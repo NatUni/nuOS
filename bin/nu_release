@@ -46,7 +46,7 @@ build_vars_init
 require_base_src
 install_vars_init -q
 
-echo 'new zvol sizes (2x)  -z ZVOL_SIZE        ' ${ZVOL_SIZE:=15000000K}
+echo 'new zvol sizes (2x)  -z ZVOL_SIZE        ' ${ZVOL_SIZE:=30000000K}
 echo 'work pool            -w WORK_POOL_NAME   ' ${WORK_POOL_NAME:=spawn}
 echo 'output pool          -o OUTPUT_POOL_NAME ' ${OUTPUT_POOL_NAME:=spore}
 echo 'local init script    -l LOCAL_SCRIPT     ' ${LOCAL_SCRIPT:-<none>}
