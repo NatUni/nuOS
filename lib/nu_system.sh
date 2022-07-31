@@ -109,14 +109,27 @@ eko () {
 }
 
 re_pattern () {
-	local whole=;
-	if [ "$1" = -n ]; then
-		shift
-	else
-		whole=y
-	fi
+	local multiple= naked= whole=;
+	while getopts mn OPT; do case $OPT in
+		m) multiple=y;;
+		n) naked=y;;
+	esac; done; shift $(($OPTIND-1))
+	srsly ${naked-} || whole=y
 	local var=$1; shift
-	setvar ${var}_re "${whole:+^}`eval eko \\"\\$$var\\" | sed -e 's/\./\\\./g'`${whole:+\$}"
+	if srsly ${multiple-}; then
+		setvar ${var}_re `{
+			srsly ${whole-} && printf %s ^
+			while [ $# -gt 0 ]; do
+				printf %s "$1"
+				shift
+				[ $# -gt 0 ] && printf '\0'
+			done | sed -e 's/\./\\\./g' | tr '\0' '|'
+			srsly ${whole-} && printf %s '$'
+			eko
+		}`
+	else
+		setvar ${var}_re "${whole:+^}`eval eko \\"\\$$var\\" | sed -e 's/\./\\\./g'`${whole:+\$}"
+	fi
 }
 
 humanize () {
@@ -353,7 +366,11 @@ save_svn_info () {
 
 
 nuos_init () {
-	for conf_file in /usr/nuos/conf /etc/nuos.conf /etc/nuos/conf; do
+	
+	if [ -d /etc/nuos ]; then
+		CONF_DIR=/etc/nuos
+	fi
+	for conf_file in /usr/nuos/conf /etc/nuos.conf ${CONF_DIR:+$CONF_DIR/conf}; do
 		if [ -r "$conf_file" ]; then
 			. "$conf_file"
 		fi
@@ -465,4 +482,151 @@ set_primary_phys_netif () {
 	cat >> "$trgt/etc/rc.conf.local" <<EOF
 ifconfig_${primary_if}_name="net0"
 EOF
+}
+
+strip_csv_header () {
+	tail -n +2
+}
+
+lower_case () {
+	local proc='tr [[:upper:]] [[:lower:]]'
+	case $# in
+		0) proc;;
+		1) eko "$1" | proc;;
+		*) error 7;;
+	esac
+}
+
+get_domains () {
+	local col= exp= rest=
+	col=`xsv headers ${ZONE_DIR:=$CONF_DIR}/domain.csv | grep ' Expires$' | cut -wf1`
+	xsv search -i -s Enabled '^y$' ${ZONE_DIR:=$CONF_DIR}/domain.csv | xsv select $col,1-$(($col - 1)),$(($col+1))- | while IFS=, read -r exp rest; do
+		if [ "x$exp" = 'xExpires' ] || [ $exp -gt "`env TZ=UTC date -v +1d +%Y%m%d`" ]; then
+			eko "$exp,$rest"
+		elif [ -z "${_nu_domains_checked-}" ]; then
+			eko WARNING: ${rest%%,*} expired >&2
+		fi
+	done
+	_nu_domains_checked=y
+}
+
+get_emails () {
+	tr @ , < ${ZONE_DIR:=$CONF_DIR}/email.csv
+}
+
+infra_name () {
+	local domain= domain_re=
+	if canhas "${1-}"; then
+		domain=$1
+	else
+		domain=`hostname -d`
+	fi
+	re_pattern domain
+	xsv search -i -s Name "$domain_re" ${ZONE_DIR:=$CONF_DIR}/domain.csv | xsv select Infrastructure | strip_csv_header
+}
+
+infra () {
+	local infra= infra_re=
+	infra=`infra_name ${1-}`
+	re_pattern infra
+	xsv search -i -s Name "$infra_re" ${ZONE_DIR:=$CONF_DIR}/infrastructure.csv
+}
+
+infra_host_name () {
+	local metal=
+	metal=`infra ${1-} | xsv select Host | strip_csv_header`
+	case "$metal" in
+		'') ;&
+		[Nn][Uu][Ll][Ll]) ;&
+		[Ss][Ee][Ll][Ff]) ;&
+		[Dd][Ee][Ff][Aa][Uu][Ll][Tt])
+			infra_name ${1-}
+		;;
+		*)
+			eko $metal
+		;;
+	esac
+}
+
+extract_name () {
+	xsv select Name | strip_csv_header
+}
+
+extract_country () {
+	xsv select Country | strip_csv_header
+}
+
+extract_state () {
+	xsv select Province | strip_csv_header
+}
+
+extract_city () {
+	xsv select Locality | strip_csv_header
+}
+
+extract_org () {
+	xsv select Organization | strip_csv_header
+}
+
+extract_dept () {
+	xsv select Department | strip_csv_header
+}
+
+extract_flags () {
+	xsv select Flags | strip_csv_header
+}
+
+extract_sec_dept () {
+	xsv select 'Security Department' | strip_csv_header
+}
+
+extract_own_acct () {
+	xsv select 'Owner Account' | strip_csv_header
+}
+
+extract_own_name () {
+	xsv select 'Owner Name' | strip_csv_header
+}
+
+match_infra () {
+	local infra= infra_re=
+	infra=`infra_name ${1-}`
+	re_pattern infra
+	xsv search -i -s Infrastructure "$infra_re"
+}
+
+match_func () {
+	local func=$1 func_re=
+	re_pattern -n func
+	xsv search -i -s Function "^$func_re"
+}
+
+match_names () {
+	local names_re=
+	re_pattern -m names $@
+	xsv search -i -s Name "$names_re"
+}
+
+match_hosts () {
+	local zones_re=
+	re_pattern -m zones $@
+	xsv search -i -s Host "$zones_re"
+}
+
+extract_email () {
+	xsv select Box,Host | strip_csv_header | tr , @
+}
+
+get_all_infras () {
+	local metal= metal_re=
+	metal=`infra_host_name ${1-}`
+	re_pattern metal
+	xsv search -i -s Name,Host "$metal_re" ${ZONE_DIR:=$CONF_DIR}/infrastructure.csv
+}
+
+get_guest_infras () {
+	local infra= infra_re=
+	infra=`infra_name ${1-}`
+	re_pattern infra
+	get_all_infras ${1-} | xsv search -v -i -s Name "$infra_re"
 }
