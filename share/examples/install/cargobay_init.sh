@@ -65,9 +65,9 @@ EOF
 		cp -v "$NUOS/share/examples/install/cargobay_genesis.sh" "$TRGT/root/"
 		echo 'nuos_firstboot_script="/root/cargobay_genesis.sh"' > "$TRGT/etc/rc.conf.d/nuos_firstboot"
 	;;
-	*)
-		:
 esac
+
+cp -v "$NUOS/share/examples/etc/nuos/"* "$TRGT/etc/nuos/"
 
 sister enable_svc -C "$TRGT" nuos_firstboot
 touch "$TRGT/firstboot"

@@ -1,122 +1,37 @@
-case `hostname -d | tr [[:upper:]] [[:lower:]]` in
-	
-	cargobay.net|ccsys.com|cropcircle.systems)
-		
-		# This must be two characters. (standard: ISO 3166-1 alpha-2; e.g. blank is XX)
-		country=US
-		
-		# These must be defined, but they can be the empty string.
-		province='Florida'
-		locality='Kissimmee'
-		organization='Crop Circle Systems'
-		
-		OWNER_ACCT=chuck
-		OWNER_NAME='Charles Jacob Milios'
-		
-		infra_domain=CargoBay.net
-		corp_zones='CCSys.com CropCircle.Systems'
-		org_zones='nuOS.net nuOS.org nu.Cash nu.Chat nu.Click nu.Email nu.Gold nu.Live nu.LOL nu.Money nu.Parts nu.Place nu.School nu.Show nu.Software nu.Team nu.Zone'
-		prod_zones='Candid.Press Leak.Report UHax.TV Pawn.Today Freer.Trade Xng.Trade HyperNatural.Art ExoCosmic.Art Freshest.Garden EcoDome.Farm FeedOur.World Pure.Doctor NoLifeGuardOnDuty.FYI Legit.Blue Crooked.Blue Oath.Report Justice.House Civix.Tech Brave.Help Hero.Rent Unblind.Date Blindish.Date BeMyLil.Baby DollHouse.Cam Goddess.One Goddess.Institute Her.Services Lady.Ninja Angel.Directory Cuddle.Expert Tickle.Ninja Dominatrix.House Dominatrix.Army Dominatrix.Fashion Fetish.Pink Brat.Chat Homies.Fund Together.Rehab WifeKnows.Best DadsMore.Fun Daddy.Bar Dads.WTF Dad.University Man.Coach Faith.Agency'
-		
-		sec_dept='System & Network Security'
-		net_dept='Network Infrastructure & Operations'
-		
-		init_emails='chad@ccsys.com milios@ccsys.com chuck@nu.email chad@nu.email jake@nu.email'
-	;;
-	
-	woneye.site|uglybagsofmostlywater.club)
-		
-		country=US
-		
-		province='Oregon'
-		locality='Astoria'
-		organization='Lighthouse Lounge'
-		
-		OWNER_ACCT=anne
-		OWNER_NAME='Angelina Fratelli'
-		
-		infra_domain=WonEye.site
-		corp_zones='MeatPopsicle.VIP UglyBagsOfMostlyWater.Club'
-		org_zones='nuOS.xyz nunu.foundation'
-		prod_zones='Bedlam.City Bumpkin.Town Deplorable.Town Deplorable.One Fattylicious.Club 8aG.Club'
-		
-		sec_dept='Development & Production Quality Assurance'
-		net_dept='Architecture Quality Assurance'
-		
-		init_emails='willy@woneye.site korben@meatpopsicle.vip giant@uglybagsofmostlywater.club bofh@nuos.xyz raven@nunu.foundation'
-	;;
-	
-	bofh.vip)
-	
-		country=SU
-		
-		province='Monastery'
-		locality='Scary Devil'
-		organization='Path-E-Tech Management'
-		
-		OWNER_ACCT=phb
-		OWNER_NAME='Pointy Haired Boss'
-		
-		infra_domain=BOFH.vip
-		org_zones='USAwhite.house FBI.management CIA.ventures DHS.agency NSA.direct CDC.doctor'
-		prod_zones='USwhite.house'
-		
-		sec_dept='Red Team'
-		net_dept='Blue Team'
-		
-		init_emails='ceo@bofh.vip phb@bofh.vip pfy@bofh.vip root@bofh.vip toor@bofh.vip daemon@bofh.vip operator@bofh.vip pop@bofh.vip nobody@bofh.vip'
-	;;
-	
-	entire.ninja)
-		
-		country=QU
-		
-		province='Hi no Kuni'
-		locality='Konohagakure'
-		organization='Foundation'
-		
-		OWNER_ACCT=naruto
-		OWNER_NAME='Naruto Uzumaki'
-		
-		infra_domain=Entire.Ninja
-		
-		sec_dept='Advanced Network & System Operations'
-		net_dept='Advanced System Engineering'
-		
-		init_emails='naruto@entire.ninja hokage@entire.ninja jonin@entire.ninja'
-	;;
-	
-	macleod.host|goonies.pro)
-		
-		country=UK
-		
-		# These must be defined, but they can be the empty string.
-		province='Scotland'
-		locality='Glenfinnan'
-		organization='Russell Nash Antiques & Curiosities'
-		
-		OWNER_ACCT=one
-		OWNER_NAME='Connor MacLeod'
-		
-		infra_domain=MacLeod.host
-		corp_zones='Goon.Store Goonies.Pro'
-		org_zones='Gangsta.Tech Thug.Digital Bully.Ninja'
-		prod_zones='Emptier.Space Bravest.World McLeod.host'
-		
-		sec_dept='Infrastructure & Operations Quality Assurance'
-		net_dept='System Engineering Quality Assurance'
-		
-		init_emails='connor@macleod.host one@bravest.world zero@emptier.space mikey@goonies.pro mouth@goonies.pro data@goonies.pro chunk@goonies.pro brand@goonies.pro stef@goonies.pro andy@goonies.pro mama@goon.store jake@goon.store francis@goon.store sloth@goon.store'
-	;;
-	*)
-		echo "ERROR: unsure of identity and ownership, check configuration" >&2
-		exit 1
-esac
+NUOS_VER=0.0.11.4a0
+. /usr/nuos/lib/nu_system.sh
+nuos_init
 
-client_zones="${corp_zones-} ${org_zones-} ${prod_zones-}"
+get_domains > /dev/null
+
+infra_domain=`infra_name`
+
+canhas $infra_domain || error 6 "unsure of identity and ownership, check configuration"
+
+spill infra_domain
+
+country=`infra | extract_country`
+province=`infra | extract_state`
+locality=`infra | extract_city`
+organization=`infra | extract_org`
+sec_dept=`infra | extract_sec_dept`
+net_dept=`get_domains | match_names $infra_domain | extract_dept`
+
+OWNER_ACCT=`infra | extract_own_acct`
+OWNER_NAME=`infra | extract_own_name`
+
+corp_zones=`get_domains | match_infra | match_func corp | extract_name`
+org_zones=`get_domains | match_infra | match_func org | extract_name`
+prod_zones=`get_domains | match_infra | match_func prod | extract_name`
+
+client_zones="$corp_zones $org_zones $prod_zones"
 zones="$infra_domain $client_zones"
 
+init_emails=`get_emails | match_hosts $zones | extract_email`
 
+spill client_zones
+
+env
 
 while IFS=: read n ip; do
 	setvar my_ip_$n $ip
@@ -125,12 +40,10 @@ done <<EOF
 `ifconfig net0 | grep -E '^[[:blank:]]*inet' | xargs -L 1 | cut -w -f 2 | grep -n .`
 EOF
 
-echo infra_domain=$infra_domain
-echo client_zones=$client_zones
 env
 
 
-infra_domain_lc=`echo $infra_domain | tr [[:upper:]] [[:lower:]]`
+infra_domain_lc=`lower_case $infra_domain`
 
 enable_svc jail
 
@@ -155,7 +68,7 @@ if [ ! -d /var/jail/ns -a ! -d /var/jail/a.ns -a ! -d /var/jail/b.ns ]; then
 fi
 
 for Z in $zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	[ ! -f /var/jail/ns/var/db/knot/$z.zone ] || continue
 	for j in ns a.ns b.ns; do
 		nu_ns_host -j $j -h $z
@@ -165,7 +78,7 @@ done
 
 echo
 for Z in $zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	nu_ns_host -j ns -h $z -k
 done
 
@@ -233,7 +146,7 @@ EOF
 fi
 
 for Z in $zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	grep -w ^$z /var/jail/postmaster/usr/local/etc/postfix/domains || nu_smtp_host -C /var/jail/postmaster -h $z
 	for b in operator security hostmaster postmaster webmaster whois-data; do
 		grep -w ^$b@$z /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $infra_domain_lc -u $OWNER_ACCT -m $b@$z
@@ -244,181 +157,16 @@ for m in $init_emails; do
 done
 
 for Z in $client_zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
-	(
-		case $z in
-			cropcircle.systems)
-				department='Customer Service';;
-			ccsys.com)
-				department='Sales and Customer Support';;
-			nuos.org)
-				department='Next Underground Operating System';;
-			nuos.net)
-				department='National Union Organizing Society';;
-			nu.zone)
-				department='Identity & Authority Registration';;
-			nu.software)
-				department='Universal Software Distribution Center';;
-			nu.place)
-				department='Secure Site-Specific Storage Service';;
-			nu.email)
-				department='Secure Electronic Post Office';;
-			nu.chat)
-				department='Realtime Private Communication';;
-			nu.team)
-				department='Collaborative Resource Management';;
-			nu.show)
-				department='Interactive Media Presentation';;
-			nu.live)
-				department='Realtime Media Distribution';;
-			nu.lol)
-				department='Social Media Chronology & Archival';;
-			nu.click)
-				department='Advertising and Trend Analysis';;
-			nu.parts)
-				department='Construction and Manufacturing';;
-			nu.school)
-				department='Knowledge Library and Training Academy';;
-			nu.money)
-				department='Cryptographic Equity Issuance & Offering System';;
-			nu.gold)
-				department='Cryptographic Assets of Merit and Democratic Information System';;
-			nu.cash)
-				department='Cryptographic Debt Instruments and Monetary Products';;
-			bedlam.city)
-				department='Urban Culture Chronology';;
-			bumpkin.town)
-				department='Rural & Suburban Culture Bulletin';;
-			meatpopsicle.vip)
-				department='Urban Taxi Service and Gourmet Croquettes';;
-			uglybagsofmostlywater.club)
-				department='Cordial Community Contributor Coterie';;
-			nuos.xyz)
-				department='Advanced Software Research & Development';;
-			nunu.foundation)
-				department='Fellowship Outreach & Coordination';;
-			gangsta.tech)
-				department='Advanced Software Architecture';;
-			bully.ninja)
-				department='Advanced Software Engineering';;
-			thug.digital)
-				department='Advanced Software Production';;
-			goonies.pro)
-				department='Faux Customer Service';;
-			goon.store)
-				department='Faux Sales & Customer Support';;
-			emptier.space)
-				department='Testbed System Host Service';;
-			bravest.world)
-				department='Testbed Application Service';;
-			usawhite.house|uswhite.house|fbi.management|cia.ventures|dhs.agency|nsa.direct|cdc.doctor)
-				department='Public Service Pilot';;
-			candid.press)
-				department='Uncensored Journalism & Editorial Platform';;
-			leak.report)
-				department='Uncensored Exposé Platform';;
-			uhax.tv)
-				department='Hacker News and Entertainment';;
-			pawn.today)
-				department='Collateralized Lending Market Portal';;
-			freer.trade)
-				department='Community Goods & Services Market Portal';;
-			xng.trade|xchng.trade)
-				department='Cryptographic Instrument Market Portal';;
-			hypernatural.art|exocosmic.art)
-				department='Appreciation & Promotion of Art & Culture';;
-			freshest.garden)
-				department='Sustainable Agriculture Equipment';;
-			ecodome.farm)
-				department='Sustainable Agriculture Construction';;
-			feedour.world)
-				department='Sustainable Agriculture Global Sociopolitical Initiative';;
-			pure.doctor)
-				department='Traditional, Natural & Holistic Medical Information Portal';;
-			nolifeguardonduty.fyi)
-				department='Community Mental Health Assistance Portal';;
-			legit.blue|crooked.blue)
-				department='Executive Power Review & Feedback Platform';;
-			oath.report)
-				department='Legislative & Judicial Authority Evaluation Platform';;
-			justice.house)
-				department='Judicial Analysis & Review Platform';;
-			civix.tech)
-				department='Electronic Direct Democracy for Federated Republics';;
-			brave.help)
-				department='Local Assistance Communication Platform';;
-			hero.rent)
-				department='Local Assistance Market Portal';;
-			deplorable.town)
-				department='Working Class Patriot Society';;
-			deplorable.one)
-				department='Working Class Patriot Individuality Association';;
-			blindish.date)
-				department='Casual Dating Communication Service';;
-			unblind.date)
-				department='Premier Dating Communication Service';;
-			bemylil.baby)
-				department='Sugar Baby Dating Communication Service';;
-			dollhouse.cam)
-				department='Live Adult Entertainment';;
-			goddess.one)
-				department='Goddess Worship Products & Entertainment';;
-			goddess.institute)
-				department='Goddess Worship & Devotion Portal';;
-			her.services)
-				department='Private Feminine Support & Comfort';;
-			lady.ninja)
-				department='Women’s Empowerment Initiative';;
-			angel.directory)
-				department='Inspiration & Encouragement Therapy';;
-			cuddle.expert)
-				department='Platonic Intimate Touch Therapy';;
-			tickle.ninja)
-				department='Tactile Sensation & Laughter Therapy';;
-			dominatrix.house|dominatrix.army)
-				department='Female Authority & Discipline Therapy';;
-			dominatrix.fashion)
-				department='Dungeon Style Clothing & Accessories';;
-			fetish.pink)
-				department='Peculiar & Taboo Fanatic Communication Service';;
-			brat.chat)
-				department='Audacious & Brazen Communication Service';;
-			homies.fund)
-				department='Compassion & Philanthropy for Homeless';;
-			together.rehab)
-				department='Addiction Recovery Assistance';;
-			wifeknows.best)
-				province='Florida'
-				locality='Venice'
-				organization='Feminine Society'
-				department='Encouraging Ladies and Family Values';;
-			dadsmore.fun|daddy.bar|dads.wtf)
-				province='Ohio'
-				locality='Toledo'
-				organization='Lost & Found Fathers Coalition'
-				department='Supporting Fatherhood and Family Values';;
-			dad.university|man.coach)
-				organization='Fatherhood Society'
-				department='Coaching Men and Fathers';;
-			faith.agency)
-				organization='Family Uplifting Inclusive Religious Society'
-				department='Promoting Faith, Spirituality and Family Unity';;
-			fattylicious.club|8ag.club)
-				province='Florida'
-				locality='Englewood'
-				organization='Alexander Marriott Memorial Society'
-				department='Fattylicious Memorial Tribute';;
-			*)
-				echo "ERROR: skipping ssl key generation and certificate registration for client zone $z" >&2
-				continue
-		esac
-		if [ ! -f /etc/ssl/private/$z.key ] || [ ! -f /etc/ssl/csrs/$z.csr ]; then
-			nu_ssl -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S
-		fi
-		if [ ! -f /etc/ssl/csrs.next/$z.csr ]; then
-			nu_ssl -N -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S
-		fi
-	)
+	department=`get_domains | match_names $Z | extract_dept`
+	canhas $department || continue
+	
+	z=`lower_case $Z`
+	if [ ! -f /etc/ssl/private/$z.key ] || [ ! -f /etc/ssl/csrs/$z.csr ]; then
+		nu_ssl -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S
+	fi
+	if [ ! -f /etc/ssl/csrs.next/$z.csr ]; then
+		nu_ssl -N -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S
+	fi
 	nu_acme_renew -j ns $z
 	host -rt tlsa _443._tcp.$z ns.jail | grep -w 'has TLSA record' || nu_ssl -j ns -F -h $z -tt
 done
@@ -429,39 +177,14 @@ if [ ! -d /var/jail/www ]; then
 	nu_http -C /var/jail/www -s -IIII
 fi
 for Z in $zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	[ -f /var/jail/www/etc/ssl/certs/$z.crt -a ! /etc/ssl/certs/$z.crt -nt /var/jail/www/etc/ssl/certs/$z.crt ] || (cd /etc/ssl && tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/www/etc/ssl/)
-	case $z in
-		goonies.pro|\
-		nuos.xyz|nunu.foundation|\
-		entire.ninja|bofh.vip|\
-		cropcircle.systems|nu.zone|nu.click)
-			http_host_extra_flags=-s;;
-		woneye.site|bedlam.city|bumpkin.town|meatpopsicle.vip|uglybagsofmostlywater.club|\
-		macleod.host|goon.store|gangsta.tech|thug.digital|bully.ninja|emptier.space|bravest.world|\
-		cargobay.net|ccsys.com|nuos.org|nuos.net|\
-		nu.cash|nu.chat|nu.email|nu.gold|nu.live|nu.lol|nu.money|nu.parts|nu.place|nu.school|nu.show|nu.software|nu.team|\
-		uhax.tv|pawn.today|freer.trade|xng.trade|hypernatural.art|exocosmic.art|freshest.garden|ecodome.farm|feedour.world|unblind.date|blindish.date|bemylil.baby|dollhouse.cam|goddess.one|goddess.institute|her.services|lady.ninja|angel.directory|cuddle.expert|tickle.ninja|dominatrix.house|dominatrix.army|dominatrix.fashion|fetish.pink|brat.chat|homies.fund|together.rehab|\
-		candid.press|leak.report|pure.doctor|nolifeguardonduty.fyi|legit.blue|crooked.blue|oath.report|justice.house|civix.tech|brave.help|hero.rent|\
-		deplorable.town|deplorable.one|\
-		usawhite.house|uswhite.house|cdc.doctor|fbi.management|cia.ventures|dhs.agency|nsa.direct|\
-		wifeknows.best|dadsmore.fun|daddy.bar|dads.wtf|dad.university|man.coach|faith.agency)
-			http_host_extra_flags=-ssss;;
-		mcleod.host)
-			http_host_extra_flags='-ssss -r https://macleod.host/';;
-		8ag.club)
-			http_host_extra_flags='-ssss -r https://fattylicious.club/';;
-		fattylicious.club)
-			http_host_extra_flags=-ssssge;;
-		*)
-			echo "ERROR: skipping http service configuration for client zone $z" >&2
-			continue
-	esac
+	http_host_extra_flags=`get_domains | match_names $Z | extract_flags`
 	[ -f /var/jail/www/usr/local/etc/apache*/Includes/$z.conf ] || nu_http_host -C /var/jail/www -a -kkf -G -P -i $http_host_extra_flags -u ${ADMIN_USER:-root} -h $z
 done
 
 if [ cargobay.net = $infra_domain_lc ]; then for Z in CCSys.com; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	[ ! -f /var/jail/www/home/$ADMIN_USER/$z/www/public/index.html ] || continue
 	sed -i '' -e "/\\<Content-Security-Policy\\>/s:object-src 'none':plugin-types application/pdf:" /var/jail/www/usr/local/etc/apache*/Includes/$z.conf
 	${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www /bin/sh <<EOF
@@ -550,7 +273,7 @@ case $infra_domain_lc in
 	*) link=https://$infra_domain/
 esac
 i=1; for Z in $org_zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	[ ! -f /var/jail/www/usr/local/etc/apache*/Includes/VirtualHost.custom/$z.conf ] || continue
 	${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www `which nu_http_host_snowtube` -h $Z -l $link -S "`echo $org_zones | xargs -n 1 | sed -E -e 's|^(.*)$|https://\1/|'`" -s $i -g >> `echo /var/jail/www/usr/local/etc/apache*/Includes/VirtualHost.custom`/$z.conf
 i=$(($i+1)); done
@@ -558,7 +281,7 @@ i=$(($i+1)); done
 admin_home=${ADMIN_USER:+home/$ADMIN_USER}
 : ${admin_home:=root}
 for Z in $prod_zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	[ -z "`find /var/jail/www/$admin_home/$z/www/public -type f | head -n 1`" ] || continue
 	if [ -d /root/nuos_deliverance/www/$z ]; then
 		tar -cf - -C /root/nuos_deliverance/www/$z . | tar -xvf - -C /var/jail/www/$admin_home/$z/www
@@ -569,7 +292,7 @@ for Z in $prod_zones; do
 done
 
 for Z in $zones; do
-	z=`echo $Z | tr [[:upper:]] [[:lower:]]`
+	z=`lower_case $Z`
 	if [ -f /root/nuos_deliverance/www/$z.fstab ]; then
 		awk "\$2 !~ \"^/var/jail/www/home/[^/]*/$z/www(\$|/)\"" /etc/fstab.www > /etc/fstab.www.$$
 		cat /root/nuos_deliverance/www/$z.fstab >> /etc/fstab.www.$$
@@ -581,10 +304,6 @@ mount -F /etc/fstab.www -a
 service jail restart www
 
 
-# for z in $zones; do
-#   if first $z of $zones; then
-#     nu_vm -i
-#     #nu_pgsql -n -s -h $z
-#     #nu_ftp -s -h $z
-#   fi
-# done
+# nu_vm -i
+# nu_pgsql -n -s -h $infra_domain_lc
+# nu_ftp -s -h $infra_domain_lc
