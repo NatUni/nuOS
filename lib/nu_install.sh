@@ -81,7 +81,7 @@ require_base_src () {
 		baseos_init
 		reset_pkg_collection
 	fi
-	local make_conf retire_make_conf_cmd
+	local make_conf= retire_make_conf_cmd=
 	if [ ! -d /usr/obj/usr/src/bin ]; then
 		prepare_make_conf make_conf retire_make_conf_cmd
 		[ $TRGT_OPTZ = `cd /var/empty && make -V CPUTYPE` ]
