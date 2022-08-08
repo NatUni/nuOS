@@ -1,9 +1,9 @@
 Name,Preferred,Enabled,Active,Expires,Registrar,Function,Infrastructure,Flags,Department,Organization,Locality,Province,Country
-CCSys.com,Y,Y,Y,20220805,godaddy.com,corp,CargoBay.net,-ssss,Sales and Customer Support,,,,
-CropCircle.Systems,Y,Y,Y,20220804,godaddy.com,corp,CargoBay.net,-s,Customer Service,,,,
+CCSys.com,Y,Y,Y,20240805,godaddy.com,corp,CargoBay.net,-ssss,Sales and Customer Support,,,,
+CropCircle.Systems,Y,Y,Y,20240804,godaddy.com,corp,CargoBay.net,-s,Customer Service,,,,
 nuOS.org,Y,Y,Y,20231222,dynadot.com,org,CargoBay.net,-ssss,Next Underground Operating System,,,,
 CCSys.org,Y,Y,Y,20230430,godaddy.com,prod,CargoBay.net,-ssss -r https://ccsys.com/,Sales and Customer Support,,,,
-UHax.TV,Y,Y,Y,20220821,domain.com,prod,CargoBay.net,-ssss,Hacker News and Entertainment,,,,
+UHax.TV,Y,Y,Y,20230821,domain.com,prod,CargoBay.net,-ssss,Hacker News and Entertainment,,,,
 BOFH.vip,Y,Y,Y,20230330,namecheap.com,infra,BOFH.vip,-s,Blue Team,,,,
 ATF.ninja,Y,Y,Y,20230615,namecheap.com,org,BOFH.vip,-ssss,Alcohol and Tobacco Faction,,,,
 CDC.doctor,Y,Y,Y,20230416,namecheap.com,org,BOFH.vip,-ssss,Community Digital Computer Support,,,,
