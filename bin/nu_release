@@ -77,6 +77,7 @@ if ! zpool list $WORK_POOL_NAME; then
 	echo NOTICE: using CAM front end LUN $work_felun
 	ctladm lunmap -p $feport -l $work_felun -L $work_ctlun
 	ctladm port -p $feport -o on
+	sleep 2
 	work_zvdev=`camcontrol devlist | sed -nEe '/^.+ at '"$sbdev"' target [[:digit:]]+ lun '"$work_felun"' \((.+)\)$/{s//\1/;p;}' | tr , '\n' | grep '^da[[:digit:]]'`
 	echo NOTICE: using CAM simulated SCSI disk $work_zvdev
 	sister nu_hdd -b -u 100 -a 128 -q -p $WORK_POOL_NAME $work_zvdev
@@ -96,20 +97,21 @@ output_felun=`ctladm portlist -q -l -p $feport | tail -n +2 | awk '{if ($2 != (N
 echo NOTICE: using CAM front end LUN $output_felun
 ctladm lunmap -p $feport -l $output_felun -L $output_ctlun
 ctladm port -p $feport -o on
+sleep 2
 output_zvdev=`camcontrol devlist | sed -nEe '/^.+ at '"$sbdev"' target [[:digit:]]+ lun '"$output_felun"' \((.+)\)$/{s//\1/;p;}' | tr , '\n' | grep '^da[[:digit:]]'`
 echo NOTICE: using CAM simulated SCSI disk $output_zvdev
 
 sister nu_hdd -b -u 100 -a 128 -q -p $OUTPUT_POOL_NAME $output_zvdev
 sister nu_os_install -P $WORK_POOL_NAME -p $OUTPUT_POOL_NAME -c $PKG_COLLECTION -q
-[ ${KEEP_ONLINE-0} -ge 2 ] || zpool export $WORK_POOL_NAME
-[ ${KEEP_ONLINE-0} -ge 2 ] || ctladm lunmap -p $feport -l $work_felun
-[ ${KEEP_ONLINE-0} -ge 2 ] || ctladm port -p $feport -o on
-[ ${KEEP_ONLINE-0} -ge 2 ] || ctladm remove -b block -l $work_ctlun
+[ ${KEEP_ONLINE-0} -ge 2 -o -z "${work_felun-}" ] || zpool export $WORK_POOL_NAME
+[ ${KEEP_ONLINE-0} -ge 2 -o -z "${work_felun-}" ] || ctladm lunmap -p $feport -l $work_felun
+[ ${KEEP_ONLINE-0} -ge 2 -o -z "${work_felun-}" ] || { ctladm port -p $feport -o on; sleep 2; }
+[ ${KEEP_ONLINE-0} -ge 2 -o -z "${work_felun-}" ] || ctladm remove -b block -l $work_ctlun
 
 sister nu_sys -s $SWAP_SIZE -p $OUTPUT_POOL_NAME -u '' -b '' -h $NEW_HOST -c $PKG_COLLECTION ${LOCAL_SCRIPT:+-l $LOCAL_SCRIPT} -q
 [ ${KEEP_ONLINE-0} -ge 1 ] || zpool export $OUTPUT_POOL_NAME
 [ ${KEEP_ONLINE-0} -ge 1 ] || ctladm lunmap -p $feport -l $output_felun
-[ ${KEEP_ONLINE-0} -ge 1 ] || ctladm port -p $feport -o on
+[ ${KEEP_ONLINE-0} -ge 1 ] || { ctladm port -p $feport -o on; sleep 2; }
 [ ${KEEP_ONLINE-0} -ge 1 ] || ctladm remove -b block -l $output_ctlun
 
 [ ${KEEP_ONLINE-0} -ge 1 ] || zfs snapshot $POOL_NAME/img/$OUTPUT_POOL_NAME@birth

@@ -18,20 +18,24 @@ sec_dept=`infra | extract_sec_dept`
 net_dept=`get_domains | match_names $infra_domain | extract_dept`
 
 OWNER_ACCT=`infra | extract_own_acct`
+spill OWNER_ACCT
 OWNER_NAME=`infra | extract_own_name`
+spill OWNER_NAME
 
 corp_zones=`get_domains | match_infra | match_func corp | extract_name`
+spill corp_zones
 org_zones=`get_domains | match_infra | match_func org | extract_name`
+spill org_zones
 prod_zones=`get_domains | match_infra | match_func prod | extract_name`
+spill prod_zones
 
 client_zones="$corp_zones $org_zones $prod_zones"
 zones="$infra_domain $client_zones"
 
 init_emails=`get_emails | match_hosts $zones | extract_email`
+spill init_emails
 
-spill client_zones
 
-env
 
 while IFS=: read n ip; do
 	setvar my_ip_$n $ip
@@ -39,8 +43,6 @@ while IFS=: read n ip; do
 done <<EOF
 `ifconfig net0 | grep -E '^[[:blank:]]*inet' | xargs -L 1 | cut -w -f 2 | grep -n .`
 EOF
-
-env
 
 
 infra_domain_lc=`lower_case $infra_domain`
@@ -137,7 +139,7 @@ imaps 2
 lmtp(unix)? 1
 EOF
 	sed -i '' -E -e "/^SERVICES {/,/^}/{$prgm}" /var/jail/postoffice/usr/local/etc/cyrus.conf
-	echo /var/jail/postoffice/var/imap/socket /var/jail/postmaster/var/imap/socket nullfs ro > /etc/fstab.postoffice
+	echo /var/jail/postoffice/var/imap/socket /var/jail/postmaster/var/imap/socket nullfs ro >| /etc/fstab.postoffice
 	if [ -d /root/nuos_deliverance/po ]; then
 		tar -cf - -C /root/nuos_deliverance/po . | tar -xvf - -C /var/jail/postoffice/var
 	fi
