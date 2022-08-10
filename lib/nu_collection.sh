@@ -180,7 +180,6 @@ collection_vars_init () {
 		commonserver
 		graphics/optipng
 		graphics/gifsicle
-		emulators/virtualbox-ose
 		sysutils/vmdktool
 		graphics/povray-meta
 		graphics/graphviz
