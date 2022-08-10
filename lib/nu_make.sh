@@ -25,7 +25,7 @@ make_vars_init () {
 	: ${TRGT_ARCH:=$HOSTOS_ARCH}
 	: ${TRGT_PROC:=$HOSTOS_PROC}
 	case $TRGT_PROC in
-		amd64) : ${TRGT_OPTZ:=k8};;
+		amd64) : ${TRGT_OPTZ:=x86-64};;
 		i386) : ${TRGT_OPTZ:=pentium3};;
 		*) [ -n "${TRGT_OPTZ-}" ]
 	esac

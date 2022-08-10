@@ -491,8 +491,8 @@ strip_csv_header () {
 lower_case () {
 	local proc='tr [[:upper:]] [[:lower:]]'
 	case $# in
-		0) proc;;
-		1) eko "$1" | proc;;
+		0) $proc;;
+		1) eko "$1" | $proc;;
 		*) error 7;;
 	esac
 }
@@ -549,7 +549,7 @@ infra_host_name () {
 }
 
 extract_name () {
-	xsv select Name | strip_csv_header
+	xsv select Name | strip_csv_header | xargs
 }
 
 extract_country () {
@@ -614,7 +614,7 @@ match_hosts () {
 }
 
 extract_email () {
-	xsv select Box,Host | strip_csv_header | tr , @
+	xsv select Box,Host | strip_csv_header | tr , @ | xargs
 }
 
 get_all_infras () {
