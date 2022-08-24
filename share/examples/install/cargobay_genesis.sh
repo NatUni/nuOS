@@ -1,4 +1,4 @@
-NUOS_VER=0.0.11.4a0
+NUOS_VER=0.0.12.99a0
 . /usr/nuos/lib/nu_system.sh
 nuos_init
 
