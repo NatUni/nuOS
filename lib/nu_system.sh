@@ -34,8 +34,8 @@ baseos_init () {
 		BASEOS_VER=`uname -r`
 	fi
 	if [ -q != "${1-}" ]; then
-		echo 'base opsys			' $BASEOS_TYPE
-		echo 'base opsys v#		     ' $BASEOS_VER
+		echo 'base opsys                        ' $BASEOS_TYPE
+		echo 'base opsys v#                     ' $BASEOS_VER
 	fi
 }
 
@@ -53,6 +53,7 @@ maybe_pause () {
 maybe_yell () {
 	if [ -n "${OPT_VERBOSE-}" ]; then
 		set -v; set -x
+		trap 'set >| /tmp/`basename "$0"`.$$.set' EXIT
 	fi
 }
 
@@ -286,6 +287,20 @@ retire_tmp () {
 	eval unset "$1"
 }
 
+underscore () {
+	if [ $# -eq 0 ]; then
+		sed -e s+/+_+
+	else
+		while [ $# -gt 0 ]; do
+			if eval [ "\${$1}" = "\${$1%%/*}" ]
+				then eval setvar ${1}_ "\${$1}"
+				else eval setvar ${1}_ "\${$1%%/*}_\${$1#*/}"
+			fi
+			shift
+		done
+	fi
+}
+
 sets_union () {
 	local ret_var=$1; shift
 	
@@ -333,12 +348,15 @@ rev_zone () {
 }
 
 try () {
-	local tries=$1; shift
+	local pause=1 tries=$1; shift
+	if [ x-p = "x$1" ]; then
+		pause=$2; shift 2
+	fi
 	for n in `seq 1 $tries`; do
 		if "$@"; then
 			return
 		else
-			sleep 1
+			sleep $pause
 		fi
 	done
 	return 1
@@ -348,19 +366,20 @@ next_ip () {
 	echo "${1%.*}.$((${1##*.}+1))"
 }
 
-save_svn_info () {
+save_git_info () {
 	local code_dir= opt_rev= r=
 	if [ x-r = "x${1-}" ]; then
 		opt_rev=y; shift
 	fi
 	code_dir="${1:-`realpath .`}"
-	if ! [ "$code_dir/.svn/info.txt" -nt "$code_dir/.svn/wc.db" ]; then
-		(cd /var/empty && env TZ=UTC svn`which svn > /dev/null 2>&1 || echo lite` info "$code_dir") >| "$code_dir/.svn/info.txt"
+	if ! [ "$code_dir/.git/info.txt" -nt "$code_dir/.git/index" ]; then
+		which git > /dev/null
+		echo Commit: "`env TZ=UTC git -C "$code_dir" rev-parse HEAD`" >| "$code_dir/.git/info.txt"
 	fi
 	if srsly ${opt_rev-}; then
-		r=`grep ^Revision: "$code_dir/.svn/info.txt" | cut -w -f 2`
+		r=`grep ^Commit: "$code_dir/.git/info.txt" | cut -w -f 2 | head -c 12`
 		: ${r:=0}
-		echo r$r
+		echo g$r
 	fi
 }
 
@@ -389,12 +408,17 @@ nuos_init () {
 	else
 		HOSTOS_MACH=$HOSTOS_ARCH.$HOSTOS_PROC
 	fi
+
+	PKG_DBLOC=/var/db/nuos/pkg
+	: ${PKG_DBDIR=$PKG_DBLOC}
+	
 	if [ -q != "${1-}" ]; then
 		echo 'nuos app v#                       ' $NUOS_VER
 		echo 'nuos support       NUOS_SUPPORTED ' "$NUOS_SUPPORTED"
 		echo 'host opsys                        ' "$HOSTOS_TYPE"
 		echo 'host opsys v#                     ' $HOSTOS_VER
-		echo "host pkg collec'n                 " ${HOSTOS_PKG_COLLECTION-n/a}
+		echo "host pkg collec'n                 " ${HOSTOS_PKG_COLLECTION-<n/a>}
+		echo "host pkg db dir                   " ${PKG_DBDIR-<none>}
 	fi
 }
 
@@ -427,15 +451,22 @@ nuos_ssh_init () {
 }
 
 nuos_sha_fngr () {
-	local bytes=24
-	while getopts b:f OPT; do case $OPT in
+	local makeconf= make_conf= bytes=24
+	while getopts b:fm: OPT; do case $OPT in
 		b) bytes=$OPTARG; [ $bytes -ge 1 -a $bytes -le 43 ];;
 		f) opt_force=y;;
+		m) makeconf=$OPTARG;;
 	esac; done; shift $(($OPTIND-1))
 	[ $# -ge 1 ]
 	[ $bytes -le 42 -o -n "${opt_force-}" ]
+
+	if canhas $makeconf; then
+		[ -r "$makeconf" ]
+		require_tmp make_conf
+		grep -vE '^CPUTYPE\>' "$makeconf" >| "$make_conf"
+	fi
 	
-	cat "$@" 2>/dev/null |
+	cat ${makeconf:+"$make_conf"} "$@" 2>/dev/null |
 		sha256 -q |
 		(echo 16i; echo -n FF; tr a-f A-F; echo P) | dc | tail -c +2 |
 		b64encode - |
@@ -448,6 +479,8 @@ nuos_sha_fngr () {
 				p
 				q
 			}"
+
+	canhas $makeconf && retire_tmp make_conf
 }
 
 ns_master_zone () {

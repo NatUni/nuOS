@@ -32,8 +32,9 @@ build_vars_init () {
 	echo 'target proc        TRGT_PROC      ' $TRGT_PROC
 	echo 'target kern        TRGT_KERN      ' ${TRGT_KERN:=NUOS}
 	echo 'target optimize    TRGT_OPTZ      ' $TRGT_OPTZ
-	echo 'subversion server  SVN_SERVER     ' ${SVN_SERVER=svn.FreeBSD.org}
-	echo 'subversion path    SVN_PATH       ' ${SVN_PATH:=base/releng/11.4}
+	echo 'git server         GIT_SERVER     ' ${GIT_SERVER=git.FreeBSD.org}
+	echo 'git path           GIT_PATH       ' ${GIT_PATH:=src}
+	echo 'git branch         GIT_BRANCH     ' ${GIT_BRANCH:=releng/13.1}
 }
 
 install_vars_init () {
@@ -46,15 +47,12 @@ install_vars_init () {
 	canhas ${1-} || echo 'target kern        TRGT_KERN      ' ${TRGT_KERN:=NUOS}
 	echo -n 'copy src           COPY_SRC        ' && [ -n "${COPY_SRC-}" ] && echo set || echo null
 	echo -n 'copy ports src     COPY_PORTS      ' && [ -n "${COPY_PORTS-}" ] && echo set || echo null
-	echo -n 'copy svn repos     COPY_SVN        ' && [ -n "${COPY_SRC-}" ] && ([ -n "${COPY_SVN-}" ] && echo set || echo null) || echo n/a
+	echo -n 'copy git repos     COPY_GIT        ' && [ -n "${COPY_GIT-}" ] && ([ -n "${COPY_GIT-}" ] && echo set || echo null) || echo n/a
 	echo -n 'copy all pkgs      COPY_DEV_PKGS   ' && [ -n "${COPY_DEV_PKGS-}" ] && echo set || echo null
 }
 
-require_subversion () {
-	if which svn; then
-	else
-		sister nu_install_pkg devel/subversion
-	fi
+require_git () {
+	which git > /dev/null || sister nu_install_pkg devel/git
 }
 
 require_base_src () {
@@ -63,35 +61,27 @@ require_base_src () {
 		opt_nomake=y; shift
 	fi
 	if [ ! -f /usr/src/Makefile ]; then
-		require_subversion
+		require_git
 		
-		local svn_errors=0
-		svn checkout https://$SVN_SERVER/$SVN_PATH /usr/src || svn_errors=1
-		save_svn_info /usr/src
-		
-		local max_svn_errors=5
-		while [ $svn_errors -gt 0 -a -z "${svn_success-}" -a $svn_errors -lt $max_svn_errors ]; do
-			local svn_retry_pause=15
-			echo suffered $svn_errors errors while checking out base system source code from subversion server at $SVN_SERVER
-			echo pausing for at least $svn_retry_pause seconds
-			(cd /usr/src && svn cleanup && sleep $svn_retry_pause && svn update) && svn_success=y || svn_errors=$(($svn_errors+1))
-		done
-		[ $svn_errors -lt $max_svn_errors ]
+		try 3 -p 5 git clone --branch "$GIT_BRANCH" https://$GIT_SERVER/$GIT_PATH.git /usr/src
 
 		baseos_init
 		reset_pkg_collection
 	fi
 	local make_conf= retire_make_conf_cmd=
-	if [ ! -d /usr/obj/usr/src/bin ]; then
+	if ! [ -d /usr/obj/usr/src/bin -o -d /usr/obj/usr/src/$TRGT_ARCH.$TRGT_PROC/bin ]; then
 		prepare_make_conf make_conf retire_make_conf_cmd
 		[ $TRGT_OPTZ = `cd /var/empty && make -V CPUTYPE` ]
 		srsly $opt_nomake || (cd /usr/src && make -j $MAKE_JOBS "__MAKE_CONF=$make_conf" buildworld)
 		$retire_make_conf_cmd make_conf
 	fi
+	[ -f /usr/obj/usr/src/$TRGT_ARCH.$TRGT_PROC/toolchain-metadata.mk ] || old_build=y
+	[ -f /usr/obj/usr/src/compiler-metadata.mk ] || new_build=y
+	[ y = "${old_build-}${new_build-}" ]
 	if [ $TRGT_KERN = NUOS ] && [ ! -e /usr/src/sys/$TRGT_ARCH/conf/NUOS -o /usr/src/sys/$TRGT_ARCH/conf/NUOS -ot "$(realpath "$(dirname "$(realpath "$0")")/../share/kern/NUOS")" ]; then
 		cp -p "$(realpath "$(dirname "$(realpath "$0")")/../share/kern/NUOS")" /usr/src/sys/$TRGT_ARCH/conf/NUOS
 	fi
-	if [ ! -d /usr/obj/usr/src/sys/$TRGT_KERN ]; then
+	if [ ! -d /usr/obj/usr/src${new_build:+/$TRGT_ARCH.$TRGT_PROC}/sys/$TRGT_KERN ]; then
 		prepare_make_conf make_conf retire_make_conf_cmd
 		srsly $opt_nomake || (cd /usr/src && make -j $MAKE_JOBS "__MAKE_CONF=$make_conf" KERNCONF=$TRGT_KERN buildkernel)
 		$retire_make_conf_cmd make_conf

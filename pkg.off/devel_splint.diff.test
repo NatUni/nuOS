@@ -1,0 +1,1 @@
+! grep -q ^+%define\ api\\.pure files/patch-*_signature.y

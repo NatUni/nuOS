@@ -30,16 +30,28 @@ fi
 
 
 ports_tag () {
-	if [ -d /usr/ports/.svn ]; then
-		save_svn_info -r /usr/ports
+	if [ -d /usr/ports/.git ]; then
+		save_git_info -r /usr/ports
 	else
 		cut -d '|' -f 2 /var/db/portsnap/tag
 	fi
 }
 
 pkg_db_tag () {
-	[ -d "${CHROOTDIR-}/var/db/nuos/pkg" -a ! -L "${CHROOTDIR-}/var/db/nuos/pkg" -a -f "${CHROOTDIR-}/var/db/nuos/pkg/tag" ]
-	cat "${CHROOTDIR-}/var/db/nuos/pkg/tag"
+	if [ -d "${CHROOTDIR-}$PKG_DBDIR" -a ! -L "${CHROOTDIR-}$PKG_DBDIR" -a -f "${CHROOTDIR-}$PKG_DBDIR/tag" ]; then
+		cat "${CHROOTDIR-}$PKG_DBDIR/tag"
+	else
+		ports_tag
+	fi
+}
+
+port_idx () {
+	local make_conf=$1 db=$2 port=$3 port_= env= ma=
+	underscore port
+	: ${_port_building_metainfo_dir:="$(dirname "$(realpath "$0")")/../pkg"}
+	env="$_port_building_metainfo_dir/${port_%%@*}.env"
+	ma="$_port_building_metainfo_dir/${port_%%@*}.makeargs"
+	nuos_sha_fngr -b 16 -m "$make_conf" "$env" "$ma" "$db/$port_/settings" "$db/$port_/dependencies/all"
 }
 
 require_portsnap_files () {
@@ -88,7 +100,7 @@ require_ports_tree () {
 		fi
 	done
 	local port_diff= port_diffs=
-	port_diffs="`cd "$pkg_meta" && ls *.1.diff 2> /dev/null`"
+	port_diffs="`cd "$pkg_meta" && ls *.1.diff 2> /dev/null || true`"
 	for port_diff in $port_diffs; do
 		local i= port_= port= targ=
 		port_=${port_diff%.1.diff}
@@ -102,7 +114,7 @@ require_ports_tree () {
 			while [ -f "$pkg_meta"/$port_.$i.diff ]; do
 				targ=`head -n 2 "$pkg_meta"/$port_.$i.diff | tail -n 1 | cut -w -f 2`
 				patch -s -C -F 0 -E -t -N -d /usr/ports/$port -i "$pkg_meta"/$port_.$i.diff $targ || { echo "ERORR: patch for $port failed." >&2 && exit 1; }
-				patch -F 0 -E -t -N -d /usr/ports/$port -i "$pkg_meta"/$port_.$i.diff $targ
+				patch -F 0 -E -t -N -V none -d /usr/ports/$port -i "$pkg_meta"/$port_.$i.diff $targ
 				i=$(($i+1))
 			done
 			sha256 -q "$pkg_meta"/$port_.diff.test >| /usr/ports/$port/.nuOS_diff_test
@@ -126,7 +138,7 @@ pkg_name () {
 
 	port_=`echo $port | tr / _`
 	if [ -n "$opt_db" ]; then
-		cat "${CHROOTDIR-}/var/db/nuos/pkg/$port_/name"
+		cat "${CHROOTDIR-}$PKG_DBDIR/$port_/name"
 	elif [ -n "$opt_installed" ]; then
 		exit 78
 		output=`${CHROOTDIR:+chroot "$CHROOTDIR"} pkg info -qO ${port%%@*}`

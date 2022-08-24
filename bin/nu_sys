@@ -64,7 +64,7 @@ discover_install_mnt $POOL_NAME
 
 sys_ds=$POOL_NAME/sys
 factories_ds=$sys_ds/factory
-nuos_factory_ds=$sys_ds/factory/nuOS-$NUOS_VER-$TRGT_MACH
+nuos_factory_ds=$sys_ds/factory/nuOS-$NUOS_VER-$TRGT
 use_factory_ds=$nuos_factory_ds/`zfs get -H -o value org.nuos:active_revision $nuos_factory_ds`
 
 host_ds=$sys_ds/$NEW_HOST
@@ -95,6 +95,9 @@ done
 
 cloner $use_factory_ds@pool_registered $new_host_ds
 
+cat >> $pool_mnt/etc/fstab <<EOF
+/dev/gpt/esp0-$POOL_NAME /boot/efi msdosfs ro,failok 2 0
+EOF
 if [ -n "$SWAP_SIZE" -a "$SWAP_SIZE" != 0 ]; then
 	if [ -n "${OPT_ELI_SWAP-}" ]; then
 		cat >> $pool_mnt/etc/fstab <<EOF
@@ -124,11 +127,13 @@ while
 do
 	bl_rev=$(($bl_rev + 1))
 done
-sister nu_jail ${OPT_VERBOSE:+-v} -C $pool_mnt -p $POOL_NAME -t clone -w -j $bl_jail_name -o $BASEOS_TYPE/$BASEOS_VER/$TRGT_MACH -s pkg_ready -i 127.1.255.254 -x -q
+sister nu_jail ${OPT_VERBOSE:+-v} -C $pool_mnt -p $POOL_NAME -t clone -w -j $bl_jail_name -o $BASEOS_TYPE/$BASEOS_VER/$TRGT -s pkg_ready -i 127.1.255.254 -x -q
 
-nuos_rev=`zfs get -H -o value org.nuos:active_revision $POOL_NAME/os/$HOSTOS_TYPE/$HOSTOS_VER/$HOSTOS_MACH || true`
+copy_ds=`CHROOTDIR=$pool_mnt; nuos_init -q; echo $POOL_NAME/os/$HOSTOS_TYPE/$HOSTOS_VER/$HOSTOS_TRGT`
+
+nuos_rev=`zfs get -H -o value org.nuos:active_revision $copy_ds || true`
 [ "x$nuos_rev" != x- ] || nuos_rev=
-if [ "$PKG_COLLECTION" != pkg -a "$PKG_COLLECTION" != blank ] && zfs list $POOL_NAME/os/$HOSTOS_TYPE/$HOSTOS_VER/$HOSTOS_MACH/$nuos_rev@pkg; then
+if [ "$PKG_COLLECTION" != pkg -a "$PKG_COLLECTION" != blank ] && zfs list $copy_ds/$nuos_rev@pkg; then
 	nl_rev=0
 	while
 		nl_jail_name=nuos-lab$nl_rev
@@ -181,6 +186,11 @@ fi
 
 admin_install -z $pool_mnt
 
+export BASEOS_TYPE
+export BASEOS_VER
+export HOSTOS_TYPE
+export HOSTOS_VER
+export TRGT_TYPE=$TRGT
 export POOL=$POOL_NAME
 export TRGT=$pool_mnt
 export NAME=${NEW_HOST%%.*}
@@ -204,4 +214,4 @@ if [ -z "${home_existed-}" ]; then
 fi
 
 
-echo "Initialization of $NEW_HOST running nuOS-$NUOS_VER-$TRGT_MACH on pool $POOL_NAME is complete."
+echo "Initialization of $NEW_HOST running nuOS-$NUOS_VER-$TRGT_TYPE on pool $POOL_NAME is complete."

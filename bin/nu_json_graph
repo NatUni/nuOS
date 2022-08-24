@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e; set -u; set -C
 
-# nuOS 0.0.11.4a0 - bin/nu_backup
+# nuOS 0.0.11.4a0 - bin/nu_json_graph
 #
 # Copyright (c) 2008-2020 Chad Jacob Milios and Crop Circle Systems.
 # All rights reserved.
@@ -20,7 +20,7 @@ NUOS_VER=0.0.11.4a0
 
 require_tmp interested
 if [ $# -eq 0 ]; then
-	ls -d /var/db/nuos/pkg/*_*/dependencies | sed -e 's|^/var/db/nuos/pkg/||;s|/dependencies$||;s|_|/|'
+	ls -d $PKG_DBDIR/*_*/dependencies | sed -e 's|^'"$PKG_DBDIR"'/||;s|/dependencies$||;s|_|/|'
 else
 	echo $@ | xargs -n 1
 fi >> "$interested"
@@ -28,14 +28,14 @@ fi >> "$interested"
 echo 'const nodeData = ['
 for p in `cat "$interested"`; do p_=`echo $p | tr / _`
 	echo "	{'name': '$p'," \
-		"'radius': Math.sqrt(`{ wc -l /var/db/nuos/pkg/$p_/dependencies/all 2> /dev/null || echo 0; } | xargs | cut -w -f 1`)," \
+		"'radius': Math.sqrt(`{ wc -l $PKG_DBDIR/$p_/dependencies/all 2> /dev/null || echo 0; } | xargs | cut -w -f 1`)," \
 		"'color': '`echo $p | sha256 -q | cut -c 1-6`'},"
 done
 echo '];'
 echo 'const linkData = ['
 for s in `cat "$interested"`; do s_=`echo $s | tr / _`
-	[ -f /var/db/nuos/pkg/$s_/dependencies/all ] || continue
-	sets_intrsctn x "$interested" /var/db/nuos/pkg/$s_/dependencies/all
+	[ -f $PKG_DBDIR/$s_/dependencies/all ] || continue
+	sets_intrsctn x "$interested" $PKG_DBDIR/$s_/dependencies/all
 	for t in `grep -vw ports-mgmt/pkg $x`; do
 		echo "	{'source': '$s'," \
 			"'target': '$t'},"
@@ -46,16 +46,16 @@ echo '];'
 
 echo 'const options = {'
 for p in `cat "$interested"`; do p_=`echo $p | tr / _`
-	[ -f /var/db/nuos/pkg/$p_/options ] || continue
-	echo "  '$p': \"$(sed -e '1d;$d;s/^ *//;s/$/\\n/' /var/db/nuos/pkg/$p_/options | tr -d '\n' )\","
+	[ -f $PKG_DBDIR/$p_/options ] || continue
+	echo "  '$p': \"$(sed -e '1d;$d;s/^ *//;s/$/\\n/' $PKG_DBDIR/$p_/options | tr -d '\n' )\","
 done
 echo '};'
 
 echo 'const settings = {'
 for p in `cat "$interested"`; do p_=`echo $p | tr / _`
-	[ -f /var/db/nuos/pkg/$p_/settings ] || continue
-	echo "  '$p': \"$(sed -e 's/$/\\n/' /var/db/nuos/pkg/$p_/settings | tr -d '\n' )\","
-#	echo "  '$p': {$(sed -e "s/^/'/;s/=/': '/;s/\$/',\ /" /var/db/nuos/pkg/$p_/settings | tr -d '\n' )},"
+	[ -f $PKG_DBDIR/$p_/settings ] || continue
+	echo "  '$p': \"$(sed -e 's/$/\\n/' $PKG_DBDIR/$p_/settings | tr -d '\n' )\","
+#	echo "  '$p': {$(sed -e "s/^/'/;s/=/': '/;s/\$/',\ /" $PKG_DBDIR/$p_/settings | tr -d '\n' )},"
 done
 echo '};'
 

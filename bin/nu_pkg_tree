@@ -16,8 +16,9 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.11.4a0
 
-while getopts Di:ko:NOPSrv OPT; do case $OPT in
+while getopts Dfi:ko:NOpRSrxv OPT; do case $OPT in
 	D) OPT_DEBUG=y;;
+	f) OPT_FILENAME=y;;
 	i) INPUT=$OPTARG;;
 	k) OPT_KEEP=y;;
 	o) type=$OPTARG; eval file=\"\$$OPTIND\"; case $type in
@@ -26,9 +27,11 @@ while getopts Di:ko:NOPSrv OPT; do case $OPT in
 		*) exit 22; esac; shift $OPTIND;;
 	N) OPT_NONAME=y;;
 	O) OPT_NOOPTIONS=y;;
-	P) OPT_PKGNAME=y;;
+	p) OPT_PKGNAME=y;;
+	R) OPT_NORECURSE=y;;
 	S) OPT_NOSLAVE=y;;
 	r) OPT_RUNONLY=y;;
+	x) OPT_INDEX=y;;
 	v) OPT_VERBOSE=y;;
 esac; done; shift $(($OPTIND-1))
 
@@ -58,11 +61,13 @@ done
 
 walk () {
 	local node=$1
-	for dep in `cat "$dir/$node/dependencies/collection" "$dir/$node/dependencies/$recurse" 2> /dev/null | tr / _`; do
+	for dep in `cat "$dir/$node/dependencies/collection" "$dir/$node/dependencies/$recurse" 2> /dev/null | underscore`; do
 		[ -f "$work_dir/$dep" ] || walk $dep
 	done
 	echo $node
 	touch "$work_dir/$node"
+	shift
+	[ $# -eq 0 ] || walk $1
 }
 
 require_tmp -d work_dir
@@ -70,16 +75,37 @@ require_tmp -d work_dir
 if [ -n "${INPUT-}" ]; then
 	if [ -f "$INPUT/root" ]; then
 		dir="$INPUT"
-		start="`cat "$INPUT/root"`"
+		if [ $# -eq 0 ]; then
+			start="`cat "$INPUT/root" | underscore`"
+		else
+			start="`echo $@ | underscore`"
+		fi
 	elif [ -f "$INPUT/name" ]; then
 		dir="`dirname "$INPUT"`"
 		start=`basename "$INPUT"`
 	else
 		exit 1
 	fi
-	if [ "${OPT_PKGNAME-}" ]; then
+	! srsly ${OPT_FILENAME-} || pkg_suffix_init
+	if srsly ${OPT_INDEX-}; then
+		prepare_make_conf mc retire_mc_cmd
+		if srsly ${OPT_FILENAME-}; then
+			tag=`cat "$dir/tag"`
+		fi
+		walk $start | sed -e s+_+/+ | grep / | while read -r port; do
+			underscore port
+			idx=`port_idx "$mc" "$dir" $port`
+			if srsly ${OPT_PKGNAME-} || srsly ${OPT_FILENAME-}; then
+				name=`cat "$dir/$port_/name" 2> /dev/null`
+				eko $name${OPT_FILENAME:+.$tag}.$idx${OPT_FILENAME:+.$PKG_SUFFIX}
+			else
+				eko $idx
+			fi
+		done
+		$retire_mc_cmd mc
+	elif srsly ${OPT_PKGNAME-} || srsly ${OPT_FILENAME-}; then
 		walk $start | grep _ | while read -r node; do
-			cat "$dir/$node/name" 2> /dev/null
+			eko `cat "$dir/$node/name" 2> /dev/null`${OPT_FILENAME:+.$PKG_SUFFIX}
 		done
 	else
 		walk $start | sed -e s+_+/+
@@ -105,19 +131,21 @@ ports_tag > "$work_dir/tag"
 metainfo_dir="$(dirname "$(realpath "$0")")/../pkg"
 main () {
 	local depth=$((${depth--1}+1))
-	[ $depth -gt 0 ] || echo $@ > "$work_dir/root"
+	[ $depth -gt 0 ] || echo $@ | xargs -n1 > "$work_dir/root"
 	mark_as_dependant () {
-		local dep_=`echo $dep | tr / _`
+		local dep_
+		underscore dep
 		mkdir -p "$work_dir/$dep_/dependants"
 		echo $arg >> "$work_dir/$dep_/dependants/$dep_type"
 	}
 	local arg=
 	for arg in $@; do
-		local arg_=`echo $arg | tr / _`
+		local arg_
+		underscore arg
 		local dep_type=
 		if [ -f "$metainfo_dir/$arg_.substitute" ]; then
 			arg=`cat "$metainfo_dir/$arg_.substitute"`
-			arg_=`echo $arg | tr / _`
+			underscore arg
 		fi
 		if [ ! -d "$work_dir/$arg_/dependencies" ]; then
 			mkdir -p "$work_dir/$arg_/dependencies"
@@ -156,7 +184,8 @@ main () {
 							local master=$(realpath "`cd /usr/ports/${arg%%@*} && make PORT_DBDIR="$PORT_DBDIR" -V MASTERDIR`")
 							master=${master#/usr/ports/}
 							echo $master > "$work_dir/$arg_/master"
-							local master_=`echo $master | tr / _`
+							local master_
+							underscore master
 							mkdir -p "$work_dir/$master_"
 							if [ -z "${OPT_NONAME-}" -a ! -e "$work_dir/$master_/name" ]; then
 								pkg_name $master > "$work_dir/$master_/name"
@@ -178,8 +207,10 @@ main () {
 						retire_tmp def_opts
 						retire_tmp my_opts
 					fi
-					eval local recurse_deps=\"\$${recurse}_deps\"
-					main `cat "$recurse_deps"`
+					if ! canhas ${OPT_NORECURSE-}; then
+						eval local recurse_deps=\"\$${recurse}_deps\"
+						main `cat "$recurse_deps"`
+					fi
 					retire_tmp lib_deps
 					retire_tmp run_deps
 					retire_tmp use_deps

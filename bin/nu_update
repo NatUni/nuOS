@@ -85,9 +85,9 @@ fi
 
 require_ports_tree -e
 
-[ -d "${CHROOTDIR-}/var/db/nuos/pkg" -a ! -L "${CHROOTDIR-}/var/db/nuos/pkg" ]
-mv "${CHROOTDIR-}/var/db/nuos/pkg" "${CHROOTDIR-}/var/db/nuos/pkg.$old_tag"
-ln -s pkg.$old_tag "${CHROOTDIR-}/var/db/nuos/pkg"
+[ -d "${CHROOTDIR-}$PKG_DBDIR" -a ! -L "${CHROOTDIR-}$PKG_DBDIR" ]
+mv "${CHROOTDIR-}$PKG_DBDIR" "${CHROOTDIR-}$PKG_DBDIR.$old_tag"
+ln -s pkg.$old_tag "${CHROOTDIR-}$PKG_DBDIR"
 
 require_tmp all_updated_ports
 if [ -n "${ports_svn-}" ]; then
@@ -112,7 +112,7 @@ else
 fi
 
 require_tmp interested_ports
-ls "${CHROOTDIR-}/var/db/nuos/pkg" | grep _ | sed -e 's|_|/|' >| "$interested_ports"
+ls "${CHROOTDIR-}$PKG_DBDIR" | grep _ | sed -e 's|_|/|' >| "$interested_ports"
 
 require_tmp -d new_to_old
 require_tmp -d old_to_new
@@ -180,7 +180,7 @@ for port in `cat "$updated_ports"`; do
 	port_=`echo $port | tr / _`
 	old_port=`cat "$new_to_old/$port_"`
 	old_port_=`echo $old_port | tr / _`
-	metainfo_dir="${CHROOTDIR-}/var/db/nuos/pkg/$old_port_"
+	metainfo_dir="${CHROOTDIR-}$PKG_DBDIR/$old_port_"
 	old=`cat "$metainfo_dir/name"`
 	[ -n "$old" ]
 	new=`pkg_name $port`
@@ -198,12 +198,12 @@ for port in `cat "$updated_ports"`; do
 	fi
 	echo "$old_port	$old" >> "$principals"
 	for dep_port in `cat "$metainfo_dir/dependants/all" 2> /dev/null`; do
-		dep=$(cat "${CHROOTDIR-}/var/db/nuos/pkg/`echo $dep_port | tr / _`/name")
+		dep=$(cat "${CHROOTDIR-}$PKG_DBDIR/`echo $dep_port | tr / _`/name")
 		echo "$old_port	$old	$dep_port	$dep" >> "$dependants"
 	done
 	if [ -e "$metainfo_dir/slaves" ]; then
 		for slave_port in `cat "$metainfo_dir/slaves"`; do
-			slave=$(cat "${CHROOTDIR-}/var/db/nuos/pkg/`echo $slave_port | tr / _`/name")
+			slave=$(cat "${CHROOTDIR-}$PKG_DBDIR/`echo $slave_port | tr / _`/name")
 			echo "$old_port	$old	$slave_port	$slave" >> "$slaves"
 		done
 	fi
@@ -240,9 +240,9 @@ if [ -s "$obsolete_pkgs" ]; then
 	sort -u "$obsolete_pkgs" >| "$OUTPUT_FILE"
 	changed=y
 else
-	rm "${CHROOTDIR-}/var/db/nuos/pkg"
-	mv "${CHROOTDIR-}/var/db/nuos/pkg.$old_tag" "${CHROOTDIR-}/var/db/nuos/pkg"
-	echo $new_tag >| "${CHROOTDIR-}/var/db/nuos/pkg/tag"
+	rm "${CHROOTDIR-}$PKG_DBDIR"
+	mv "${CHROOTDIR-}$PKG_DBDIR.$old_tag" "${CHROOTDIR-}$PKG_DBDIR"
+	echo $new_tag >| "${CHROOTDIR-}$PKG_DBDIR/tag"
 fi
 retire_tmp obsolete_pkgs
 
@@ -353,12 +353,12 @@ if canhas ${OPT_FREEBSD-}; then
 	fi
 fi
 
-if canhas ${OPT_AUTO-} && [ -L /var/db/nuos/pkg ]; then
-	sister nu_pkg_tree -o dir /var/db/nuos/pkg $PKG_COLLECTION
+if canhas ${OPT_AUTO-} && [ -L $PKG_DBDIR ]; then
+	sister nu_pkg_tree -o dir $PKG_DBDIR $PKG_COLLECTION
 	sister nu_pkg_chk_tree || error 62 'Loop found in package directives'
 	
 	require_tmp want
-	(ls -d /var/db/nuos/pkg/*_*/dependencies | sed -e 's/dependencies$/name/' | xargs cat; for p in `pkg info -qox ^bootstrap-`; do (cd /usr/ports/$p; make -V PKGNAME); done) | sort -u >| "$want"
+	(ls -d $PKG_DBDIR/*_*/dependencies | sed -e 's/dependencies$/name/' | xargs cat; for p in `pkg info -qox ^bootstrap-`; do (cd /usr/ports/$p; make -V PKGNAME); done) | sort -u >| "$want"
 	require_tmp have
 	pkg info -q | sort >| "$have"
 	require_tmp kill
@@ -403,7 +403,7 @@ if [ -n "${OPT_DEPRECATED_AUTO_PROCESS-}" ]; then
 				sister -C "$CHROOTDIR" nu_install_pkg -R $post_delete_ports
 			fi
 			require_tmp -c pkg_tree
-			sister -C "$CHROOTDIR" nu_pkg_tree -o dir /var/db/nuos/pkg -o txt "${pkg_tree#"$CHROOTDIR"}" $PKG_COLLECTION
+			sister -C "$CHROOTDIR" nu_pkg_tree -o dir $PKG_DBDIR -o txt "${pkg_tree#"$CHROOTDIR"}" $PKG_COLLECTION
 			if [ "$OPT_DEPRECATED_AUTO_PROCESS" -ge 3 ]; then
 				sister -C "$CHROOTDIR" nu_install_pkg -R `grep / "$pkg_tree"`
 				retire_tmp pkg_tree

@@ -38,7 +38,6 @@ maybe_yell
 require_ports_tree
 
 : ${WORKERS:=3}
-: ${PKG_DBDIR:=/var/db/nuos/pkg}
 
 require_tmp -d data_graph
 require_tmp -d workers
