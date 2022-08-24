@@ -1,9 +1,9 @@
 #!/usr/bin/false
 set -e; set -u; set -C
 
-# nuOS 0.0.11.4a0 - lib/nu_system.sh
+# nuOS 0.0.12.99a0 - lib/nu_system.sh
 #
-# Copyright (c) 2008-2020 Chad Jacob Milios and Crop Circle Systems.
+# Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.
 # All rights reserved.
 #
 # This Source Code Form is subject to the terms of the Simplified BSD License.
@@ -14,7 +14,7 @@ set -e; set -u; set -C
 # Official updates and community support available at https://nuos.org .
 # Professional services available at https://ccsys.com .
 
-nuos_lib_ver=0.0.11.4a0
+nuos_lib_ver=0.0.12.99a0
 [ $nuos_lib_ver = "$NUOS_VER" ]
 [ -z "${nuos_lib_system_loaded-}" ]
 [ -z "${nuos_lib_common_loaded-}" ]
