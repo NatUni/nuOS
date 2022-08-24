@@ -1,0 +1,14 @@
+--- /dev/null	2022-08-21 13:16:26.422303000 +0000
++++ files/patch-src__signature.y	2022-08-21 13:02:52.156973000 +0000
+@@ -0,0 +1,11 @@
++--- src/signature.y.orig	2007-07-13 23:15:01.000000000 +0200
+++++ src/signature.y	2021-02-12 22:13:15.000000000 +0100
++@@ -56,7 +56,7 @@
++ 
++ %}
++ 
++-%pure_parser 
+++%define api.pure
++ 
++ /* CONVENTIONS:  Reserved words are in ALL CAPS (plus markerSym)
++ 		Characters appearing in the grammar are reserved:

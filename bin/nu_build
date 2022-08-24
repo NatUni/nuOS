@@ -53,7 +53,17 @@ discover_install_mnt $POOL_NAME
 os_software_ds=$POOL_NAME/os
 fbsd_proj_ds=$os_software_ds/$BASEOS_TYPE
 fbsd_os_ds=$fbsd_proj_ds/$BASEOS_VER
-fbsd_bin_ds=$fbsd_os_ds/$TRGT_MACH
+fbsd_bin_ds=$fbsd_os_ds/$TRGT
+
+baseos_minor_ver=${BASEOS_VER%%-*}
+baseos_major_ver=${baseos_minor_ver%%.*}
+case $BASEOS_TYPE in
+	FreeBSD)
+		if [ $baseos_major_ver -ge 13 ]; then
+			new_motd=y
+		fi
+	;;
+esac
 
 if [ -n "${OPT_SKIP_FBSD-}" -o -n "${OPT_SKIP_NUOS-}" ]; then
 	fbsd_sysroot_ds=$fbsd_bin_ds/`zfs get -H -o value org.nuos:active_revision $fbsd_bin_ds`
@@ -83,20 +93,23 @@ else
 	
 	if [ -n "${OPT_NOMAKE-}" ]; then
 		mkdir $pool_mnt/boot $pool_mnt/boot/zfs $pool_mnt/etc/ssh
-		head -n 1 /etc/motd > $pool_mnt/etc/motd
 		touch $pool_mnt/etc/login.conf.db
+		srsly ${new_motd-} || echo 'FreeBSD ?.?.?  (UNKNOWN)' > $pool_mnt/etc/motd
 	else
 		(cd /usr/src && make -D WITHOUT_KERNEL_SYMBOLS DESTDIR=$pool_mnt KERNCONF=$TRGT_KERN installkernel installworld distribution)
 	fi
 	:> $pool_mnt/etc/fstab
 	
 	zfs snapshot -r $fbsd_sysroot_ds@freebsd_dist
-	
+
+	srsly ${new_build-} || obj_trgt=$TRGT
+	srsly ${old_build-} || obj_trgt=$TRGT_CODE
+		
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src
 	zfs create -o mountpoint=/usr/src $fbsd_proj_ds/src/$BASEOS_VER && zfs unmount $fbsd_proj_ds/src/$BASEOS_VER || true
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj
-	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj/$TRGT_MACH
-	zfs create -o mountpoint=/usr/obj $fbsd_proj_ds/src/obj/$TRGT_MACH/$BASEOS_VER && zfs unmount $fbsd_proj_ds/src/obj/$TRGT_MACH/$BASEOS_VER || true
+	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj/$obj_trgt
+	zfs create -o mountpoint=/usr/obj $fbsd_proj_ds/src/obj/$obj_trgt/$BASEOS_VER && zfs unmount $fbsd_proj_ds/src/obj/$obj_trgt/$BASEOS_VER || true
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/ports
 	zfs create -o mountpoint=/var/db/portsnap $fbsd_proj_ds/ports/snap-db && zfs unmount $fbsd_proj_ds/ports/snap-db || true
 	zfs create -o mountpoint=/usr/ports $fbsd_proj_ds/ports/src && zfs unmount $fbsd_proj_ds/ports/src || true
@@ -113,7 +126,8 @@ EOF
 	
 	zfs snapshot -r $fbsd_sysroot_ds@zfs_enabled
 	
-	cat >> $pool_mnt/etc/fstab <<'EOF'
+	cat >> $pool_mnt/etc/fstab <<EOF
+# Device		Mountpoint	FStype	Options		Dump	Pass#
 tmp /tmp tmpfs rw,nosuid 0 0
 EOF
 	
@@ -130,7 +144,7 @@ fi
 
 nuos_proj_ds=$os_software_ds/nuOS
 nuos_os_ds=$nuos_proj_ds/$NUOS_VER
-nuos_bin_ds=$nuos_os_ds/$TRGT_MACH
+nuos_bin_ds=$nuos_os_ds/$TRGT
 
 if [ -n "${OPT_SKIP_NUOS-}" ]; then
 	nuos_sysroot_ds=$nuos_bin_ds/`zfs get -H -o value org.nuos:active_revision $nuos_bin_ds`
@@ -431,9 +445,11 @@ EOF
 		baseos_type_lc=`echo "$BASEOS_TYPE" | tr '[:upper:]' '[:lower:]'`
 		baseos_info_url="https://$baseos_type_lc.org"
 		
-		mv -n $pool_mnt/etc/motd $pool_mnt/etc/motd.$baseos_type_lc
-		head -n 1 $pool_mnt/etc/motd.$baseos_type_lc > $pool_mnt/etc/motd
-		cat >> $pool_mnt/etc/motd <<EOF
+		mv -n $pool_mnt/etc/motd${new_motd:+.template} $pool_mnt/etc/motd${new_motd:+.template}.$baseos_type_lc
+		if ! srsly ${new_motd-}; then
+			head -n 1 $pool_mnt/etc/motd.$baseos_type_lc > $pool_mnt/etc/motd
+		fi
+		cat >> $pool_mnt/etc/motd${new_motd:+.template} <<EOF
 nuOS $NUOS_VER
 
 Welcome! Thank you for choosing nuOS.
@@ -445,7 +461,7 @@ information about $BASEOS_TYPE is available at $baseos_info_url .
 
 Your contributions are greatly appreciated and allow nuOS to thrive.
 
-Edit /etc/motd to change this login announcement.
+Edit /etc/motd${new_motd:+.template and run \`service motd restart\`} to change this login announcement.
 
 EOF
 		
@@ -481,6 +497,7 @@ HOSTOS_ARCH=$TRGT_ARCH
 HOSTOS_PROC=$TRGT_PROC
 HOSTOS_MACH=$TRGT_MACH
 HOSTOS_KERN=$TRGT_KERN
+HOSTOS_CHIP=$TRGT_CHIP
 HOSTOS_OPTZ=$TRGT_OPTZ
 EOF
 	
@@ -499,13 +516,14 @@ EOF
 		require_tmp -c -C $pool_mnt pkg_tree
 		mount -r -t nullfs /usr/ports $pool_mnt/usr/ports
 		mount -r -t nullfs /var/db/portsnap $pool_mnt/var/db/portsnap
-		sister -C $pool_mnt nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir /var/db/nuos/pkg -o txt "${pkg_tree#"$pool_mnt"}" $PKG_COLLECTION
+		#sister -C $pool_mnt nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $PKG_DBDIR -o txt "${pkg_tree#"$pool_mnt"}" $PKG_COLLECTION
+		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $pool_mnt/$PKG_DBDIR -o txt "$pkg_tree" $PKG_COLLECTION
 		umount $pool_mnt/var/db/portsnap
 		umount $pool_mnt/usr/ports
 		for tree_node in `cat "$pkg_tree"`; do
 			case $tree_node in
 				[^/]*/*)
-					sister nu_install_pkg -C $pool_mnt -R $tree_node
+					sister nu_install_pkg -C $pool_mnt -R -d $PKG_DBDIR $tree_node
 				;;
 				[^/]*)
 					if [ -f $pool_mnt/etc/nuos/conf ]; then
@@ -531,7 +549,7 @@ if ! srsly ${OPT_SKIP_FACTORY-}; then
 
 	sys_ds=$POOL_NAME/sys
 	factories_ds=$sys_ds/factory
-	nuos_factory_ds=$sys_ds/factory/nuOS-$NUOS_VER-$TRGT_MACH
+	nuos_factory_ds=$sys_ds/factory/nuOS-$NUOS_VER-$TRGT
 
 	zfs create -p -o mountpoint=none -o canmount=off $sys_ds
 	zfs create -p -o mountpoint=none -o canmount=off $factories_ds

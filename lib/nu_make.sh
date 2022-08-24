@@ -25,14 +25,53 @@ make_vars_init () {
 	: ${TRGT_ARCH:=$HOSTOS_ARCH}
 	: ${TRGT_PROC:=$HOSTOS_PROC}
 	case $TRGT_PROC in
-		amd64) : ${TRGT_OPTZ:=x86-64};;
-		i386) : ${TRGT_OPTZ:=pentium3};;
-		*) [ -n "${TRGT_OPTZ-}" ]
+		amd64)
+			BASE_CHIP=x86-64
+			: ${TRGT_CHIP:=$BASE_CHIP}
+			: ${TRGT_OPTZ:=opteron-sse3}
+		;;
+		i386)
+			BASE_CHIP=i686
+			: ${TRGT_CHIP:=$BASE_CHIP}
+			: ${TRGT_OPTZ:=pentium3}
+		;;
+		*)
+			[ -n "${BASE_CHIP-}" -o -n "${TRGT_CHIP-}" ]
+			: ${TRGT_CHIP:=$BASE_CHIP}
+			: ${BASE_CHIP:=$TRGT_CHIP}
+			: ${TRGT_OPTZ:=$TRGT_CHIP}
 	esac
 	if [ $TRGT_ARCH = $TRGT_PROC ]; then
 		TRGT_MACH=$TRGT_ARCH
 	else
 		TRGT_MACH=$TRGT_ARCH.$TRGT_PROC
+	fi
+	if [ $TRGT_CHIP = $TRGT_OPTZ ]; then
+		TRGT_CODE=$TRGT_CHIP
+	else
+		TRGT_CODE=$TRGT_OPTZ
+	fi
+	if [ $TRGT_CODE = $BASE_CHIP ]; then
+		TRGT=$TRGT_MACH
+	else
+		TRGT=$TRGT_MACH.$TRGT_CODE
+	fi
+	: ${HOSTOS_TRGT:=$TRGT}
+}
+
+pkg_suffix_init () {
+	if [ "x${1-}" = x-i ]; then
+		_pkg_name=
+		_pkg_cmp=
+	fi
+	: ${_pkg_name:=`pkg info -qO ports-mgmt/pkg < /dev/null 2> /dev/null || true`}
+	local pkg_ver=${_pkg_name##*-}
+	if canhas $pkg_ver; then
+		case ${_pkg_cmp:=`pkg version -t 1.17.0 $pkg_ver < /dev/null 2> /dev/null || true`} in
+			'>') PKG_SUFFIX=txz;;
+			'=') ;&
+			'<') PKG_SUFFIX=pkg;;
+		esac
 	fi
 }
 
@@ -50,14 +89,13 @@ prepare_make_conf () {
 		setvar $ret_cmd_var :
 	else
 		make_vars_init
-		local tempfile=
-		require_tmp tempfile
-		cat >| "$tempfile" <<EOF
-CPUTYPE?=$TRGT_OPTZ
-DEFAULT_VERSIONS= llvm=11 java=16 ssl=openssl ruby=2.7 perl5=5.32 php=8.0 python=3.9 python3=3.9 lua=5.4 pgsql=13 samba=4.13
-WANT_OPENLDAP_SASL=YES
+		local makeconf=
+		require_tmp makeconf
+		cat >| "$makeconf" <<EOF
+CPUTYPE?=$TRGT_CODE
+DEFAULT_VERSIONS= bdb=18 gcc=12 java=18 llvm=14 lua=5.4 mysql=8.0 nodejs=18 perl5=5.36 pgsql=14 php=8.1 python=3.10 python3=3.10 ruby=3.1 samba=4.13 ssl=openssl
 EOF
-		setvar $ret_file_var "$tempfile"
+		setvar $ret_file_var "$makeconf"
 		setvar $ret_cmd_var retire_tmp
 	fi
 }

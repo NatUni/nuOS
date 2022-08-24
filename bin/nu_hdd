@@ -18,7 +18,7 @@ NUOS_VER=0.0.11.4a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts a:bdfm:o:O:p:qt:u:v OPT; do case $OPT in
+while getopts a:bdfm:o:O:p:qs:S:t:u:v OPT; do case $OPT in
 	a) PART_ALIGN=$OPTARG;;
 	b) OPT_BOOTABLE=y;;
 	d) OPT_DELETE=y;;
@@ -28,6 +28,8 @@ while getopts a:bdfm:o:O:p:qt:u:v OPT; do case $OPT in
 	O) push ZFS_OPTS $OPTARG;;
 	p) POOL_NAME=$OPTARG;;
 	q) OPT_QUICK=y;;
+	s) INIT_SECTOR_SZ=$OPTARGi; error 78;;
+	S) PHYS_SECTOR_SZ=$OPTARG;;
 	t) POOL_TYPE=$OPTARG;;
 	u) UTILIZE_PCT=$OPTARG;;
 	v) OPT_VERBOSE=y;;
@@ -74,13 +76,15 @@ echo 'pool devs          POOL_DEVS      ' $POOL_DEVS
 echo 'pool name       -p POOL_NAME      ' $POOL_NAME
 echo -n 'delete          -d OPT_DELETE      ' && [ -n "${OPT_DELETE-}" ] && echo set || echo null
 if [ -z "${OPT_DELETE-}" ]; then
-	echo -n 'bootable        -b OPT_BOOTABLE    ' && [ -n "${OPT_BOOTABLE-}" ] && echo set || echo null
+	echo -n 'bootable               -b OPT_BOOTABLE    ' && [ -n "${OPT_BOOTABLE-}" ] && echo set || echo null
 	echo 'pool mnt pt     -m POOL_MNT       ' ${POOL_MNT:=/$POOL_NAME}
-	echo 'pool type       -t POOL_TYPE      ' $pool_display_type
-	echo 'partition align -a PART_ALIGN     ' ${PART_ALIGN:=8192} " (i.e. `humanize $((512 * $PART_ALIGN))`)"
-	echo 'utilize percent -u UTILIZE_PCT    ' ${UTILIZE_PCT:=99.95}
-	echo 'pool options    -o POOL_OPTS      ' ${POOL_OPTS=}
-	echo 'zfs options     -O ZFS_OPTS       ' ${ZFS_OPTS="atime=off compression=lz4"}
+	echo 'pool type           -t POOL_TYPE      ' $pool_display_type
+	echo 'init sectors        -s INIT_SECTOR_SZ ' ${INIT_SECTOR_SZ:=512}
+	echo 'phys sector size    -S PHYS_SECTOR_SZ ' ${PHYS_SECTOR_SZ:=4096}
+	echo 'partition align     -a PART_ALIGN     ' ${PART_ALIGN:=8192} "(i.e. `humanize $(($INIT_SECTOR_SZ * $PART_ALIGN))`)"
+	echo 'utilize percent     -u UTILIZE_PCT    ' ${UTILIZE_PCT:=99.95} 
+	echo 'pool options        -o POOL_OPTS      ' ${POOL_OPTS=}
+	echo 'zfs options         -O ZFS_OPTS       ' ${ZFS_OPTS="atime=off compression=lz4"}
 fi
 
 maybe_pause
@@ -99,7 +103,7 @@ if [ -n "${OPT_DELETE-}" ]; then
 	exit 78
 else
 	if [ -n "${OPT_BOOTABLE-}" ]; then
-		zfsidx=2
+		zfsidx=3
 	else
 		zfsidx=1
 	fi
@@ -109,7 +113,8 @@ else
 			push phys_devs $dev
 			gpart create -s GPT -f x /dev/$dev || undo_exit
 			if [ -n "${OPT_BOOTABLE-}" ]; then
-				gpart add -a $PART_ALIGN -t freebsd-boot -s 256 -f x /dev/$dev || undo_exit
+				gpart add -a $PART_ALIGN -t efi -l esp$i-$POOL_NAME -s 65536 -f x /dev/$dev || undo_exit
+				gpart add -a $PART_ALIGN -t freebsd-boot -s 1024 -f x /dev/$dev || undo_exit
 			fi
 			gpart add -a $PART_ALIGN -t freebsd-zfs -l $POOL_NAME$i -f x /dev/$dev
 		elif [ x != $dev -a X != $dev ]; then
@@ -139,16 +144,17 @@ else
 	i=0
 	for dev in $POOL_DEVS; do
 		if [ x = $dev -o X = $dev ]; then
-			mock_node=`mdconfig -a -t swap -o noreserve -o compress -S 4096 -s $safesz`
+			mock_node=`mdconfig -a -t swap -o noreserve -o compress -S $PHYS_SECTOR_SZ -s $safesz`
 			push pool_devs /dev/$mock_node
 			push mock_nodes $mock_node
 		else
+			push phys_idx $i
 			try 3 gpart commit /dev/$dev
 			if [ -n "${OPT_BOOTABLE-}" ]; then
-				try 3 gpart bootcode -p /boot/gptzfsboot -i 1 /dev/$dev
+				try 3 gpart bootcode -p /boot/gptzfsboot -i 2 /dev/$dev
 				try 3 gpart bootcode -b /boot/pmbr /dev/$dev
 			fi
-			gnop create -S 4096 /dev/gpt/$POOL_NAME$i
+			gnop create -S 4096 -p $PHYS_SECTOR_SZ /dev/gpt/$POOL_NAME$i
 			next_dev=/dev/gpt/$POOL_NAME$i.nop
 			push pool_devs $next_dev
 			push nop_devs $next_dev
@@ -172,6 +178,20 @@ else
 	done
 	zpool export $POOL_NAME
 	gnop destroy $nop_devs
+	if [ -n "${OPT_BOOTABLE-}" ]; then
+		require_tmp -d efi_fat
+		require_tmp efi_img
+		mkdir $efi_fat/BOOT
+		mkdir $efi_fat/FreeBSD
+		cp /boot/loader.efi $efi_fat/BOOT/BOOTX64.efi
+		cp /boot/loader_lua.efi $efi_fat/FreeBSD/loader.efi
+		makefs -t msdos -Z -s 32m -o fat_type=16,sectors_per_cluster=1,media_descriptor=248,volume_label=EFI $efi_img $efi_fat
+		for i in $phys_idx; do
+			dd bs=4M conv=sparse if=$efi_img of=/dev/gpt/esp$i-$POOL_NAME
+		done
+		retire_tmp efi_img
+		retire_tmp efi_fat
+	fi
 	zpool import -o altroot=$POOL_MNT -o cachefile=$zpool_cache -d /dev/gpt $zpool_id
 
 

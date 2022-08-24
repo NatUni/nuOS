@@ -25,9 +25,10 @@ esac; done; shift $(($OPTIND-1))
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
+baseos_init -q
+nuos_init -q
 maybe_yell
 
-: ${PKG_DBDIR:=/var/db/nuos/pkg}
 : ${PKG_MGR=ports-mgmt/pkg}
 
 require_tmp graph

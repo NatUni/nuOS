@@ -16,11 +16,12 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.11.4a0
 
-while getopts ABC:d:fFMRStvyY OPT; do case $OPT in
+while getopts ABC:d:D:fFMRStvyY OPT; do case $OPT in
 	A) OPT_ARG_SUBPROCESS=y;;
 	B) OPT_NOBUILD=y;;
 	C) CHROOTDIR=$OPTARG;;
-	d) PORT_DBDIR=$OPTARG;;
+	d) PKG_DBDIR=$OPTARG;;
+	D) PORT_DBDIR=$OPTARG;;
 	f) OPT_NOCLEAN_BEFORE=y;;
 	F) OPT_NOCLEAN_AFTER=y;;
 	M) OPT_NOMAKE=y;;
@@ -45,7 +46,7 @@ make_vars_init
 collection_vars_init -q
 
 if [ -n "${OPT_YES-}" ]; then
-	yes | sh $0 ${OPT_ARG_SUBPROCESS:+-A} ${OPT_NOBUILD:+-B} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C "$CHROOTDIR"} -Y $@
+	yes | sh $0 ${OPT_ARG_SUBPROCESS:+-A} ${OPT_NOBUILD:+-B} ${PKG_DBDIR+-d $PKG_DBDIR} ${PORT_DBDIR+-D $PORT_DBDIR} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C "$CHROOTDIR"} -Y $@
 	exit $?
 fi
 
@@ -67,8 +68,25 @@ BOOT_BASEOS_TYPE=`uname -s`
 BOOT_BASEOS_VER=`uname -r`
 os_compat=$BOOT_BASEOS_TYPE-${BOOT_BASEOS_VER%%-*}
 
-for port in $*; do
-	port_=`echo $port | tr / _`
+require_tmp deps
+if canhas ${PKG_DBDIR-} && [ -d "${CHROOTDIR-}${PKG_DBDIR-}" ]; then
+	db=$PKG_DBDIR
+	retire_db_cmd=:
+	[ -d "${CHROOTDIR-}$db" ]
+	[ $# -gt 0 ] || [ -f "${CHROOTDIR-}$db/root" ]
+	if canhas ${OPT_NORECURSE-}; then
+		echo $@ | xargs -n1
+	else
+		sister nu_pkg_tree -i "${CHROOTDIR-}$db" $@
+	fi >| "$deps"
+else
+	require_tmp -d db
+	retire_db_cmd=retire_tmp
+	sister nu_pkg_tree ${OPT_VERBOSE:+-v} ${OPT_NORECURSE:+-R} -o txt "$deps" -o dir "$db" $@
+fi
+
+for port in `grep / "$deps"`; do
+	underscore port
 	uni=${port_%%@*}
 	flavor=
 	case $port in
@@ -78,28 +96,15 @@ for port in $*; do
 	esac
 	args="$metainfo_dir/$uni.args"
 	if [ -z "${OPT_ARG_SUBPROCESS-}" ] && [ -f "$args" ]; then
-		sh $0 ${OPT_NOBUILD:+-B} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C $CHROOTDIR} -A `cat "$args"` $port
+		sh $0 ${OPT_NOBUILD:+-B} -d "$db" ${PORT_DBDIR+-D $PORT_DBDIR} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C $CHROOTDIR} -A `cat "$args"` $port
 	else
 		script="$metainfo_dir/$uni.sh"
-		pkg=`pkg_name $port`
+		pkg=`cat ${CHROOTDIR-}$db/$port_/name`
 		env="$metainfo_dir/$uni.env"
-		pkg_file=/usr/ports/packages/All/$pkg.txz
-		if [ -n "${OPT_TAGPKG-}" ] || [ ! -e $pkg_file ] || ([ -z "${CHROOTDIR-}" -a ports-mgmt/pkg = $port ] && ! pkg info -e $pkg < /dev/null); then
+		pkg_file=/usr/ports/packages/All/$pkg
+		pkg_suffix_init
+		if srsly "${OPT_TAGPKG-}" || [ -z "${PKG_SUFFIX-}" -o ! -e $pkg_file.${PKG_SUFFIX-} ]; then
 			[ -z "${OPT_NOMAKE-}" ]
-			if [ -z "${OPT_NORECURSE-}" ]; then
-				exit 78 # this needs updating for the more specific dep_types (build run -> lib run build fetch extract patch)
-				port_deps def_opts my_opts build_deps run_deps $port
-				retire_tmp def_opts
-				retire_tmp my_opts
-				sets_union all_deps "$build_deps" "$run_deps"
-				retire_tmp build_deps
-				sister nu_install_pkg ${OPT_YES_SUBPROCESS:+-y} `cat "$all_deps"`
-				retire_tmp all_deps
-				if [ -n "${CHROOTDIR-}" ]; then
-					sister nu_install_pkg -C $CHROOTDIR ${OPT_YES_SUBPROCESS:+-y} `cat "$run_deps"`
-				fi
-				retire_tmp run_deps
-			fi
 			destdir=
 			makeargs="$metainfo_dir/$uni.makeargs"
 			if [ -z "${OPT_NOSCRIPT-}" ] && [ -f "$script" ]; then
@@ -117,36 +122,29 @@ for port in $*; do
 				[ -n "${OPT_NOBUILD-}" ] || lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS install
 				[ -n "${OPT_NOCLEAN_AFTER-}" ] || make ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} -DNOCLEANDEPENDS clean
 			)
-			[ -f $pkg_file ]
+			[ ports-mgmt/pkg != $port ] || pkg_suffix_init -i
+			[ -f $pkg_file.$PKG_SUFFIX ]
 			if [ -z "${OPT_NOSCRIPT-}" ] && [ -f "$script" ]; then
 				pkg_step=post-build
 				. "$script"
 			fi
-			if tag=`pkg_db_tag` && [ $tag = `ports_tag` ] && [ ! -L $pkg_file ]; then
-				mkdir -p "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT_MACH"
-				idx=`nuos_sha_fngr "$make_conf" "$env" "$makeargs" /var/db/nuos/pkg/$port_/settings /var/db/nuos/pkg/$port_/dependencies/all`
-				mv -v $pkg_file "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT_MACH/$pkg.$tag.$idx.txz"
-				ln -s "../Index.nuOS/$os_compat-$TRGT_MACH/$pkg.$tag.$idx.txz" $pkg_file
+			if tag=`pkg_db_tag` && [ $tag = `ports_tag` ] && [ ! -L $pkg_file.$PKG_SUFFIX ]; then
+				
+				mkdir -p "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT"
+				idx=`port_idx "$make_conf" "$db" $port`
+				mv -v $pkg_file.$PKG_SUFFIX "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT/$pkg.$tag.$idx.$PKG_SUFFIX"
+				ln -s "../Index.nuOS/$os_compat-$TRGT/$pkg.$tag.$idx.$PKG_SUFFIX" $pkg_file.$PKG_SUFFIX
 			fi
 		fi
 		if pkg info -e $pkg < /dev/null && ( [ -z "${CHROOTDIR-}" ] || pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg < /dev/null ); then
 			echo found dependency $pkg
 		else
-			if [ -z "${OPT_NORECURSE-}" ]; then
-				pkg_deps -m -p needed_deps $pkg
-				cat "$needed_deps"
-				sister nu_install_pkg -C '' ${OPT_YES_SUBPROCESS:+-y} `cat "$needed_deps"`
-				if [ -n "${CHROOTDIR-}" ]; then
-					sister nu_install_pkg -C $CHROOTDIR ${OPT_YES_SUBPROCESS:+-y} `cat "$needed_deps"`
-				fi
-				retire_tmp needed_deps
-			fi
 			destdir="${CHROOTDIR-}"
 			if [ -f "$script" ]; then
 				pkg_step=pre-install
 				. "$script"
 			fi
-			env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg || lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} add -M $pkg_file
+			env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg || lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} add -M $pkg_file.$PKG_SUFFIX
 			if [ -f "$script" ]; then
 				pkg_step=post-install
 				. "$script"
@@ -155,6 +153,9 @@ for port in $*; do
 		pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg
 	fi
 done
+$retire_db_cmd db
+retire_tmp deps
+
 if [ -n "${nullfs_mounted-}" ]; then
 	umount "$CHROOTDIR/usr/ports/packages"
 fi

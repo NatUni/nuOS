@@ -48,11 +48,11 @@ os_software_ds_name=os
 
 fbsd_proj_ds_name=$os_software_ds_name/$BASEOS_TYPE
 fbsd_os_ds_name=$fbsd_proj_ds_name/$BASEOS_VER
-fbsd_bin_ds_name=$fbsd_os_ds_name/$TRGT_MACH
+fbsd_bin_ds_name=$fbsd_os_ds_name/$TRGT
 
 nuos_proj_ds_name=$os_software_ds_name/nuOS
 nuos_os_ds_name=$nuos_proj_ds_name/$NUOS_VER
-nuos_bin_ds_name=$nuos_os_ds_name/$TRGT_MACH
+nuos_bin_ds_name=$nuos_os_ds_name/$TRGT
 
 pool_mnt=`zpool get -H -o value altroot $POOL_NAME`
 [ -n "$pool_mnt" -a x- != "x$pool_mnt" ]
@@ -94,9 +94,9 @@ zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/s
 zfs create -o mountpoint=/usr/src $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER && \
 	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER || true
 zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src/obj
-zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_MACH
-zfs create -o mountpoint=/usr/obj $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_MACH/$BASEOS_VER && \
-	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_MACH/$BASEOS_VER || true
+zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE
+zfs create -o mountpoint=/usr/obj $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE/$BASEOS_VER && \
+	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE/$BASEOS_VER || true
 zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/ports
 zfs create -o mountpoint=/var/db/portsnap $POOL_NAME/$fbsd_proj_ds_name/ports/snap-db && \
 	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/ports/snap-db || true

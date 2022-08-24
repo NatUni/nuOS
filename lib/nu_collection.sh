@@ -69,9 +69,8 @@ collection_vars_init () {
 		sysutils/screen
 		misc/buffer
 		sysutils/pipemeter
-		archivers/lzop
-		archivers/p7zip
-		archivers/p7zip-codec-rar
+		archivers/zstd
+		archivers/ppmd-7z
 		sysutils/pciutils
 		sysutils/dmidecode
 		sysutils/smartmontools
@@ -80,6 +79,8 @@ collection_vars_init () {
 		sysutils/lsof
 		textproc/jq
 		textproc/xsv-rs
+		sysutils/bhyve-firmware
+		sysutils/grub2-bhyve
 	'
 	
 	COLL_developer='
@@ -109,9 +110,9 @@ collection_vars_init () {
 		mail/postfix
 		mail/opendkim
 		mail/opendmarc
-		dns/knot2
+		dns/knot3
 		security/acme.sh
-		net/openldap24-server
+		net/openldap26-server
 		security/openvpn
 		net/mpd5
 		net/avahi
@@ -121,24 +122,23 @@ collection_vars_init () {
 		net/isc-dhcp44-server
 		net/istgt
 		net/mosquitto
-		mail/cyrus-imapd32
+		mail/cyrus-imapd34
 		security/cyrus-sasl2-saslauthd
-		databases/postgresql13-server
-		databases/mysql57-server
-		databases/mongodb44
+		databases/postgresql14-server
+		databases/mysql80-server
+		databases/mongodb50
 		databases/redis
-		lang/mono-basic
 		lang/go
 		www/npm
-		lang/php80-extensions
+		lang/php81-extensions
 		graphics/pecl-imagick-im7
-		www/mod_php80
+		www/mod_php81
 		www/apache24
 		www/nginx
 		net/haproxy
 		net-im/ejabberd
 		net/rabbitmq
-		lang/erlang-runtime23
+		lang/erlang-runtime25
 		lang/elixir
 		net/kamailio
 		sysutils/ipfs-go
@@ -148,13 +148,14 @@ collection_vars_init () {
 	
 	COLL_mediaserver='
 		miniserver
+		misc/toilet
 		www/httrack
 		net/netatalk3
 		net/samba413
 		multimedia/ffmpeg
 		multimedia/Bento4
 		www/youtube_dl
-		www/annie
+		www/lux
 		net-p2p/rtorrent
 		net-p2p/createtorrent
 		net-p2p/torrentcheck
@@ -169,6 +170,8 @@ collection_vars_init () {
 		net-p2p/namecoin-daemon
 		net-p2p/namecoin-utils
 		net-p2p/monero-cli
+		net-p2p/cardano-node
+		net-p2p/cardano-db-sync
 	'
 	
 	COLL_commonserver='
@@ -212,7 +215,6 @@ collection_vars_init () {
 		net/quiterss
 		multimedia/vlc
 		multimedia/obs-studio
-		multimedia/obs-ndi
 		multimedia/obs-websocket
 		multimedia/obs-scrab
 		multimedia/wlrobs

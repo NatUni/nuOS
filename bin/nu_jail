@@ -48,6 +48,7 @@ esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_admin.sh"
+. "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
 . "$(dirname "$(realpath "$0")")/../lib/nu_jail.sh"
 . "$(dirname "$(realpath "$0")")/../lib/nu_collection.sh"
 
@@ -56,6 +57,7 @@ nuos_init
 : ${POOL_NAME:=$POOL_BOOT_NAME}
 
 collection_vars_init
+make_vars_init
 jail_vars_init
 admin_init
 : ${PUBLIC_INTERFACE:=net0}
