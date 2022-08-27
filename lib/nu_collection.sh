@@ -194,6 +194,8 @@ collection_vars_init () {
 	
 	COLL_desktop='
 		server
+		graphics/drm-fbsd13-kmod
+		graphics/gpu-firmware-kmod
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
