@@ -197,6 +197,7 @@ collection_vars_init () {
 		server
 		graphics/drm-fbsd13-kmod
 		graphics/gpu-firmware-kmod
+		editors/lapce
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
