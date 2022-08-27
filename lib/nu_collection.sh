@@ -94,6 +94,7 @@ collection_vars_init () {
 		sysutils/coreutils
 		lang/expect
 		math/convertall
+		sysutils/debootstrap
 	'
 	
 	COLL_user='
