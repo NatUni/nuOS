@@ -67,7 +67,7 @@ zfs create -o compression=off -o volmode=dev -V $ZVOL_SIZE -b 4K -s $POOL_NAME/i
 
 if ! zpool list $WORK_POOL_NAME; then
 	zfs create -o compression=off -o volmode=dev -V $ZVOL_SIZE -b 4K -s $POOL_NAME/img/$WORK_POOL_NAME
-	ctladm create -b block -o pblocksize=4096 -o ublocksize=4096 -o file=/dev/zvol/$POOL_NAME/img/$WORK_POOL_NAME
+	ctladm create -b block -o pblocksize=4096 -o ublocksize=524288 -o file=/dev/zvol/$POOL_NAME/img/$WORK_POOL_NAME
 	work_zvol_escd=`echo $POOL_NAME/img/$WORK_POOL_NAME | sed -e 's/\\./\\\\./g;s|/|\\\\/|g'`
 	work_ctlun=$(ctladm devlist -b block -v | tail -n +2 | awk '/^ +[[:digit:]]+ block /{x = $1} /^ +file=\/dev\/zvol\/'"$work_zvol_escd"'$/{r = x} END{print r}')
 	echo NOTICE: using CAM target LUN $work_ctlun
@@ -87,7 +87,7 @@ if ! zfs list $WORK_POOL_NAME/os/nuOS; then
 	sister nu_build -p $WORK_POOL_NAME -c $PKG_COLLECTION -q
 fi
 
-ctladm create -b block -o pblocksize=4096 -o ublocksize=4096 -o file=/dev/zvol/$POOL_NAME/img/$OUTPUT_POOL_NAME
+ctladm create -b block -o pblocksize=4096 -o ublocksize=524288 -o file=/dev/zvol/$POOL_NAME/img/$OUTPUT_POOL_NAME
 output_zvol_escd=`echo $POOL_NAME/img/$OUTPUT_POOL_NAME | sed -e 's/\\./\\\\./g;s|/|\\\\/|g'`
 output_ctlun=$(ctladm devlist -b block -v | tail -n +2 | awk '/^ +[[:digit:]]+ block /{x = $1} /^ +file=\/dev\/zvol\/'"$output_zvol_escd"'$/{r = x} END{print r}')
 echo NOTICE: using CAM target LUN $output_ctlun
