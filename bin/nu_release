@@ -85,6 +85,7 @@ fi
 
 if ! zfs list $WORK_POOL_NAME/os/nuOS; then
 	sister nu_build -p $WORK_POOL_NAME -c $PKG_COLLECTION -q
+	zpool trim $WORK_POOL_NAME || true
 fi
 
 ctladm create -b block -o pblocksize=4096 -o ublocksize=524288 -o file=/dev/zvol/$POOL_NAME/img/$OUTPUT_POOL_NAME
