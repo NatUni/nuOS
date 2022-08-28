@@ -172,9 +172,13 @@ EOF
 	cat >> $pool_mnt/etc/fstab <<'EOF'
 fdesc /dev/fd fdescfs rw 0 0
 proc /proc procfs rw 0 0
+EOF
+	if [ $baseos_major_ver -le 12 ]; then
+		cat >> $pool_mnt/etc/fstab <<'EOF'
 linproc /compat/linux/proc linprocfs rw 0 0
 linsys /compat/linux/sys linsysfs rw 0 0
 EOF
+	fi
 	
 	cat >> $pool_mnt/boot/loader.conf <<'EOF'
 autoboot_delay="3"
