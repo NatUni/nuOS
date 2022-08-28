@@ -18,16 +18,25 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts b:Cdp:vz: OPT; do case $OPT in
+while getopts b:Cdip:vz: OPT; do case $OPT in
 	b) BLOCK_SIZE=$OPTARG;;
 	C) OPT_NO_COMPRESSION=y;;
 	d) OPT_DELETE=y;;
+	i) OPT_INFO=y;;
 	p) POOL_NAME=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 	z) ZVOL_SIZE=$OPTARG;;
 esac; done; shift $(($OPTIND-1))
 [ $# -gt 0 ]
 
+if srsly ${OPT_INFO-}; then
+	for img_name in $@; do
+		sed -n -E -e '
+				/^zvdev=([[:alpha:]]+[[:digit:]]+)$/{s//\1/;p;}
+			' /tmp/nu_img.vol-$img_name.conf
+	done
+	exit 0
+fi
 
 baseos_init
 nuos_init
