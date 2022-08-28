@@ -150,9 +150,23 @@ humanize () {
 	fi
 }
 
+dehumanize () {
+	[ -n "$1" ]
+	local n=`eko $1 | tr -dc [[:digit:]].` u=`eko $1 | tr -d [[:digit:]].,`
+	case $u in
+		[Pp]) eko "$(($n * 1125899906842624))";;
+		[Tt]) eko "$(($n * 1099511627776))";;
+		[Gg]) eko "$(($n * 1073741824))";;
+		[Mm]) eko "$(($n * 1048576))";;
+		[Kk]) eko "$(($n * 1024))";;
+		[Bb]|'') eko "$n";;
+		*) error 22 "invalid argument \"$1\""
+	esac
+}
+
 error () {
 	local ex=$1; shift
-	printf '%s\n' "ERROR: $*" 2>&1
+	printf '%s\n' "ERROR: $*" | tr -dc [[:graph:]][[:space:]] 2>&1
 	exit $ex
 }
 
