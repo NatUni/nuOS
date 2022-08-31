@@ -18,6 +18,8 @@ NUOS_VER=0.0.12.99a0
 NUOS_CODE="$(dirname "$(realpath "$0")")/.."
 
 . "$NUOS_CODE/lib/nu_system.sh"
+baseos_init
+nuos_init
 
 while IFS= read _nush_interactive_line; do
 	eval "$_nush_interactive_line"
