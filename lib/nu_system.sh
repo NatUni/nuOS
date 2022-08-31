@@ -98,11 +98,13 @@ incr () {
 }
 
 push () {
-	local var=$1 old_val= prepend= new_val=; shift
+	local var=$1 old_val= prepend= new_val=; unset new_val; shift
 	eval old_val=\"\${$var-}\"
-	prepend="${old_val:+$old_val }"
-	new_val="$prepend$*"
-	setvar $var "$new_val"
+	if canhas "$*"; then
+		prepend="${old_val:+$old_val }"
+		new_val="$prepend$*"
+	fi
+	setvar $var "${new_val-$old_val}"
 }
 
 eko () {
@@ -170,38 +172,44 @@ error () {
 	exit $ex
 }
 
+warn () {
+	printf '%s\n' "WARNING: $*" | tr -dc [[:graph:]][[:space:]] 2>&1
+}
+
 spill () {
-	case "${1-}" in
-		-p)
-			shift
-			local pvar=$1
-			shift
-		;;
-		'') return 1;;
-		*) local pvar=$1;;
-	esac
-	local var=$1 val=
-	if eval [ -z \"\${$var-}\" -a -n \"\${$var-x}\" ]; then
-		return
-	fi
-	eval setvar val \"\$$var\"
-	echo -n "$pvar="
-	printf %s "$val" | case y in
-		`printf %s "$val" | grep -q \' && echo y`)
-				echo -n \"
-				sed -e 's/\\/\\\\/g;s/`/\\`/g;s/"/\\"/g;s/\$/\\&/g'
-				echo \"
-		;;
-		`printf %s "$val" | awk 'NR==2{print "$";exit}{print $0}' | grep -qE '[^[:alnum:]./_@%^+=:-]' && echo y`)
-				echo -n \'
-				cat
-				echo \'
-		;;
-		*)
-				cat
-				echo
-		;;
-	esac
+	while [ $# -gt 0 ]; do
+		case "${1-}" in
+			-p)
+				shift
+				local pvar=$1
+				shift
+			;;
+			*) local pvar=$1;;
+		esac
+		local var=$1 val=
+		if eval [ -z \"\${$var-}\" -a -n \"\${$var-x}\" ]; then
+			return
+		fi
+		eval setvar val \"\$$var\"
+		echo -n "$pvar="
+		printf %s "$val" | case y in
+			`printf %s "$val" | grep -q \' && echo y`)
+					echo -n \"
+					sed -e 's/\\/\\\\/g;s/`/\\`/g;s/"/\\"/g;s/\$/\\&/g'
+					echo \"
+			;;
+			`printf %s "$val" | awk 'NR==2{print "$";exit}{print $0}' | grep -qE '[^[:alnum:]./_@%^+=:-]' && echo y`)
+					echo -n \'
+					cat
+					echo \'
+			;;
+			*)
+					cat
+					echo
+			;;
+		esac
+		shift
+	done
 }
 
 mnt_dev () {
@@ -540,39 +548,67 @@ lower_case () {
 	case $# in
 		0) $proc;;
 		1) eko "$1" | $proc;;
-		*) error 7;;
+		*)
+			for v in $@; do
+				[ "x$v" != x-s ] || continue
+				setvar ${v}_lc "`eval lower_case '"$'$v'"'`"
+			done
+		;;
 	esac
 }
 
+require_domain_metadata () {
+	[ -r ${ZONE_DIR:=$CONF_DIR}/domain.csv ] || error 6 'no servicable domains, check configuration'
+}
+
 get_domains () {
-	local col= exp= rest=
+	require_domain_metadata
+	local col= exp= dom= rest=
+	: ${_today:=`env TZ=UTC date -v +1d +%Y%m%d`}
 	col=`xsv headers ${ZONE_DIR:=$CONF_DIR}/domain.csv | grep ' Expires$' | cut -wf1`
-	xsv search -i -s Enabled '^y$' ${ZONE_DIR:=$CONF_DIR}/domain.csv | xsv select $col,1-$(($col - 1)),$(($col+1))- | while IFS=, read -r exp rest; do
-		if [ "x$exp" = 'xExpires' ] || [ $exp -gt "`env TZ=UTC date -v +1d +%Y%m%d`" ]; then
-			eko "$exp,$rest"
-		elif [ -z "${_nu_domains_checked-}" ]; then
-			eko WARNING: ${rest%%,*} expired >&2
+	xsv search -i -s Enabled '^y$' ${ZONE_DIR:=$CONF_DIR}/domain.csv | xsv select $col,1-$(($col - 1)),$(($col+1))- | while IFS=, read -r exp dom rest; do
+		if [ "x$exp" = 'xExpires' ] || [ $exp -gt $_today ]; then
+			eko "$exp,$dom,$rest"
+		elif [ ! -f /tmp/expired_domains.$$ ]; then
+			eko $exp $dom >> /tmp/expired_domains.$$.tmp
 		fi
 	done
-	_nu_domains_checked=y
+	[ ! -f /tmp/expired_domains.$$.tmp ] || mv /tmp/expired_domains.$$.tmp /tmp/expired_domains.$$
+}
+
+report_expired_domains () {
+	if [ -f /tmp/expired_domains.$$ ]; then
+		local line=
+		while read -r line; do
+			warn expired "$line"
+		done < /tmp/expired_domains.$$
+	fi
 }
 
 get_emails () {
+	[ -r ${ZONE_DIR:=$CONF_DIR}/email.csv ] || error 6 'no email information, check configuration'
 	tr @ , < ${ZONE_DIR:=$CONF_DIR}/email.csv
 }
 
 infra_name () {
-	local domain= domain_re=
+	require_domain_metadata
+	local domain= domain_re= name=
 	if canhas "${1-}"; then
 		domain=$1
 	else
 		domain=`hostname -d`
 	fi
 	re_pattern domain
-	xsv search -i -s Name "$domain_re" ${ZONE_DIR:=$CONF_DIR}/domain.csv | xsv select Infrastructure | strip_csv_header
+	name=`xsv search -i -s Name "$domain_re" ${ZONE_DIR:=$CONF_DIR}/domain.csv | xsv select Infrastructure | strip_csv_header`
+	canhas $name && echo $name || echo $domain
+}
+
+require_infra_metadata () {
+	[ -r ${ZONE_DIR:=$CONF_DIR}/infrastructure.csv ] || error 6 'no infrastructure metadata found, check configuration'
 }
 
 infra () {
+	require_infra_metadata
 	local infra= infra_re=
 	infra=`infra_name ${1-}`
 	re_pattern infra
@@ -665,6 +701,7 @@ extract_email () {
 }
 
 get_all_infras () {
+	require_infra_metadata
 	local metal= metal_re=
 	metal=`infra_host_name ${1-}`
 	re_pattern metal
@@ -676,4 +713,90 @@ get_guest_infras () {
 	infra=`infra_name ${1-}`
 	re_pattern infra
 	get_all_infras ${1-} | xsv search -v -i -s Name "$infra_re"
+}
+
+set_infras () {
+	# NOTE: Sets these variables in caller context:
+	# infra_host, guest_infras
+	
+	local opt_verbose=
+	while getopts v OPT; do case $OPT in
+		v) opt_verbose=y;;
+	esac; done; shift $(($OPTIND-1))
+	
+	infra_host=`infra_host_name ${1-}`
+	
+	! srsly ${opt_verbose-} || spill infra_host
+	
+	guest_infras=`get_guest_infras $infra_host | extract_name`
+	
+	lower_case -s infra_host
+}
+
+read_set_ips () {
+	# NOTE: Sets these variables in caller context:
+	# my_ip_<n>, my_ip6_<n>
+	
+	local opt_verbose= i=
+	while getopts v OPT; do case $OPT in
+		v) opt_verbose=y;;
+	esac; done; shift $(($OPTIND-1))
+	
+	while IFS=: read i ip; do
+		setvar my_ip_$i $ip
+		! srsly ${opt_verbose-} || spill my_ip_$i
+	done <<EOF
+`ifconfig net0 | grep -E '^[[:blank:]]*inet ' | xargs -L 1 | cut -w -f 2 | grep -n .`
+EOF
+
+	while IFS=: read i ip; do
+		setvar my_ip6_$i $ip
+		! srsly ${opt_verbose-} || spill my_ip6_$i
+	done <<EOF
+`ifconfig net0 | grep -E '^[[:blank:]]*inet6 ' | xargs -L 1 | cut -w -f 2 | grep -n .`
+EOF
+}
+
+set_infra_metadata () {
+	# NOTE: Sets these variables in caller context:
+	# infra_domain
+	# country, province, locality, organization, sec_dept, net_dept,
+	# OWNER_ACCT, OWNER_NAME,
+	# corp_zones, org_zones, prod_zones,
+	# client_zones, zones, init_emails
+	
+	local opt_quiet= opt_verbose=
+	while getopts qv OPT; do case $OPT in
+		q) opt_quiet=y;;
+		v) opt_verbose=y;;
+	esac; done; shift $(($OPTIND-1))
+	
+	infra_domain=`infra_name ${1-}`
+	country=`infra ${1-} | extract_country`
+	province=`infra ${1-} | extract_state`
+	locality=`infra ${1-} | extract_city`
+	organization=`infra ${1-} | extract_org`
+	sec_dept=`infra ${1-} | extract_sec_dept`
+	net_dept=`get_domains | match_names $infra_domain | extract_dept`
+	! srsly ${opt_verbose-} || spill infra_domain country province locality organization sec_dept net_dept
+	
+	OWNER_ACCT=`infra ${1-} | extract_own_acct`
+	OWNER_NAME=`infra ${1-} | extract_own_name`
+	! srsly ${opt_verbose-} || spill OWNER_ACCT OWNER_NAME
+	
+	client_zones=
+	zones=$infra_domain
+	for func in corp org prod; do
+		setvar ${func}_zones "`get_domains | match_infra ${1-} | match_func $func | extract_name`"
+		! srsly ${opt_verbose-} || spill ${func}_zones
+		eval push client_zones \$${func}_zones
+		eval push zones \$${func}_zones
+	done
+		
+	init_emails=`get_emails | match_hosts $zones | extract_email`
+	! srsly ${opt_verbose-} || spill init_emails
+	
+	srsly ${opt_quiet-} || report_expired_domains
+	
+	lower_case corp_zones org_zones prod_zones client_zones zones
 }
