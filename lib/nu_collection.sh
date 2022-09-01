@@ -155,7 +155,7 @@ collection_vars_init () {
 		net/samba413
 		multimedia/ffmpeg
 		multimedia/Bento4
-		www/youtube_dl
+		www/yt-dlp
 		www/lux
 		net-p2p/rtorrent
 		net-p2p/createtorrent
