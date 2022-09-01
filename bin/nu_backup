@@ -16,12 +16,14 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts f:l:np:sv OPT; do case $OPT in
+while getopts f:l:np:sS:t:v OPT; do case $OPT in
 	f) FROM_SNAP=$OPTARG;;
 	l) SNAP_LABEL=$OPTARG;;
 	n) OPT_BACKUP_NULL=y;;
 	p) POOL_NAME=$OPTARG;;
 	s) OPT_ONLY_SNAP=y;;
+	S) SNAPSHOT=$OPTARG;;
+	t) TOKEN=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 esac; done; shift $(($OPTIND-1))
 [ $# -ge 1 -o -f /etc/nuos/backup ]
@@ -97,8 +99,24 @@ all_origins () {
 maybe_yell
 
 [ -z "${FROM_SNAP-}" -o -z "${OPT_ONLY_SNAP-}" ]
+[ -z "${FROM_SNAP-}" -o -z "${TOKEN-}" ]
+[ -z "${SNAPSHOT-}" -o -z "${OPT_ONLY_SNAP-}" ]
+[ -z "${SNAPSHOT-}" -o -z "${SNAP_LABEL-}" ]
+[ -z "${TOKEN-}" -o -z "${SNAP_LABEL-}" ]
 
-snaptime=${SNAP_LABEL:+${SNAP_LABEL}-}t`date +%s`
+if canhas ${TOKEN-}; then
+	canhas ${SNAPSHOT-}
+	token_ds=`zfs send -Pvnet $TOKEN | sed -ne '/^[[:blank:]]*toname = /{s///;p;}'`
+	canhas $token_ds
+	token_pool=${token_ds%%/*}
+	token_snap=${token_ds##*@}
+	[ "$token_pool" = "$POOL_NAME" ] || error 9 "wrong pool, try using: -p $token_pool"
+else
+	if ! canhas ${SNAPSHOT-}; then
+		new_snap=y
+		SNAPSHOT=${SNAP_LABEL:+${SNAP_LABEL}-}t`date +%s`
+	fi
+fi
 
 require_tmp input_list
 
@@ -137,11 +155,13 @@ EOF
 done < "$input_list" >| "$output_list"
 retire_tmp input_list
 
-grep -v @ < "$output_list" | sed -e "s/\$/@$snaptime/" | xargs zfs snapshot -r
+if srsly ${new_snap-}; then
+	grep -v @ < "$output_list" | sed -e "s/\$/@$SNAPSHOT/" | xargs zfs snapshot -r
+fi
 
 if [ -z "${OPT_ONLY_SNAP-}" ]; then
 	while IFS=@ read ds snap; do
-		: ${snap:=$snaptime}
+		: ${snap:=$SNAPSHOT}
 		printf '%s\n' "$ds@$snap" | if canhas "${FROM_SNAP-}"; then
 			cat
 		else
@@ -153,7 +173,14 @@ if [ -z "${OPT_ONLY_SNAP-}" ]; then
 # 			header_printed=y
 # 		fi
 # 		srsly ${OPT_BACKUP_NULL-} || echo nu_backup.zstream v0
-		${OPT_BACKUP_NULL:+echo} zfs send -L -e -c -p ${FROM_SNAP:+-R -I @$FROM_SNAP} $args
+		if canhas ${TOKEN-}; then
+			if [ $token_ds = ${args##* } ]; then
+				${OPT_BACKUP_NULL:+echo} zfs send -e -t $TOKEN
+				unset TOKEN
+			fi
+		else
+			${OPT_BACKUP_NULL:+echo} zfs send -L -e -c -p ${FROM_SNAP:+-R -I @$FROM_SNAP} $args
+		fi
 	done
 fi
 retire_tmp output_list
