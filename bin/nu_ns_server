@@ -32,7 +32,7 @@ while getopts a:A:b:C:dh:i:k:m:s:t:vz: OPT; do case $OPT in
 		master|slave) ;; *) exit 22; esac;;
 	s) push SLAVES $OPTARG;;
 	t) SOFTWARE=$OPTARG; case $SOFTWARE in
-		djb|knot) ;; *) exit 22; esac;;
+		knot) ;; *) exit 22; esac;;
 	v) OPT_VERBOSE=y;;
 	z) ZSK_BITS=$OPTARG;;
 esac; done; shift $(($OPTIND-1))
@@ -46,10 +46,6 @@ echo 'software        -t SOFTWARE       ' $SOFTWARE
 echo 'public ips      -i PUB_IPS        ' $PUB_IPS
 
 case $SOFTWARE in
-	
-	djb)
-		echo 'host name       -h HOST_NAME      ' ${HOST_NAME:=$HOST}
-	;;
 	
 	knot)
 		[ -z "${MASTERS-}" -o -z "${SLAVES-}" ] # we dont support configuring complex propagation hierarchies yet
@@ -85,30 +81,6 @@ echo
 maybe_yell
 
 case $SOFTWARE in
-	
-	djb)
-		
-		mkdir -p "${CHROOTDIR-}/var/service"
-		
-		for ip in $PUB_IPS; do
-			[ ! -e "${CHROOTDIR-}/var/service/tinydns-$ip" ]
-			${CHROOTDIR:+chroot "$CHROOTDIR"} tinydns-conf tinydns dnslog /var/service/tinydns-$ip $ip
-			(
-				cd "${CHROOTDIR-}/var/service/tinydns-$ip/root"
-				rdns=`rev_zone $ip`
-				for ip_ in $PUB_IPS; do
-					./add-ns $HOST_NAME $ip_
-					./add-ns $rdns $ip_
-				done
-				./add-mx $HOST_NAME $ip
-				./add-host $HOST_NAME $ip
-				./add-alias www.$HOST_NAME $ip
-				make
-			)
-		done
-		
-		sister enable_svc ${CHROOTDIR:+-C "$CHROOTDIR"} svscan
-	;;
 	
 	knot)
 		
