@@ -18,7 +18,7 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts a:A:b:C:dh:i:k:m:s:t:vz: OPT; do case $OPT in
+while getopts a:A:b:C:dh:i:k:m:s:vz: OPT; do case $OPT in
 	a) ALGORITHM=$OPTARG;;
 	A) ALTERNATE=$OPTARG;;
 	b) SIG_BITS=$OPTARG;;
@@ -31,8 +31,6 @@ while getopts a:A:b:C:dh:i:k:m:s:t:vz: OPT; do case $OPT in
 	M) MODE=$OPTARG; case $MODE in
 		master|slave) ;; *) exit 22; esac;;
 	s) push SLAVES $OPTARG;;
-	t) SOFTWARE=$OPTARG; case $SOFTWARE in
-		knot) ;; *) exit 22; esac;;
 	v) OPT_VERBOSE=y;;
 	z) ZSK_BITS=$OPTARG;;
 esac; done; shift $(($OPTIND-1))
@@ -41,99 +39,88 @@ esac; done; shift $(($OPTIND-1))
 
 nuos_init
 
-: ${SOFTWARE:=knot}
-echo 'software        -t SOFTWARE       ' $SOFTWARE
 echo 'public ips      -i PUB_IPS        ' $PUB_IPS
 
-case $SOFTWARE in
-	
-	knot)
-		[ -z "${MASTERS-}" -o -z "${SLAVES-}" ] # we dont support configuring complex propagation hierarchies yet
-		if [ -n "${MASTERS-}" ]; then
-			: ${MODE:=slave}
-		else
-			: ${MODE:=master}
-		fi
-		[ -z "${MASTERS-}" -o $MODE = slave ] # so then, if we have no masters then we must be a master
-		[ -z "${SLAVES-}" -o $MODE = master ] # and vice versa
-		[ -z "${OPT_DNSSEC-}" -o $MODE = master ] # only the master signs
-		echo 'mode            -M MODE           ' $MODE
-		echo 'master ips      -m MASTERS        ' ${MASTERS-<none>}
-		echo 'slave ips       -s SLAVES         ' ${SLAVES-<none>}
-		echo -n 'dnssec          -d OPT_DNSSEC      ' && [ -n "${OPT_DNSSEC-}" ] && echo set || echo null
-		if [ -n "${OPT_DNSSEC-}" ]; then
-			echo 'algorithm       -a ALGORITHM      ' ${ALGORITHM:=rsa}
-			echo 'hash size       -b SIG_BITS       ' ${SIG_BITS:=256}
-			case $ALGORITHM in
-				rsa) algo=rsasha$SIG_BITS;;
-				ecdsa) algo=ecdsap$SIG_BITSsha$SIG_BITS;;
-			esac
-			[ -n "$algo" ]
-			echo 'keykey size     -k KSK_BITS       ' ${KSK_BITS:=2048}
-			echo 'zonekey size    -z ZSK_BITS       ' ${ZSK_BITS:=1024}
-		fi
-	;;
-	
-esac
+[ -z "${MASTERS-}" -o -z "${SLAVES-}" ] # we dont support configuring complex propagation hierarchies yet
+if [ -n "${MASTERS-}" ]; then
+	: ${MODE:=slave}
+else
+	: ${MODE:=master}
+fi
+[ -z "${MASTERS-}" -o $MODE = slave ] # so then, if we have no masters then we must be a master
+[ -z "${SLAVES-}" -o $MODE = master ] # and vice versa
+[ -z "${OPT_DNSSEC-}" -o $MODE = master ] # only the master signs
+echo 'mode            -M MODE           ' $MODE
+echo 'master ips      -m MASTERS        ' ${MASTERS-<none>}
+echo 'slave ips       -s SLAVES         ' ${SLAVES-<none>}
+echo -n 'dnssec          -d OPT_DNSSEC      ' && [ -n "${OPT_DNSSEC-}" ] && echo set || echo null
+if [ -n "${OPT_DNSSEC-}" ]; then
+	echo 'algorithm       -a ALGORITHM      ' ${ALGORITHM:=rsa}
+	echo 'hash size       -b SIG_BITS       ' ${SIG_BITS:=256}
+	case $ALGORITHM in
+		rsa) algo=rsasha$SIG_BITS;;
+		ecdsa) algo=ecdsap$SIG_BITSsha$SIG_BITS;;
+	esac
+	[ -n "$algo" ]
+	echo 'keykey size     -k KSK_BITS       ' ${KSK_BITS:=2048}
+	echo 'zonekey size    -z ZSK_BITS       ' ${ZSK_BITS:=1024}
+fi
 
 echo
 
 maybe_yell
 
-case $SOFTWARE in
-	
-	knot)
-		
-		ETC="${CHROOTDIR-}/usr/local/etc/knot"
-		sufx=${ALTERNATE:+_${ALTERNATE}}
-		if [ ! -f "$ETC/example.com.zone.sample" ]; then
-			mv -n -h "$ETC/example.com.zone" "$ETC/example.com.zone.sample"
+
+ETC="${CHROOTDIR-}/usr/local/etc/knot"
+sufx=${ALTERNATE:+_${ALTERNATE}}
+if [ ! -f "$ETC/example.com.zone.sample" ]; then
+	mv -n -h "$ETC/example.com.zone" "$ETC/example.com.zone.sample"
+fi
+[ ! -e "$ETC/knot$sufx.conf" -a -f "$ETC/knot.conf.sample" ] || diff -q "$ETC/knot.conf.sample" "$ETC/knot$sufx.conf"
+
+case $MODE in
+	master)
+		other_mode=slave
+		action=transfer
+	;;
+	slave)
+		other_mode=master
+		action=notify
+	;;
+esac
+
+sed -nEe '
+	/^server:/,/^$/{
+		s/^([[:blank:]]*)# user:.*$/\1user: knot:knot/
+		p
+	}
+	/^log:/,/^$/p' "$ETC/knot.conf.sample" >| "$ETC/knot$sufx.conf"
+
+if [ -n "${MASTERS-}${SLAVES-}" ]; then
+	for h in ${MASTERS-}${SLAVES-}; do
+		if echo $h | grep -q -E '[^[:digit:]\.]'; then
+			h=`${CHROOTDIR:+chroot "$CHROOTDIR"} getent hosts $h | cut -w -f 1`
+			canhas $h
 		fi
-		[ ! -e "$ETC/knot$sufx.conf" -a -f "$ETC/knot.conf.sample" ] || diff -q "$ETC/knot.conf.sample" "$ETC/knot$sufx.conf"
-		
-		case $MODE in
-			master)
-				other_mode=slave
-				action=transfer
-			;;
-			slave)
-				other_mode=master
-				action=notify
-			;;
-		esac
-		
-		sed -nEe '
-			/^server:/,/^$/{
-				s/^([[:blank:]]*)# user:.*$/\1user: knot:knot/
-				p
-			}
-			/^log:/,/^$/p' "$ETC/knot.conf.sample" >| "$ETC/knot$sufx.conf"
-		
-		if [ -n "${MASTERS-}${SLAVES-}" ]; then
-			for h in ${MASTERS-}${SLAVES-}; do
-				if echo $h | grep -q -E '[^[:digit:]\.]'; then
-					h=`${CHROOTDIR:+chroot "$CHROOTDIR"} getent hosts $h | cut -w -f 1`
-					canhas $h
-				fi
-				push partner_ips $h
-				incr num_partners 1
-				push partner_ids $other_mode$num_partners
-			done
-			if [ $num_partners -gt 1 ]; then
-				partner_ip_list=`echo $partner_ips | sed -e 's/ /, /g;s/^/[ /;s/$/ ]/;'`
-				partner_id_list=`echo $partner_ids | sed -e 's/ /, /g;s/^/[ /;s/$/ ]/;'`
-			else
-				partner_ip_list="$partner_ips"
-				partner_id_list="$partner_ids"
-			fi
-			echo remote: >> "$ETC/knot$sufx.conf"
-			for ip in $partner_ips; do
-				i=$((${i-0} + 1))
-				cat >> "$ETC/knot$sufx.conf" <<EOF
+		push partner_ips $h
+		incr num_partners 1
+		push partner_ids $other_mode$num_partners
+	done
+	if [ $num_partners -gt 1 ]; then
+		partner_ip_list=`echo $partner_ips | sed -e 's/ /, /g;s/^/[ /;s/$/ ]/;'`
+		partner_id_list=`echo $partner_ids | sed -e 's/ /, /g;s/^/[ /;s/$/ ]/;'`
+	else
+		partner_ip_list="$partner_ips"
+		partner_id_list="$partner_ids"
+	fi
+	echo remote: >> "$ETC/knot$sufx.conf"
+	for ip in $partner_ips; do
+		i=$((${i-0} + 1))
+		cat >> "$ETC/knot$sufx.conf" <<EOF
   - id: $other_mode${SLAVES:+$i}
     address: $ip
 EOF
-			done
+	done
 cat >> "$ETC/knot$sufx.conf" <<EOF
 
 acl:
@@ -142,10 +129,10 @@ acl:
     action: $action
 
 EOF
-		fi
-		
-		if [ -n "${OPT_DNSSEC-}" ]; then
-			cat >> "$ETC/knot$sufx.conf" <<EOF
+fi
+
+if [ -n "${OPT_DNSSEC-}" ]; then
+	cat >> "$ETC/knot$sufx.conf" <<EOF
 policy:
   - id: $ALGORITHM
     algorithm: $algo
@@ -154,9 +141,9 @@ policy:
     nsec3: on
 
 EOF
-		fi
-		
-		cat >> "$ETC/knot$sufx.conf" <<EOF
+fi
+
+cat >> "$ETC/knot$sufx.conf" <<EOF
 template:
   - id: default
     zonefile-load: difference
@@ -171,127 +158,122 @@ ${MASTERS+    master: master
 zone:
 EOF
 		
-		sed -nEe '
-				/^\$/,/^$/p
-				/^@/,/^$/{
-					s/\<dns1\>/ns1/
-					p
-				}
-			' \
-			"$ETC/example.com.zone.sample" \
-				>| "$ETC/example$sufx.com.zone"
-		
-		i=1
-		for ip in $PUB_IPS; do
-			cat >> "$ETC/example$sufx.com.zone" <<EOF
+sed -nEe '
+		/^\$/,/^$/p
+		/^@/,/^$/{
+			s/\<dns1\>/ns1/
+			p
+		}
+	' \
+	"$ETC/example.com.zone.sample" \
+		>| "$ETC/example$sufx.com.zone"
+
+i=1
+for ip in $PUB_IPS; do
+	cat >> "$ETC/example$sufx.com.zone" <<EOF
 	NS	ns$i
 EOF
-			i=$(($i + 1))
-		done
-		
-		sed -Ee '
-				s/\<example\.com\>/example.in-addr.arpa/g
-			' \
-			"$ETC/example$sufx.com.zone" \
-				>| "$ETC/example$sufx.in-addr.arpa.zone"
-		
-		i=1
-		for ip in $PUB_IPS; do
-			case $i in
-				1) order=0;;
-				*) order=10;;
-			esac
-			cat >> "$ETC/example$sufx.com.zone" <<EOF
+	i=$(($i + 1))
+done
+
+sed -Ee '
+		s/\<example\.com\>/example.in-addr.arpa/g
+	' \
+	"$ETC/example$sufx.com.zone" \
+		>| "$ETC/example$sufx.in-addr.arpa.zone"
+
+i=1
+for ip in $PUB_IPS; do
+	case $i in
+		1) order=0;;
+		*) order=10;;
+	esac
+	cat >> "$ETC/example$sufx.com.zone" <<EOF
 	MX	$order mx$i
 EOF
-			i=$(($i + 1))
-		done
-		
-		tee -a "$ETC/example$sufx.com.zone" >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
+	i=$(($i + 1))
+done
+
+tee -a "$ETC/example$sufx.com.zone" >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
 
 	1m	CAA	128 issue ";"
 	1m	CAA	128 issuewild ";"
 
 EOF
-		cat >> "$ETC/example$sufx.com.zone" <<EOF
+cat >> "$ETC/example$sufx.com.zone" <<EOF
 	TXT	"v=spf1 mx -all"
 EOF
 
-		cat >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
+cat >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
 	TXT	"v=spf1 -all"
 EOF
-		
-		tee -a "$ETC/example$sufx.com.zone" >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
+
+tee -a "$ETC/example$sufx.com.zone" >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
 
 *	TXT	"v=spf1 -all"
 
 EOF
-		
-		cat >> "$ETC/example$sufx.com.zone" <<EOF
+
+cat >> "$ETC/example$sufx.com.zone" <<EOF
 _acme-challenge	1m	TXT	";"
 
 EOF
-		
-		i=1
-		for ip in $PUB_IPS; do
-			tee -a "$ETC/example$sufx.com.zone" >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
+
+i=1
+for ip in $PUB_IPS; do
+	tee -a "$ETC/example$sufx.com.zone" >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
 ns$i	A	$ip
 
 EOF
-			i=$(($i + 1))
-		done
-		
-		i=1
-		for ip in $PUB_IPS; do
-			cat >> "$ETC/example$sufx.com.zone" <<EOF
+	i=$(($i + 1))
+done
+
+i=1
+for ip in $PUB_IPS; do
+	cat >> "$ETC/example$sufx.com.zone" <<EOF
 mx$i	A	$ip
 
 EOF
-			i=$(($i + 1))
-		done
-		
-		i=1
-		for ip in $PUB_IPS; do
-			cat >> "$ETC/example$sufx.com.zone" <<EOF
+	i=$(($i + 1))
+done
+
+i=1
+for ip in $PUB_IPS; do
+	cat >> "$ETC/example$sufx.com.zone" <<EOF
 slave$i	A	$ip
 
 EOF
-			i=$(($i + 1))
-		done
-		
-		i=1
-		for ip in $PUB_IPS; do
-			cat >> "$ETC/example$sufx.com.zone" <<EOF
+	i=$(($i + 1))
+done
+
+i=1
+for ip in $PUB_IPS; do
+	cat >> "$ETC/example$sufx.com.zone" <<EOF
 `[ $i -gt 1 ] || echo @`	A	$ip
 EOF
-			i=$(($i + 1))
-		done
-		
-		echo >> "$ETC/example$sufx.com.zone"
-		
-		i=1
-		for ip in $PUB_IPS; do
-			cat >> "$ETC/example$sufx.com.zone" <<EOF
+	i=$(($i + 1))
+done
+
+echo >> "$ETC/example$sufx.com.zone"
+
+i=1
+for ip in $PUB_IPS; do
+	cat >> "$ETC/example$sufx.com.zone" <<EOF
 `[ $i -gt 1 ] || echo www`	A	$ip
 EOF
-			i=$(($i + 1))
-		done
-		
-		cat >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
+	i=$(($i + 1))
+done
+
+cat >> "$ETC/example$sufx.in-addr.arpa.zone" <<EOF
 @	PTR	example.com.
 EOF
-		
-		if [ $MODE = slave ]; then
-			for ip in $PUB_IPS; do
-				echo "  - domain: `rev_zone $ip`" >> "$ETC/knot$sufx.conf"
-			done
-		fi
-		
-		sister enable_svc ${CHROOTDIR:+-C "$CHROOTDIR"} knot
-		
-	;;
-	
-esac
 
+if [ $MODE = slave ]; then
+	for ip in $PUB_IPS; do
+		echo "  - domain: `rev_zone $ip`" >> "$ETC/knot$sufx.conf"
+	done
+fi
+
+sister enable_svc ${CHROOTDIR:+-C "$CHROOTDIR"} knot
 
 echo "Configured name servers."
