@@ -31,37 +31,36 @@ jail_vars_init () {
 	echo 'jail host name  -h JAIL_HOST      ' ${JAIL_HOST:=$JAIL_NAME.$hostname}
 	echo 'jail dataset       JAIL_DATA      ' ${JAIL_DATA:=$POOL_NAME/jail/$JAIL_HOST}
 	echo 'jail path          JAIL_PATH      ' ${JAIL_PATH:=/var/jail/$JAIL_NAME}
-	echo 'jail ip address -i JAIL_IP        ' ${JAIL_IP:=`
-		awk '
-			/^127\.[0-9]+\.[0-9]+\.[0-9]+/{
-				split(\$1, n, ".")
-				printf("%03i%03i%03i\n", n[2], n[3], n[4])
-			}' "${CHROOTDIR-}/etc/hosts" |
-		sort -n |
-		tail -1 |
-		awk '{
-			x = substr(\$1, 1, 3) * 1
-			if ( x < 1 ) {
-				x = 1; y = 0; z = 0
-			} else {		
-				y = substr(\$1, 4, 3) * 1
-				z = substr(\$1, 7, 3) + 1
-				if ( z > 255 ) {
-					z = 0
-					y++
-				}
-				if ( y > 255 ) {
-					y = 0
-					x++
-				}
-			}
-			if (x < 256 && y < 256 && z < 256 && x + y + z < (3 * 255)) {
-				print 127 "." x "." y "." z
-			} else {
-				print "ERANGE"
-			}
-		}'
-	`}
+	
+	case $JAIL_TYPE in
+		jail|clone) : ${JAIL_NET:=127.1.0.0/16};;
+		nat) : ${JAIL_NET:=172.16.0.1/16};;
+		vnet) : ${JAIL_NET:=172.24.0.0/16};;
+		vnet-nat) : ${JAIL_NET:=172.28.0.0/16};;
+		public|vnet-public) ;;
+		*) error 22 "JAIL_TYPE (-t) must be jail (default), nat, vnet, clone or public."
+	esac
+	case "${JAIL_IP-}" in
+		'') JAIL_IP=`next_available_jail_ip`;;
+		[xX].[xX].*) JAIL_IP=${JAIL_NET%.*.*}.${JAIL_IP#?.?.};;
+	esac
+	
+	echo 'jail ip address -i JAIL_IP        ' ${JAIL_IP:=`next_available_jail_ip`}
 	[ -n "$JAIL_IP" -a $JAIL_IP = ${JAIL_IP#E} ]
 	echo -n 'shared src mnts -w OPT_RW_SRC      ' && [ -n "${OPT_RW_SRC-}" ] && echo set || echo null
+}
+
+last_used_jail_ip () {
+	[ ${JAIL_NET##*/} -le 16 ] || error 78 "JAIL_NET must be of size B (end in /16) or less"
+	local net=${JAIL_NET%.*.*} n=
+	{ eko ${JAIL_NET%/*}; grep "^${net%.*}\\.${net#*.}\\." "${CHROOTDIR-}/etc/hosts"; } |\
+		cut -w -f 1 | ip_to_int |\
+		awk '$0 >= '${n:=`ip_to_int ${JAIL_NET%/*}`}' && $0 < '$n' + (2 ^ '${JAIL_NET##*/}') {print $0}' |\
+		sort -n | int_to_ip |\
+		awk -F . '$3 < 250 {print $0}' | tail -n 1
+}
+
+next_available_jail_ip () {
+	local net=${JAIL_NET%.*.*} ip=${1:-`last_used_jail_ip`}
+	int_to_ip $((`ip_to_int $ip` + 1))
 }

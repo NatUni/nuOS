@@ -90,8 +90,11 @@ case $MODE in
 esac
 
 sed -nEe '
+	/^server:/a\
+    tcp-fastopen: on
 	/^server:/,/^$/{
-		s/^([[:blank:]]*)# user:.*$/\1user: knot:knot/
+		s/^[[:blank:]]*#?[[:blank:]]*user:.*$/    user: knot:knot/
+		s/^[[:blank:]]*#?[[:blank:]]*listen:.*$/    listen: [ 127.0.0.1@53 ]/
 		p
 	}
 	/^log:/,/^$/p' "$ETC/knot.conf.sample" >| "$ETC/knot$sufx.conf"

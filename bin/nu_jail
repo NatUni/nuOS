@@ -38,7 +38,7 @@ while getopts a:Ab:C:dfh:i:I:j:mn:o:O:p:Pqs:S:t:T:u:vwx OPT; do case $OPT in
 	q) OPT_QUICK=y;;
 	s) JAIL_SNAP=$OPTARG;;
 	S) push SERVICE $OPTARG;;
-	t) JAIL_TYPE=$OPTARG;; # jail (default), clone, public or vnet
+	t) JAIL_TYPE=$OPTARG;;
 	T) push CONNECT_TARGETS $OPTARG;;
 	u) USER_ACCT=$OPTARG;;
 	v) OPT_VERBOSE=y;;
@@ -47,10 +47,7 @@ while getopts a:Ab:C:dfh:i:I:j:mn:o:O:p:Pqs:S:t:T:u:vwx OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
-. "$(dirname "$(realpath "$0")")/../lib/nu_admin.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_jail.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_collection.sh"
+load_lib nu_admin nu_make nu_jail nu_collection
 
 baseos_init
 nuos_init
@@ -77,26 +74,50 @@ remove_our_jail_from_hostfile () {
 	sed -i '' -E -e "/^[^#]*[[:<:]]$JAIL_NAME\\.jail[[:>:]]/d" "$1"
 }
 
+unmount_our_jail_pseudofs () {
+	mount -pt devfs,fdescfs,tmpfs,procfs,linprocfs,linsysfs | awk "\$2 ~ \"^/var/jail/$JAIL_NAME/\"{print \$2}" | tail -r | xargs umount
+}
+
 if srsly "${OPT_DELETE-}"; then
 	if ! srsly "${OPT_FORCE_DELETE-}"; then
 		read -p "Are you sure you want to delete the jail '$JAIL_NAME' from configuration and all associated data from '$JAIL_DATA'? Type 'absolutely' to confirm: " confirm
 		if [ "$confirm" != absolutely ]; then
 			echo Action canceled.
-			exit 1
+			exit 85
 		fi 
 	fi
-	jail -r $JAIL_NAME_ || true
-	sed -i '' -e "/^$JAIL_NAME_ {\$/,/^}\$/d" "${CHROOTDIR-}/etc/jail.conf"
+	if jls -j $JAIL_NAME_; then
+		if grep -q "^[[:blank:]]*$JAIL_NAME_[[:blank:]]*{$" /etc/jail.conf /etc/jail.$JAIL_NAME_.conf /etc/jail.conf.d/$JAIL_NAME_.conf 2> /dev/null; then
+			service jail stop $JAIL_NAME > /dev/null 2>&1 &
+			while jls -Ndj $JAIL_NAME_ > /dev/null; do
+				sleep 1
+			done
+		else
+			jail -r $JAIL_NAME_
+			unmount_our_jail_pseudofs
+		fi
+	fi
+	if [ -d "${CHROOTDIR-}/etc/jail.conf.d" ]; then
+		rm "${CHROOTDIR-}/etc/jail.conf.d/$JAIL_NAME_.conf" || true
+	else
+		sed -i '' -e "/^$JAIL_NAME_ {\$/,/^}\$/d" "${CHROOTDIR-}/etc/jail.conf"
+	fi
 	remove_our_jail_from_hostfile "${CHROOTDIR-}/etc/hosts"
 	for j in `ls "$jail_dir"`; do
 		remove_our_jail_from_hostfile "$jail_dir/$j/etc/hosts" || true
 	done
 	
 	[ ! -f "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_" ] || mv "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_" "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_.`env TZ=UTC date +%Y-%m-%d-%H%M%S`.removed_from_service"
-
-	zfs list -H -r $JAIL_DATA | cut -w -f 1 | tail -r | xargs -n1 zfs destroy
+	
+	unmount_our_jail_pseudofs
+	zfs list -H -r $JAIL_DATA | cut -w -f 1 | tail -r | xargs -n1 zfs destroy -f
 	rmdir "${CHROOTDIR-}$JAIL_PATH"
 	exit
+fi
+
+if [ -d "${CHROOTDIR-}/etc/jail.conf.d" ]; then
+	dir_add=.d/$JAIL_NAME_.conf
+	cp "${CHROOTDIR-}/etc/jail.conf.template" "${CHROOTDIR-}/etc/jail.conf$dir_add"
 fi
 
 if canhas "${SERVICE-}"; then
@@ -104,16 +125,16 @@ if canhas "${SERVICE-}"; then
 	push CONNECT_SERVICE $SERVICE
 fi
 if canhas "${CONNECT_TARGETS-}"; then
-	ct_rule_n=$((`{ echo 50; sed -nEe '/^[[:blank:]]*exec.poststart[[:>:]]/{/"ipfw add [56789][[:digit:]] /{s/^.*(ipfw add [56789][[:digit:]])/\1/;s/ipfw add ([56789][[:digit:]]).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"; } | sort -n | tail -n 1` + 1))
+	ct_rule_n=$((`{ echo 50; sed -nEe '/^[[:blank:]]*exec.poststart[[:>:]]/{/"ipfw add [56789][[:digit:]] /{s/^.*(ipfw add [56789][[:digit:]])/\1/;s/ipfw add ([56789][[:digit:]]).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"${dir_add:+.d/*.conf}; } | sort -n | tail -n 1` + 1))
 	CONNECT_TARGETS=`echo $CONNECT_TARGETS | sed -e 's/ /.jail, /g;s/$/.jail/'`
 	[ $ct_rule_n -le 99 -a $ct_rule_n -ge 51 ]
 fi
 if canhas "${LISTEN_SERVICE-}" || canhas "${CONNECT_SERVICE-}"; then
-	[ $JAIL_TYPE = jail ]
-	fw_rule_n=$((`{ echo 200; sed -nEe '/^[[:blank:]]*exec.poststart[[:>:]]/{/"ipfw add 1[[:digit:]][[:digit:]] /{s/^.*(ipfw add 1[[:digit:]][[:digit:]])/\1/;s/ipfw add (1[[:digit:]][[:digit:]]).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"; } | sort -n | head -n 1` - 1))
+	[ $JAIL_TYPE = jail -o $JAIL_TYPE = nat ]
+	fw_rule_n=$((`{ echo 200; sed -nEe '/^[[:blank:]]*exec.poststart[[:>:]]/{/"ipfw add 1[[:digit:]][[:digit:]] /{s/^.*(ipfw add 1[[:digit:]][[:digit:]])/\1/;s/ipfw add (1[[:digit:]][[:digit:]]).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"${dir_add:+.d/*.conf}; } | sort -n | head -n 1` - 1))
 	[ $fw_rule_n -le 199 -a $fw_rule_n -ge 101 ]
 	if canhas "${LISTEN_SERVICE-}" && srsly "${OPT_PUBLIC_LISTEN_SERVICE-}"; then
-		fwd_rule_n=$((`{ echo 50; sed -nEe '/^[[:blank:]]*exec.poststart[[:>:]]/{/"ipfw add [1-4]?[[:digit:]] /{s/^.*(ipfw add [1-4]?[[:digit:]])/\1/;s/ipfw add ([1-4]?[[:digit:]]).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"; } | sort -n | head -n 1` - 1))
+		fwd_rule_n=$((`{ echo 50; sed -nEe '/^[[:blank:]]*exec.poststart[[:>:]]/{/"ipfw add [1-4]?[[:digit:]] /{s/^.*(ipfw add [1-4]?[[:digit:]])/\1/;s/ipfw add ([1-4]?[[:digit:]]).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"${dir_add:+.d/*.conf}; } | sort -n | head -n 1` - 1))
 		[ $fwd_rule_n -le 49 -a $fwd_rule_n -ge 1 ]
 	fi
 fi
@@ -175,12 +196,12 @@ for j in `ls "$jail_dir"`; do
 	fi
 done
 
-cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 $JAIL_NAME_ {
 EOF
 
 if [ "$JAIL_NAME" != "$JAIL_NAME_" ]; then
-	cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	path = "/var/jail/$JAIL_NAME";
 	host.hostname = "$JAIL_NAME.jail";
 EOF
@@ -188,33 +209,33 @@ fi
 
 if [ -n "${OPT_MOUNT_FSTAB-}" ]; then
 	touch "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_"
-	cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	mount.fstab = "/etc/fstab.$JAIL_NAME_";
 EOF
 fi
 
 case $JAIL_TYPE in
 	public)
-		cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	interface = "$PUBLIC_INTERFACE";
 EOF
 		;;
 	clone)
-		cat >> "${CHROOTDIR-}/etc/jail.conf" <<'EOF'
+		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<'EOF'
 	allow.raw_sockets;
 	noip_hostname;
 	ip4 = "inherit";   
 	$tmpfs_args = "";
 EOF
 		require_tmp tempfile
-		grep ^exec.prestart "${CHROOTDIR-}/etc/jail.conf" | sed -e 's/&& devfs .* applyset &&/\&\&/;s/^/	/' >> "$tempfile"
-		cat "$tempfile" >> "${CHROOTDIR-}/etc/jail.conf"
+		grep ^exec.prestart "${CHROOTDIR-}/etc/jail.conf${dir_add-}" | sed -e 's/&& devfs .* applyset &&/\&\&/;s/^/	/' >> "$tempfile"
+		cat "$tempfile" >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}"
 		rm "$tempfile"
 		;;
-	vnet)
+	vnet-nat)
 		rip=${JAIL_IP%.*}.$((${JAIL_IP##*.} - 1))
-		next_epair=$((`{ echo -1; sed -nEe '/^[[:blank:]]*exec.prestart[[:>:]]/{/"ifconfig epair[[:digit:]]+ create"/{s/^.*(epair[[:digit:]]+)/\1/;s/epair([[:digit:]]+).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"; } | sort -n | tail -n 1` + 1))
-		cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+		next_epair=$((`{ echo -1; sed -nEe '/^[[:blank:]]*exec.prestart[[:>:]]/{/"ifconfig epair[[:digit:]]+ create"/{s/^.*(epair[[:digit:]]+)/\1/;s/epair([[:digit:]]+).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"${dir_add:+.d/*.conf}; } | sort -n | tail -n 1` + 1))
+		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	noip_hostname;
 	vnet = "new";
 	vnet.interface = "epair${next_epair}b";
@@ -227,10 +248,18 @@ EOF
 	exec.poststop += "ifconfig epair${next_epair}a destroy";
 EOF
 		;;
+	nat)
+		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
+	interface = "tap1";
+# 	exec.start = "ifconfig tap1 $JAIL_IP netmask 0xffff0000";
+# 	exec.start += "route add default ${JAIL_NET%/*}";
+# 	exec.start += "/bin/sh /etc/rc";
+EOF
+		;;
 esac
 
 if srsly "${OPT_RW_SRC-}"; then
-		cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	exec.prestart += "mkdir -p \$path/usr/ports && mount -t nullfs /usr/ports \$path/usr/ports";
 	exec.prestart += "mount -t nullfs /usr/ports/distfiles \$path/usr/ports/distfiles";
 	exec.prestart += "mount -t nullfs /usr/ports/packages \$path/usr/ports/packages";
@@ -259,7 +288,7 @@ if canhas "${LISTEN_SERVICE-}"; then
 		fi
 		nat_conf=`for port in $LISTEN_SERVICE; do for proto in tcp udp; do echo redirect_port $proto $JAIL_NAME.jail:$port ${OPT_PUBLIC_ALIAS:+$ALIAS_IP:}$port; done; done | xargs`
 	fi
-	cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 ${OPT_PUBLIC_LISTEN_SERVICE:+${OPT_PUBLIC_ALIAS:+	exec.poststart += "ipfw add $fwd_rule_n fwd $JAIL_NAME.jail ip from me to $ALIAS_IP${listen_list:+ $listen_list} keep-state";
 }	exec.poststart += "\`ipfw nat show config\` $nat_conf";
 }${CONNECT_TARGETS:+	exec.poststart += "ipfw add $ct_rule_n nat 123 ip4 from $CONNECT_TARGETS to $JAIL_NAME.jail";
@@ -271,13 +300,13 @@ if canhas "${CONNECT_SERVICE-}"; then
 	if [ "${CONNECT_SERVICE-}" != '*' ]; then
 		connect_list=`echo $CONNECT_SERVICE | sed -e 's/ /, /g'`
 	fi
-	cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	exec.poststart += "ipfw add $fw_rule_n allow ip from any${connect_list:+ $connect_list} to $JAIL_NAME.jail";
 	exec.poststart += "ipfw add $fw_rule_n allow ip from $JAIL_NAME.jail to any${connect_list:+ $connect_list}";
 EOF
 fi
 if canhas "${LISTEN_SERVICE-}${CONNECT_SERVICE-}"; then
-	cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 ${OPT_PUBLIC_LISTEN_SERVICE:+	exec.prestop += "\`ipfw nat show config | sed -E -e \"s/ redirect_port [[:graph:]]+ \$(getent hosts $JAIL_NAME.jail | cut -w -f 1):[[:digit:]]+ ${OPT_PUBLIC_ALIAS:+[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+:}[[:digit:]]+//g\"\`";
 ${OPT_PUBLIC_ALIAS:+	exec.prestop += "ipfw delete $fwd_rule_n";
 }}${CONNECT_TARGETS:+	exec.prestop += "ipfw delete $ct_rule_n";
@@ -285,7 +314,7 @@ ${OPT_PUBLIC_ALIAS:+	exec.prestop += "ipfw delete $fwd_rule_n";
 EOF
 fi
 
-cat >> "${CHROOTDIR-}/etc/jail.conf" <<EOF
+cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 }
 EOF
 

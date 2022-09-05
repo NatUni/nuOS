@@ -23,6 +23,13 @@ nuos_lib_common_loaded=y
 
 : ${TMPDIR:=/tmp}
 
+load_lib () {
+	local lib=
+	for lib in "$@"; do
+		. "${NUOS_CODE:="$(dirname "$(realpath "$0")")/.."}/lib/$lib.sh"
+	done
+}
+
 baseos_init () {
 	if [ -r /usr/src/sys/conf/newvers.sh ]; then
 		local TYPE REVISION BRANCH
@@ -98,13 +105,23 @@ incr () {
 }
 
 push () {
-	local var=$1 old_val= prepend= new_val=; unset new_val; shift
-	eval old_val=\"\${$var-}\"
+	local _push_var=$1 _push_old_val= _push_prepend= _push_new_val=; shift
+	unset _push_new_val
+	eval _push_old_val=\"\${$_push_var-}\"
 	if canhas "$*"; then
-		prepend="${old_val:+$old_val }"
-		new_val="$prepend$*"
+		_push_prepend="${_push_old_val:+$_push_old_val }"
+		_push_new_val="$_push_prepend$*"
 	fi
-	setvar $var "${new_val-$old_val}"
+	setvar $_push_var "${_push_new_val-$_push_old_val}"
+}
+
+push_set () {
+	local _push_set_var=$1 _push_set_val=; shift
+	for _push_set_val in $*; do
+		if ! { eval eko \"\${$_push_set_var-}\" | grep -q -w "$_push_set_val"; }; then
+			push $_push_set_var "$_push_set_val"
+		fi
+	done
 }
 
 eko () {
@@ -366,7 +383,7 @@ sets_intrsctn () {
 }
 
 rev_zone () {
-	echo $1 | awk 'FS=OFS="."{print $4,$3,$2,$1,"in-addr.arpa"}'
+	echo $1 | awk -F . 'OFS="."{print $4,$3,$2,$1,"in-addr.arpa"}'
 }
 
 try () {
@@ -407,7 +424,7 @@ save_git_info () {
 
 
 nuos_init () {
-	
+	: ${NUOS_CODE:="$(dirname "$(realpath "$0")")/.."}
 	if [ -d /etc/nuos ]; then
 		CONF_DIR=/etc/nuos
 	fi
@@ -557,6 +574,43 @@ lower_case () {
 	esac
 }
 
+ip_to_int () {
+	local a= b= c= d= v=
+	case $# in
+		0)
+			while IFS=. read -r a b c d; do
+				eko $(( ($a * 16777216) + ($b * 65536) + ($c * 256) + $d ))
+			done
+		;;
+		*)
+			for v in $@; do
+				eko $v | ip_to_int
+			done
+		;;
+	esac
+}
+
+int_to_ip () {
+	local a= b= c= d= n= o= v= x=
+	case $# in
+		0)
+			while read -r n; do
+				for o in d c b a; do
+					x=$(( $n % 256 ))
+					setvar $o $x
+					n=$(( ($n - $x) / 256 ))
+				done
+				eko $a.$b.$c.$d
+			done
+		;;
+		*)
+			for v in $@; do
+				eko $v | int_to_ip
+			done
+		;;
+	esac
+}
+
 require_domain_metadata () {
 	[ -r ${ZONE_DIR:=$CONF_DIR}/domain.csv ] || error 6 'no servicable domains, check configuration'
 }
@@ -579,9 +633,10 @@ get_domains () {
 report_expired_domains () {
 	if [ -f /tmp/expired_domains.$$ ]; then
 		local line=
-		while read -r line; do
+		sort -u /tmp/expired_domains.$$ | while read -r line; do
 			warn expired "$line"
-		done < /tmp/expired_domains.$$
+		done
+		rm /tmp/expired_domains.$$
 	fi
 }
 
@@ -717,20 +772,20 @@ get_guest_infras () {
 
 set_infras () {
 	# NOTE: Sets these variables in caller context:
-	# infra_host, guest_infras
+	# INFRA_HOST, guest_infras
 	
 	local opt_verbose=
 	while getopts v OPT; do case $OPT in
 		v) opt_verbose=y;;
 	esac; done; shift $(($OPTIND-1))
 	
-	infra_host=`infra_host_name ${1-}`
+	INFRA_HOST=`infra_host_name ${1-}`
 	
-	! srsly ${opt_verbose-} || spill infra_host
+	! srsly ${opt_verbose-} || spill INFRA_HOST
 	
-	guest_infras=`get_guest_infras $infra_host | extract_name`
+	guest_infras=`get_guest_infras $INFRA_HOST | extract_name`
 	
-	lower_case -s infra_host
+	lower_case INFRA_HOST guest_infras
 }
 
 read_set_ips () {
@@ -758,45 +813,57 @@ EOF
 }
 
 set_infra_metadata () {
-	# NOTE: Sets these variables in caller context:
-	# infra_domain
-	# country, province, locality, organization, sec_dept, net_dept,
+	# NOTE:
+	#
+	# [Re]sets these variables in caller context:
+	# INFRA_DOMAIN
 	# OWNER_ACCT, OWNER_NAME,
+	# country, province, locality, organization, sec_dept, net_dept,
 	# corp_zones, org_zones, prod_zones,
 	# client_zones, zones, init_emails
+	#
+	# Appends to these variables in caller context:
+	# all_client_zones, all_zones
+	#
+	# Along with <varname>_lc (lower case) variants.
 	
-	local opt_quiet= opt_verbose=
+	local opt_quick= opt_really_quick= opt_verbose=
 	while getopts qv OPT; do case $OPT in
-		q) opt_quiet=y;;
+		q) [ -n "${opt_quick-}" ] && opt_really_quick=y || opt_quick=y;;
 		v) opt_verbose=y;;
 	esac; done; shift $(($OPTIND-1))
 	
-	infra_domain=`infra_name ${1-}`
-	country=`infra ${1-} | extract_country`
-	province=`infra ${1-} | extract_state`
-	locality=`infra ${1-} | extract_city`
-	organization=`infra ${1-} | extract_org`
-	sec_dept=`infra ${1-} | extract_sec_dept`
-	net_dept=`get_domains | match_names $infra_domain | extract_dept`
-	! srsly ${opt_verbose-} || spill infra_domain country province locality organization sec_dept net_dept
-	
+	INFRA_DOMAIN=`infra_name ${1-}`
 	OWNER_ACCT=`infra ${1-} | extract_own_acct`
 	OWNER_NAME=`infra ${1-} | extract_own_name`
-	! srsly ${opt_verbose-} || spill OWNER_ACCT OWNER_NAME
+	! srsly ${opt_verbose-} || spill INFRA_DOMAIN OWNER_ACCT OWNER_NAME
 	
-	client_zones=
-	zones=$infra_domain
-	for func in corp org prod; do
-		setvar ${func}_zones "`get_domains | match_infra ${1-} | match_func $func | extract_name`"
-		! srsly ${opt_verbose-} || spill ${func}_zones
-		eval push client_zones \$${func}_zones
-		eval push zones \$${func}_zones
-	done
-		
-	init_emails=`get_emails | match_hosts $zones | extract_email`
-	! srsly ${opt_verbose-} || spill init_emails
-	
-	srsly ${opt_quiet-} || report_expired_domains
-	
-	lower_case corp_zones org_zones prod_zones client_zones zones
+	if srsly ${opt_really_quick-}; then
+		unset corp_zones org_zones prod_zones client_zones zones
+	else
+		client_zones=
+		zones=$INFRA_DOMAIN
+		for func in corp org prod; do
+			setvar ${func}_zones "`get_domains | match_infra ${1-} | match_func $func | extract_name`"
+			! srsly ${opt_verbose-} || spill ${func}_zones
+			eval push client_zones \$${func}_zones
+			eval push zones \$${func}_zones
+		done
+		push_set all_client_zones $client_zones
+		push_set all_zones $zones
+		lower_case corp_zones org_zones prod_zones client_zones zones all_client_zones all_zones
+	fi
+
+	if srsly ${opt_quick-}; then
+		unset country province locality organization sec_dept net_dept init_emails
+	else
+		country=`infra ${1-} | extract_country`
+		province=`infra ${1-} | extract_state`
+		locality=`infra ${1-} | extract_city`
+		organization=`infra ${1-} | extract_org`
+		sec_dept=`infra ${1-} | extract_sec_dept`
+		net_dept=`get_domains | match_names $INFRA_DOMAIN | extract_dept`
+		init_emails=`get_emails | match_hosts $zones | extract_email`
+		! srsly ${opt_verbose-} || spill country province locality organization sec_dept net_dept init_emails
+	fi
 }
