@@ -199,8 +199,9 @@ firewall_enable="YES"
 firewall_type="open"
 firewall_nat_flags="same_ports reset"
 firewall_nat_interface="net0"
-cloned_interfaces="lo1 tap0 bridge0"
+cloned_interfaces="tap0 bridge0 tap1 lo1"
 ifconfig_lo1="inet 127.1.0.0 netmask 0xffff0000"
+ifconfig_tap1="inet 172.16.0.1 netmask 0xffff0000"
 ifconfig_bridge0="addm net0 addm tap0 up"
 devfs_load_rulesets="YES"
 sendmail_submit_enable="NO"
@@ -219,6 +220,11 @@ EOF
 	
 	cat > $pool_mnt/etc/rc.conf.d.off/ntpd <<'EOF'
 ntpd_sync_on_start="YES"
+EOF
+
+	cat > $pool_mnt/etc/rc.conf.d.off/jail <<'EOF'
+jail_reverse_stop="YES"
+jail_list=""
 EOF
 	
 	cat > $pool_mnt/etc/rc.conf.local <<'EOF'
@@ -277,6 +283,10 @@ net.inet.tcp.cc.algorithm=cdg
 # Increment the window increase factor alpha by 1 MSS segment every alpha_inc RTTs during congestion avoidance mode
 # FreeBSD 11.2 default: 0
 net.inet.tcp.cc.cdg.alpha_inc=1
+
+# Enable/disable TCP Fast Open server functionality
+# FreeBSD 13.1 default: 0
+net.inet.tcp.fastopen.server_enable=1
 
 # Default TCP Maximum Segment Size
 # FreeBSD 11.2 default: 536
@@ -349,7 +359,7 @@ EOF
 UseDNS no
 EOF
 	
-	cat > $pool_mnt/etc/jail.conf <<'EOF'
+	cat > $pool_mnt/etc/jail.conf`[ ! -d $pool_mnt/etc/jail.conf.d ] || echo .template` <<'EOF'
 $tmpfs_args = "-o size=3221225472";
 path = "/var/jail/$name";
 host.hostname = "$name.jail";
@@ -360,7 +370,7 @@ exec.prestart += "mount -t fdescfs fdesc $path/dev/fd";
 exec.prestart += "mount -t tmpfs -o nosuid $tmpfs_args tmp $path/tmp";
 exec.prestart += "mount -t procfs proc $path/proc";
 exec.start = "/bin/sh /etc/rc";
-exec.stop = "/bin/sh /etc/rc.shutdown";
+exec.stop = "/bin/sh /etc/rc.shutdown jail";
 exec.poststop = "umount $path/proc";
 exec.poststop += "umount $path/tmp";
 exec.poststop += "umount $path/dev/fd";
@@ -449,6 +459,9 @@ EOF
 		
 		baseos_type_lc=`echo "$BASEOS_TYPE" | tr '[:upper:]' '[:lower:]'`
 		baseos_info_url="https://$baseos_type_lc.org"
+		
+		sed -i '' -Ee 's/^(The compilation of software known as )FreeBSD /\1nuOS /;/^Copyright\>.*\<The FreeBSD Project\>/a\
+Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.' $pool_mnt/COPYRIGHT
 		
 		mv -n $pool_mnt/etc/motd${new_motd:+.template} $pool_mnt/etc/motd${new_motd:+.template}.$baseos_type_lc
 		if ! srsly ${new_motd-}; then
