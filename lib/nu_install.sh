@@ -68,23 +68,32 @@ require_base_src () {
 		baseos_init
 		reset_pkg_collection
 	fi
-	local make_conf= retire_make_conf_cmd=
+	local make_conf= retire_make_conf_cmd= src_conf= retire_src_conf_cmd=
 	if ! [ -d /usr/obj/usr/src/bin -o -d /usr/obj/usr/src/$TRGT_ARCH.$TRGT_PROC/bin ]; then
 		prepare_make_conf make_conf retire_make_conf_cmd
+		prepare_src_conf src_conf retire_src_conf_cmd
 		[ $TRGT_OPTZ = `cd /var/empty && make -V CPUTYPE` ]
-		srsly $opt_nomake || (cd /usr/src && make -j $MAKE_JOBS "__MAKE_CONF=$make_conf" buildworld)
+		srsly $opt_nomake || (cd /usr/src && make -j $MAKE_JOBS "__MAKE_CONF=$make_conf" "SRCCONF=$src_conf" buildworld)
 		$retire_make_conf_cmd make_conf
+		$retire_src_conf_cmd src_conf
 	fi
+	
 	[ -f /usr/obj/usr/src/$TRGT_ARCH.$TRGT_PROC/toolchain-metadata.mk ] || old_build=y
 	[ -f /usr/obj/usr/src/compiler-metadata.mk ] || new_build=y
 	[ y = "${old_build-}${new_build-}" ]
-	if [ $TRGT_KERN = NUOS ] && [ ! -e /usr/src/sys/$TRGT_ARCH/conf/NUOS -o /usr/src/sys/$TRGT_ARCH/conf/NUOS -ot "$(realpath "$(dirname "$(realpath "$0")")/../share/kern/NUOS")" ]; then
-		cp -p "$(realpath "$(dirname "$(realpath "$0")")/../share/kern/NUOS")" /usr/src/sys/$TRGT_ARCH/conf/NUOS
+	
+	local kconf=/usr/src/sys/$TRGT_ARCH/conf/NUOS
+	if [ $TRGT_KERN = NUOS ] && [ ! -e $kconf -o $kconf -ot "$NUOS_CODE/share/kern/NUOS" ]; then
+		cp -p "$NUOS_CODE/share/kern/NUOS" $kconf
 	fi
-	if [ ! -d /usr/obj/usr/src${new_build:+/$TRGT_ARCH.$TRGT_PROC}/sys/$TRGT_KERN ]; then
+	
+	local kobj=/usr/obj/usr/src${new_build:+/$TRGT_ARCH.$TRGT_PROC}/sys/$TRGT_KERN
+	if [ ! -d $kobj -o $kobj -ot $kconf ]; then
 		prepare_make_conf make_conf retire_make_conf_cmd
-		srsly $opt_nomake || (cd /usr/src && make -j $MAKE_JOBS "__MAKE_CONF=$make_conf" KERNCONF=$TRGT_KERN buildkernel)
+		prepare_src_conf src_conf retire_src_conf_cmd
+		srsly $opt_nomake || (cd /usr/src && make -j $MAKE_JOBS "__MAKE_CONF=$make_conf" "SRCCONF=$src_conf" KERNCONF=$TRGT_KERN buildkernel)
 		$retire_make_conf_cmd make_conf
+		$retire_src_conf_cmd src_conf
 	fi
 }
 

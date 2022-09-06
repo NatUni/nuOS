@@ -21,6 +21,11 @@ NUOS_CODE="$(dirname "$(realpath "$0")")/.."
 baseos_init
 nuos_init
 
-while IFS= read _nush_interactive_line; do
-	eval "$_nush_interactive_line"
-done
+if [ x-c = "x${1-}" ]; then
+	shift
+	eval "$@"
+else
+	while IFS= read _nush_interactive_line; do
+		eval "$_nush_interactive_line"
+	done
+fi

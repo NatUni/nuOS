@@ -15,7 +15,6 @@ set -e; set -u; set -C
 # Professional services available at https://ccsys.com .
 
 NUOS_VER=0.0.12.99a0
-
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
 while getopts Bc:FMNp:qSv OPT; do case $OPT in
@@ -31,11 +30,7 @@ while getopts Bc:FMNp:qSv OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
-. "$(dirname "$(realpath "$0")")/../lib/nu_admin.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_ports.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_collection.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_install.sh"
+load_lib nu_admin nu_make nu_ports nu_collection nu_install
 
 baseos_init
 nuos_init
@@ -192,14 +187,14 @@ EOF
 	
 	cat >> $pool_mnt/etc/rc.conf <<'EOF'
 linux_enable="YES"
-kld_list="aesni geom_eli ipfw nmdm vmm sem accf_data accf_dns accf_http cc_cdg"
+kld_list="aesni geom_eli ipfw ng_ether ng_bridge nmdm vmm sem accf_data accf_dns accf_http cc_cdg"
 entropy_file="/var/db/entropy/seed"
 keyrate="fast"
 firewall_enable="YES"
 firewall_type="open"
 firewall_nat_flags="same_ports reset"
 firewall_nat_interface="net0"
-cloned_interfaces="tap0 bridge0 tap1 lo1"
+cloned_interfaces="tap0 bridge0 tap1 bridge1 lo1"
 ifconfig_lo1="inet 127.1.0.0 netmask 0xffff0000"
 ifconfig_tap1="inet 172.16.0.1 netmask 0xffff0000"
 ifconfig_bridge0="addm net0 addm tap0 up"
@@ -230,6 +225,7 @@ EOF
 	cat > $pool_mnt/etc/rc.conf.local <<'EOF'
 gateway_enable="YES"
 firewall_nat_enable="YES"
+firewall_logif="YES"
 
 # replace 'vtnet0' with the name of your primary upstream network interface
 ifconfig_vtnet0_name="net0"
@@ -386,6 +382,10 @@ EOF
 	prepare_make_conf -i make_conf retire_make_conf_cmd
 	cat "$make_conf" > $pool_mnt/etc/make.conf
 	$retire_make_conf_cmd make_conf
+	
+	prepare_src_conf -i src_conf retire_src_conf_cmd
+	cat "$src_conf" > $pool_mnt/etc/src.conf
+	$retire_src_conf_cmd src_conf
 	
 	cat >> $pool_mnt/boot/loader.conf <<'EOF'
 init_script="/boot/init.sh"

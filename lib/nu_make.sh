@@ -99,3 +99,27 @@ EOF
 		setvar $ret_cmd_var retire_tmp
 	fi
 }
+
+prepare_src_conf () {
+	local opt_init=
+	while getopts i OPT; do case $OPT in
+		i) opt_init=y;;
+	esac; done; shift $(($OPTIND-1))
+	
+	local ret_file_var=$1; shift
+	local ret_cmd_var=$1; shift
+	
+	if [ -z "$opt_init" ] && [ -s "${CHROOTDIR-}/etc/src.conf" ]; then
+		setvar $ret_file_var "${CHROOTDIR-}/etc/src.conf"
+		setvar $ret_cmd_var :
+	else
+		make_vars_init
+		local srcconf=
+		require_tmp srcconf
+		cat >| "$srcconf" <<EOF
+WITH_EXTRA_TCP_STACKS=1
+EOF
+		setvar $ret_file_var "$srcconf"
+		setvar $ret_cmd_var retire_tmp
+	fi
+}

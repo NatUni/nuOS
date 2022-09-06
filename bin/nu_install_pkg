@@ -15,6 +15,7 @@ set -e; set -u; set -C
 # Professional services available at https://ccsys.com .
 
 NUOS_VER=0.0.12.99a0
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
 while getopts ABC:d:D:fFMRStuvyY OPT; do case $OPT in
 	A) OPT_ARG_SUBPROCESS=y;;
@@ -34,11 +35,7 @@ while getopts ABC:d:D:fFMRStuvyY OPT; do case $OPT in
 	Y) OPT_YES_SUBPROCESS=y;;
 esac; done; shift $(($OPTIND-1))
 
-. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_ports.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_collection.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_install.sh"
+load_lib nu_make nu_ports nu_collection nu_install
 
 maybe_yell
 baseos_init -q

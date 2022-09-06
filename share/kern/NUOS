@@ -1,3 +1,5 @@
 include GENERIC
 ident NUOS
 options VIMAGE
+options TCPHPTS
+options RATELIMIT
