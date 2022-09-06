@@ -27,11 +27,7 @@ while getopts c:p:P:qv OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
-. "$(dirname "$(realpath "$0")")/../lib/nu_admin.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_ports.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_collection.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_install.sh"
+load_lib nu_admin nu_make nu_ports nu_collection nu_install
 
 baseos_init
 nuos_init

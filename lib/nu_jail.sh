@@ -36,7 +36,7 @@ jail_vars_init () {
 		jail|clone) : ${JAIL_NET:=127.1.0.0/16};;
 		nat) : ${JAIL_NET:=172.16.0.1/16};;
 		vnet) : ${JAIL_NET:=172.24.0.0/16};;
-		vnet-nat) : ${JAIL_NET:=172.28.0.0/16};;
+		vnet-nat) : ${JAIL_NET:=172.28.0.1/16};;
 		public|vnet-public) ;;
 		*) error 22 "JAIL_TYPE (-t) must be jail (default), nat, vnet, clone or public."
 	esac
