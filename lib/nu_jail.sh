@@ -23,7 +23,7 @@ nuos_lib_jail_loaded=y
 jail_vars_init () {
 	echo 'creating jail   -j JAIL_NAME      ' ${JAIL_NAME:=clink}
 	JAIL_NAME_=`echo $JAIL_NAME | tr . _`
-	echo 'jail type       -t JAIL_TYPE      ' ${JAIL_TYPE:=jail}
+	echo 'jail type       -t JAIL_TYPE      ' ${JAIL_TYPE:=solitary}
 	echo 'jail opsys      -o JAIL_OS        ' ${JAIL_OS:=$HOSTOS_TYPE/$HOSTOS_VER/$HOSTOS_TRGT}
 	echo 'pool name       -p POOL_NAME      ' ${POOL_NAME:=$POOL_BOOT_NAME}
 	echo 'jail snapshot   -s JAIL_SNAP      ' ${JAIL_SNAP:=$PKG_COLLECTION}
@@ -32,21 +32,24 @@ jail_vars_init () {
 	echo 'jail dataset       JAIL_DATA      ' ${JAIL_DATA:=$POOL_NAME/jail/$JAIL_HOST}
 	echo 'jail path          JAIL_PATH      ' ${JAIL_PATH:=/var/jail/$JAIL_NAME}
 	
-	case $JAIL_TYPE in
-		jail|clone) : ${JAIL_NET:=127.1.0.0/16};;
-		nat) : ${JAIL_NET:=172.16.0.1/16};;
-		vnet) : ${JAIL_NET:=172.24.0.0/16};;
-		vnet-nat) : ${JAIL_NET:=172.28.0.1/16};;
-		public|vnet-public) ;;
-		*) error 22 "JAIL_TYPE (-t) must be jail (default), nat, vnet, clone or public."
-	esac
+	local n= i=; case $JAIL_TYPE in
+		solitary)    n=0.255.0.1/16;        i=lo0;;
+		clone)       n=127.0.0.1/16;        i=lo0;;
+		private)     n=172.16.0.1/16;       i=lo1;;
+		public)      n=172.24.0.1/16;       i=lo2;;
+		*)
+			error 22 "JAIL_TYPE (-t) must be solitary (default), private, clone or public.";;
+	esac; : ${JAIL_NET:=$n}; : ${INTERFACE:=$i}
+	
+	: ${PUBLIC_INTERFACE:=net0}
 	case "${JAIL_IP-}" in
 		'') JAIL_IP=`next_available_jail_ip`;;
 		[xX].[xX].*) JAIL_IP=${JAIL_NET%.*.*}.${JAIL_IP#?.?.};;
 	esac
 	
+	echo 'net interface   -I INTERFACE      ' ${INTERFACE:-n/a}
 	echo 'jail ip address -i JAIL_IP        ' ${JAIL_IP:=`next_available_jail_ip`}
-	[ -n "$JAIL_IP" -a $JAIL_IP = ${JAIL_IP#E} ]
+	[ -n "$JAIL_IP" ]
 	echo -n 'shared src mnts -w OPT_RW_SRC      ' && [ -n "${OPT_RW_SRC-}" ] && echo set || echo null
 }
 

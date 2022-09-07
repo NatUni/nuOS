@@ -194,9 +194,9 @@ firewall_enable="YES"
 firewall_type="open"
 firewall_nat_flags="same_ports reset"
 firewall_nat_interface="net0"
-cloned_interfaces="tap0 bridge0 tap1 bridge1 lo1"
-ifconfig_lo1="inet 127.1.0.0 netmask 0xffff0000"
-ifconfig_tap1="inet 172.16.0.1 netmask 0xffff0000"
+cloned_interfaces="tap0 bridge0 tap1 lo1 lo2"
+ifconfig_lo1="inet 172.16.0.1 netmask 0xffff0000"
+ifconfig_lo2="inet 172.24.0.1 netmask 0xffff0000"
 ifconfig_bridge0="addm net0 addm tap0 up"
 devfs_load_rulesets="YES"
 sendmail_submit_enable="NO"
@@ -361,18 +361,17 @@ path = "/var/jail/$name";
 host.hostname = "$name.jail";
 devfs_ruleset = 4;
 exec.clean;
-exec.prestart = "mount -t devfs dev $path/dev && devfs -m $path/dev ruleset $devfs_ruleset && devfs -m $path/dev rule applyset && ln -sf /var/run/log $path/dev/log";
+exec.prestart += "mount -t devfs dev $path/dev && devfs -m $path/dev ruleset $devfs_ruleset && devfs -m $path/dev rule applyset && ln -sf /var/run/log $path/dev/log";
 exec.prestart += "mount -t fdescfs fdesc $path/dev/fd";
 exec.prestart += "mount -t tmpfs -o nosuid $tmpfs_args tmp $path/tmp";
 exec.prestart += "mount -t procfs proc $path/proc";
 exec.start = "/bin/sh /etc/rc";
 exec.stop = "/bin/sh /etc/rc.shutdown jail";
-exec.poststop = "umount $path/proc";
+exec.poststop += "umount $path/proc";
 exec.poststop += "umount $path/tmp";
 exec.poststop += "umount $path/dev/fd";
 exec.poststop += "umount $path/dev";
 enforce_statfs = 1;
-interface = "lo1";
 ip_hostname;
 allow.chflags;
 allow.quotas;

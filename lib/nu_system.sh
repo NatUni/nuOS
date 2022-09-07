@@ -240,6 +240,45 @@ mnt_dev () {
 	fi
 }
 
+get_host_ent () {
+	local chrootdir= opt_one= opt_ip4= opt_ip6= opt_full= fcmd= icmd= ocmd=
+	while getopts C:146f OPT; do case $OPT in
+		1) opt_one=y;;
+		4) opt_ip4=y;;
+		6) opt_ip6=y;;
+		C) chrootdir=$OPTARG;;
+		f) opt_full=y;;
+	esac; done; shift $(($OPTIND-1))
+	
+	fcmd () {
+		if srsly ${opt_full-}; then
+			cat
+		else
+			cut -wf1
+		fi
+	}
+	icmd () {
+		if srsly ${opt_ip4-}; then
+			awk '$1 ~ /\./ {print $1}'
+		elif srsly ${opt_ip6-}; then
+			grep :
+		else
+			cat
+		fi
+	}
+	ocmd () {
+		if srsly ${opt_one-}; then
+			head -n 1
+		else
+			cat
+		fi
+	}
+	
+	grep -v '^#' "${chrootdir-}/etc/hosts" | grep -q -E "[[:blank:]]$1([[:blank:]]|\$)" && \
+		grep -v '^#' "${chrootdir-}/etc/hosts" | grep -E "[[:blank:]]$1([[:blank:]]|\$)" |\
+		icmd | fcmd | ocmd
+}
+
 sister () {
 	local chrootdir= jailname=; unset chrootdir jailname
 	while getopts C:j: OPT; do case $OPT in

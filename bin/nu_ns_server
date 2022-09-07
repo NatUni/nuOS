@@ -102,7 +102,7 @@ sed -nEe '
 if [ -n "${MASTERS-}${SLAVES-}" ]; then
 	for h in ${MASTERS-}${SLAVES-}; do
 		if echo $h | grep -q -E '[^[:digit:]\.]'; then
-			h=`${CHROOTDIR:+chroot "$CHROOTDIR"} getent hosts $h | cut -w -f 1`
+			h=`get_host_ent ${CHROOTDIR:+-C "$CHROOTDIR"} -1 -4 $h`
 			canhas $h
 		fi
 		push partner_ips $h
