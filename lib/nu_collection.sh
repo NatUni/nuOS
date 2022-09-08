@@ -92,6 +92,7 @@ collection_vars_init () {
 		textproc/gsed
 		devel/gmake
 		sysutils/coreutils
+		lang/v
 		lang/expect
 		math/convertall
 		sysutils/debootstrap
@@ -130,6 +131,8 @@ collection_vars_init () {
 		databases/mongodb50
 		databases/redis
 		lang/go
+		lang/squeak
+		lang/crystal
 		www/npm
 		lang/php81-extensions
 		graphics/pecl-imagick-im7
@@ -197,7 +200,6 @@ collection_vars_init () {
 		server
 		graphics/drm-fbsd13-kmod
 		graphics/gpu-firmware-kmod
-		editors/lapce
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
@@ -208,6 +210,7 @@ collection_vars_init () {
 		x11/xorg
 		x11/kde5
 		x11/sddm
+		lang/pharo
 		net-p2p/bitcoin
 		net-p2p/litecoin
 		net-p2p/namecoin
@@ -233,7 +236,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
-		lang/v
+		multimedia/obs-ndi
 		security/palisade
 		math/fplll
 		math/maxima

@@ -33,10 +33,10 @@ jail_vars_init () {
 	echo 'jail path          JAIL_PATH      ' ${JAIL_PATH:=/var/jail/$JAIL_NAME}
 	
 	local n= i=; case $JAIL_TYPE in
-		solitary)    n=0.255.0.1/16;        i=lo0;;
 		clone)       n=127.0.0.1/16;        i=lo0;;
-		private)     n=172.16.0.1/16;       i=lo1;;
-		public)      n=172.24.0.1/16;       i=lo2;;
+		solitary)    n=127.1.0.0/16;        i=lo1;;
+		private)     n=127.128.0.0/16;      i=lo1;;
+		public)      n=172.16.0.1/16;       i=tap1;;
 		*)
 			error 22 "JAIL_TYPE (-t) must be solitary (default), private, clone or public.";;
 	esac; : ${JAIL_NET:=$n}; : ${INTERFACE:=$i}
