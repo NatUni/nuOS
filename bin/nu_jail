@@ -18,13 +18,14 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts a:b:C:dfh:i:I:j:mo:p:P:qs:S:t:u:vwx OPT; do case $OPT in
+while getopts a:b:C:dfh:H:i:I:j:mo:p:P:qs:S:t:T:u:vwx OPT; do case $OPT in
 	a) ADMIN_ACCT=$OPTARG;;
 	b) BD_ACCT=$OPTARG;;
 	C) CHROOTDIR=$OPTARG;;
 	d) OPT_DELETE=y;;
 	f) OPT_FORCE_DELETE=y;;
 	h) JAIL_HOST=$OPTARG;;
+	H) push SERVICES $OPTARG;;
 	i) JAIL_IP=$OPTARG;;
 	I) INTERFACE=$OPTARG;;
 	j) JAIL_NAME=$OPTARG;;
@@ -34,8 +35,9 @@ while getopts a:b:C:dfh:i:I:j:mo:p:P:qs:S:t:u:vwx OPT; do case $OPT in
 	P) PUBLIC_INTERFACE=$OPTARG;;
 	q) OPT_QUICK=y;;
 	s) JAIL_SNAP=$OPTARG;;
-	S) push PUBLIC_SERVICE $OPTARG;;
+	S) push PUBLIC_SERVICES $OPTARG;;
 	t) JAIL_TYPE=$OPTARG;;
+	T) push CONNECT_TARGETS $OPTARG;;
 	u) USER_ACCT=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 	w) OPT_RW_SRC=y;;
@@ -210,7 +212,7 @@ EOF
 		;;
 	vnet-nat)
 		rip=${JAIL_IP%.*}.$((${JAIL_IP##*.} - 1))
-		next_epair=$((`{ echo -1; sed -nEe '/^[[:blank:]]*exec.prestart[[:>:]]/{/"ifconfig epair[[:digit:]]+ create"/{s/^.*(epair[[:digit:]]+)/\1/;s/epair([[:digit:]]+).*$/\1/;p;};}' "${CHROOTDIR-}/etc/jail.conf"${dir_add:+.d/*.conf}; } | sort -n | tail -n 1` + 1))
+		next_epair=$((`{ echo -1; sed -nEe '/^[[:blank:]]*exec.prestart[[:>:]]/{/"ifconfig epair[[:digit:]]+ create"/{s/^.*(epair[[:digit:]]+)/\1/;s/epair([[:digit:]]+).*$/\1/;p;};}' "${CHROOTDIR-}"/etc/jail.conf${dir_add:+.template "${CHROOTDIR-}"/etc/jail.conf.d/*.conf}; } | sort -n | tail -n 1` + 1))
 		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	noip_hostname;
 	vnet = "new";
@@ -243,9 +245,47 @@ if srsly "${OPT_RW_SRC-}"; then
 EOF
 fi
 
-if canhas "${PUBLIC_SERVICE-}"; then
+if canhas "${SERVICES-}${CONNECT_TARGETS-}"; then
+	fw_rule_n=$((`{ eko 200; sed -nEe '/^[[:blank:]]*exec.poststart[[:>:]]/{/"[[:<:]]ipfw add 1[[:digit:]][[:digit:]] /{s/^.*[[:<:]]ipfw add (1[[:digit:]][[:digit:]]).*/\1/;p;};}' "${CHROOTDIR-}"/etc/jail.conf${dir_add:+.template "${CHROOTDIR-}"/etc/jail.conf.d/*.conf}; } | sort -n -u | head -n 1` - 1))
+	while ipfw list $fw_rule_n; do
+		[ $fw_rule_n -gt 50 ] || error 84 "too many existing jail services, contact support for guidance"
+		fw_rule_n=$(($fw_rule_n - 1))
+	done
+fi
+
+if canhas "${SERVICES-}"; then
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
+	exec.poststart += "ipfw add $fw_rule_n allow ip from $JAIL_NET to $JAIL_NAME.jail `eko $SERVICES | sed -e 's/ /, /g'` keep-state :$JAIL_NAME";
+EOF
+fi
+if canhas "${CONNECT_TARGETS-}"; then
+	for tgt in $CONNECT_TARGETS; do
+		tp= sp=
+		case `eko $tgt | tr -dc :` in
+			::) sp=${tgt%%:*}; tgt=${tgt#$sp:} ;&
+			:) tp=${tgt##*:}; tgt=${tgt%:$tp} ;;
+		esac
+		[ _$sp != _= ] || sp=$tp
+		case $tgt in
+			''|+|!@) tgt="not $JAIL_NET";;
+			@) tgt=$JAIL_NET;;
+			!*) tgt="not ${tgt#!}";;
+			'*') tgt=any;;
+		esac
+		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
+	exec.poststart += "ipfw add $fw_rule_n allow ip from $JAIL_IP${sp:+ $sp} to $tgt${tp:+ $tp} keep-state";
+EOF
+	done
+fi
+if canhas "${fw_rule_n-}"; then
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
+	exec.prestop += "ipfw delete $fw_rule_n";
+EOF
+fi
+
+if canhas "${PUBLIC_SERVICES-}"; then
 	nat_conf=`
-		echo $PUBLIC_SERVICE | xargs -n1 | while IFS=: read -r alias port int_port; do
+		echo $PUBLIC_SERVICES | xargs -n1 | while IFS=: read -r alias port int_port; do
 			for proto in tcp udp; do
 				echo redirect_port $proto $JAIL_NAME.jail:${int_port:-$port} $alias:$port
 			done
@@ -255,14 +295,10 @@ if canhas "${PUBLIC_SERVICE-}"; then
 	noip_hostname;
 	host.hostname = "$JAIL_HOST";
 	ip4.addr = "$JAIL_IP";
-	exec.poststart += "\`ipfw nat show config | grep -w \"config if $PUBLIC_INTERFACE\"\` $nat_conf";
+	exec.poststart += "\`ipfw nat show config | grep -w \"config if $PUBLIC_INTERFACE\" | tail -n 1\` $nat_conf";
 	exec.prestop += "\`ipfw nat show config | grep -w \"config if $PUBLIC_INTERFACE\" | sed -E -e \"s/ redirect_port [[:graph:]]+ \${ip4.addr}:[[:digit:]]+ [[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+:[[:digit:]]+//g\"\`";
 EOF
 fi
-
-cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
-}
-EOF
 
 if [ $JAIL_TYPE = clone ]; then
 	cat >> "${CHROOTDIR-}$JAIL_PATH/etc/rc.conf.local" <<EOF
@@ -275,5 +311,10 @@ admin_install "${CHROOTDIR-}$JAIL_PATH"
 if [ -f "${CHROOTDIR-}/etc/resolv.conf" ]; then
 	cp -a -v "${CHROOTDIR-}/etc/resolv.conf" "${CHROOTDIR-}$JAIL_PATH/etc/"
 fi
+
+cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
+}
+EOF
+
 
 echo "Initialization of $JAIL_HOST running $JAIL_OS is complete."
