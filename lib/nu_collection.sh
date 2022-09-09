@@ -132,6 +132,7 @@ collection_vars_init () {
 		databases/redis
 		lang/go
 		lang/squeak
+		lang/gravity
 		lang/crystal
 		www/npm
 		lang/php81-extensions
@@ -144,6 +145,7 @@ collection_vars_init () {
 		net/rabbitmq
 		lang/erlang-runtime25
 		lang/elixir
+		devel/stack
 		net/kamailio
 		sysutils/ipfs-go
 		security/tor
