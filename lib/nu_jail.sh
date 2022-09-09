@@ -36,15 +36,15 @@ jail_vars_init () {
 		clone)       n=127.0.0.1/16;        i=lo0;;
 		solitary)    n=127.1.0.0/16;        i=lo1;;
 		private)     n=127.128.0.0/16;      i=lo1;;
-		public)      n=172.16.0.1/16;       i=tap1;;
+		vnet)        n=172.16.0.1/16;       i=epair{n}b;;
 		*)
 			error 22 "JAIL_TYPE (-t) must be solitary (default), private, clone or public.";;
 	esac; : ${JAIL_NET:=$n}; : ${INTERFACE:=$i}
 	
 	: ${PUBLIC_INTERFACE:=net0}
 	case "${JAIL_IP-}" in
-		'') JAIL_IP=`next_available_jail_ip`;;
-		[xX].[xX].*) JAIL_IP=${JAIL_NET%.*.*}.${JAIL_IP#?.?.};;
+		'')           JAIL_IP=`next_available_jail_ip`;;
+		[xX].[xX].*)  JAIL_IP=${JAIL_NET%.*.*}.${JAIL_IP#?.?.};;
 	esac
 	
 	echo 'net interface   -I INTERFACE      ' ${INTERFACE:-n/a}
@@ -64,6 +64,11 @@ last_used_jail_ip () {
 }
 
 next_available_jail_ip () {
-	local net=${JAIL_NET%.*.*} ip=${1:-`last_used_jail_ip`}
-	int_to_ip $((`ip_to_int $ip` + 1))
+	local incr= ip=
+	case $INTERFACE in
+		*{n}*)  incr=2;;
+		*)      incr=1;;
+	esac
+	ip=${1:-`last_used_jail_ip`}
+	int_to_ip $((`ip_to_int $ip` + $incr))
 }

@@ -192,10 +192,6 @@ if [ -n "${OPT_MOUNT_FSTAB-}" ]; then
 EOF
 fi
 
-cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
-	interface = "$INTERFACE";
-EOF
-
 case $JAIL_TYPE in
 	clone)
 		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<'EOF'
@@ -210,7 +206,7 @@ EOF
 		cat "$tempfile" >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}"
 		retire_tmp tempfile
 		;;
-	vnet-nat)
+	vnet)
 		rip=${JAIL_IP%.*}.$((${JAIL_IP##*.} - 1))
 		next_epair=$((`{ echo -1; sed -nEe '/^[[:blank:]]*exec.prestart[[:>:]]/{/"ifconfig epair[[:digit:]]+ create"/{s/^.*(epair[[:digit:]]+)/\1/;s/epair([[:digit:]]+).*$/\1/;p;};}' "${CHROOTDIR-}"/etc/jail.conf${dir_add:+.template "${CHROOTDIR-}"/etc/jail.conf.d/*.conf}; } | sort -n | tail -n 1` + 1))
 		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
@@ -224,6 +220,11 @@ EOF
 	exec.start += "route add default $rip";
 	exec.start += "/bin/sh /etc/rc";
 	exec.poststop += "ifconfig epair${next_epair}a destroy";
+EOF
+		;;
+	*)
+		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
+	interface = "$INTERFACE";
 EOF
 		;;
 esac
@@ -284,6 +285,9 @@ EOF
 fi
 
 if canhas "${PUBLIC_SERVICES-}"; then
+	warn '****************************************************'
+	warn "* Setting up Public (-S)ervices on interface: $PUBLIC_INTERFACE *"
+	warn '****************************************************'
 	nat_conf=`
 		echo $PUBLIC_SERVICES | xargs -n1 | while IFS=: read -r alias port int_port; do
 			for proto in tcp udp; do
@@ -292,11 +296,9 @@ if canhas "${PUBLIC_SERVICES-}"; then
 		done | xargs`
 	
 	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
-	noip_hostname;
-	host.hostname = "$JAIL_HOST";
-	ip4.addr = "$JAIL_IP";
+	\$ip4_assignment = "$JAIL_IP";
 	exec.poststart += "\`ipfw nat show config | grep -w \"config if $PUBLIC_INTERFACE\" | tail -n 1\` $nat_conf";
-	exec.prestop += "\`ipfw nat show config | grep -w \"config if $PUBLIC_INTERFACE\" | sed -E -e \"s/ redirect_port [[:graph:]]+ \${ip4.addr}:[[:digit:]]+ [[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+:[[:digit:]]+//g\"\`";
+	exec.prestop += "\`ipfw nat show config | grep -w \"config if $PUBLIC_INTERFACE\" | sed -E -e \"s/ redirect_port [[:graph:]]+ \$ip4_assignment:[[:digit:]]+ [[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+:[[:digit:]]+//g\"\`";
 EOF
 fi
 
