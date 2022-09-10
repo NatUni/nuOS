@@ -18,7 +18,7 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts a:A:b:C:dh:i:k:m:s:vz: OPT; do case $OPT in
+while getopts a:A:b:C:dh:i:k:l:m:s:vz: OPT; do case $OPT in
 	a) ALGORITHM=$OPTARG;;
 	A) ALTERNATE=$OPTARG;;
 	b) SIG_BITS=$OPTARG;;
@@ -27,6 +27,7 @@ while getopts a:A:b:C:dh:i:k:m:s:vz: OPT; do case $OPT in
 	h) HOST_NAME=$OPTARG;;
 	i) push PUB_IPS $OPTARG;;
 	k) KSK_BITS=$OPTARG;;
+	l) LISTEN=$OPTARG;;
 	m) push MASTERS $OPTARG;;
 	M) MODE=$OPTARG; case $MODE in
 		master|slave) ;; *) exit 22; esac;;
@@ -50,6 +51,7 @@ fi
 [ -z "${MASTERS-}" -o $MODE = slave ] # so then, if we have no masters then we must be a master
 [ -z "${SLAVES-}" -o $MODE = master ] # and vice versa
 [ -z "${OPT_DNSSEC-}" -o $MODE = master ] # only the master signs
+echo 'listen ip       -l LISTEN         ' ${LISTEN:=127.0.0.1}
 echo 'mode            -M MODE           ' $MODE
 echo 'master ips      -m MASTERS        ' ${MASTERS-<none>}
 echo 'slave ips       -s SLAVES         ' ${SLAVES-<none>}
@@ -71,6 +73,11 @@ echo
 maybe_yell
 
 
+case $LISTEN in
+	localhost) LISTEN=127.0.0.1;;
+	all) LISTEN=0.0.0.0;;
+esac
+
 ETC="${CHROOTDIR-}/usr/local/etc/knot"
 sufx=${ALTERNATE:+_${ALTERNATE}}
 if [ ! -f "$ETC/example.com.zone.sample" ]; then
@@ -89,15 +96,15 @@ case $MODE in
 	;;
 esac
 
-sed -nEe '
-	/^server:/a\
+sed -nEe "
+	/^server:/a\\
     tcp-fastopen: on
-	/^server:/,/^$/{
-		s/^[[:blank:]]*#?[[:blank:]]*user:.*$/    user: knot:knot/
-		s/^[[:blank:]]*#?[[:blank:]]*listen:.*$/    listen: [ 127.0.0.1@53 ]/
+	/^server:/,/^\$/{
+		s/^[[:blank:]]*#?[[:blank:]]*user:.*\$/    user: knot:knot/
+		s/^[[:blank:]]*#?[[:blank:]]*listen:.*\$/    listen: [ $LISTEN@53 ]/
 		p
 	}
-	/^log:/,/^$/p' "$ETC/knot.conf.sample" >| "$ETC/knot$sufx.conf"
+	/^log:/,/^\$/p" "$ETC/knot.conf.sample" >| "$ETC/knot$sufx.conf"
 
 if [ -n "${MASTERS-}${SLAVES-}" ]; then
 	for h in ${MASTERS-}${SLAVES-}; do

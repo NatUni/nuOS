@@ -68,7 +68,7 @@ EOF
 }
 
 remove_our_jail_from_hostfile () {
-	sed -i '' -E -e "/^[^#]*[[:<:]]$JAIL_NAME\\.jail[[:>:]]/d" "$1"
+	sed -i '' -E -e "/^[^#]*[[:<:]]$JAIL_NAME\\.jail[[:>:]]/d;/^[^#]*[[:<:]]$JAIL_NAME\\.guard[[:>:]]/d" "$1"
 }
 
 unmount_our_jail_pseudofs () {
@@ -209,6 +209,9 @@ EOF
 	vnet)
 		rip=${JAIL_IP%.*}.$((${JAIL_IP##*.} - 1))
 		next_epair=$((`{ echo -1; sed -nEe '/^[[:blank:]]*exec.prestart[[:>:]]/{/"ifconfig epair[[:digit:]]+ create"/{s/^.*(epair[[:digit:]]+)/\1/;s/epair([[:digit:]]+).*$/\1/;p;};}' "${CHROOTDIR-}"/etc/jail.conf${dir_add:+.template "${CHROOTDIR-}"/etc/jail.conf.d/*.conf}; } | sort -n | tail -n 1` + 1))
+		sed -i '' -e "\$i\\
+$rip		$JAIL_NAME.guard.$HOSTNAME $JAIL_NAME.guard
+		" "${CHROOTDIR-}/etc/hosts"
 		cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	noip_hostname;
 	vnet = "new";
@@ -280,7 +283,7 @@ EOF
 fi
 if canhas "${fw_rule_n-}"; then
 	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
-	exec.prestop += "ipfw delete $fw_rule_n";
+	exec.prestop += "ipfw delete $fw_rule_n || true";
 EOF
 fi
 

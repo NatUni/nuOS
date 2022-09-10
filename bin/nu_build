@@ -194,9 +194,6 @@ firewall_enable="YES"
 firewall_type="open"
 firewall_nat_flags="same_ports reset"
 firewall_nat_interface="net0"
-cloned_interfaces="tap0 bridge0 tap1 lo1"
-ifconfig_bridge0="addm net0 addm tap0 up"
-ifconfig_lo1="inet 127.128.0.0 netmask 0xffff0000"
 devfs_load_rulesets="YES"
 sendmail_submit_enable="NO"
 sendmail_outbound_enable="NO"
@@ -234,10 +231,6 @@ ifconfig_net0="up -rxcsum -rxcsum6 -txcsum -txcsum6 -lro -tso -vlanhwtso"
 EOF
 	
 	cat >> $pool_mnt/etc/sysctl.conf <<'EOF'
-
-# Enable TCP Segmentation Offload
-# FreeBSD 11.2 default: 1
-net.inet.tcp.tso=0
 
 # Maximum number of IPv4 fragment reassembly queue entries
 # FreeBSD 11.2 default: 31311
@@ -456,11 +449,11 @@ EOF
 	mkdir $pool_mnt/etc/nuos
 	if [ -z "${OPT_NOBRAND-}" ]; then
 		
-		baseos_type_lc=`echo "$BASEOS_TYPE" | tr '[:upper:]' '[:lower:]'`
-		baseos_info_url="https://$baseos_type_lc.org"
-		
 		sed -i '' -Ee 's/^(The compilation of software known as )FreeBSD /\1nuOS /;/^Copyright\>.*\<The FreeBSD Project\>/a\
 Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.' $pool_mnt/COPYRIGHT
+		
+		baseos_type_lc=`echo "$BASEOS_TYPE" | tr '[:upper:]' '[:lower:]'`
+		baseos_info_url="https://$baseos_type_lc.org"
 		
 		mv -n $pool_mnt/etc/motd${new_motd:+.template} $pool_mnt/etc/motd${new_motd:+.template}.$baseos_type_lc
 		if ! srsly ${new_motd-}; then
