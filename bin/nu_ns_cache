@@ -16,9 +16,10 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts C:fsSvV OPT; do case $OPT in
+while getopts C:fl:sSvV OPT; do case $OPT in
 	C) CHROOTDIR=$OPTARG;;
 	f) OPT_FORCE=y;;
+	l) LISTEN=$OPTARG;;
 	s) OPT_SELF_SUFFICIENT=y;;
 	S) OPT_INSECURE_SEARCH=y;;
 	v) OPT_VERBOSE=y;;
@@ -30,6 +31,11 @@ esac; done; shift $(($OPTIND-1))
 
 nuos_init
 
+echo    'listen ip       -l LISTEN              '  ${LISTEN:=localhost}
+case $LISTEN in
+	localhost) LISTEN=127.0.0.1; : ${ALLOW:=127.0.0.0/8};;
+	all) LISTEN=0.0.0.0; : ${ALLOW:=0.0.0.0/0};;
+esac
 echo -n 'heavyweight     -s OPT_SELF_SUFFICIENT  ' && [ -n "${OPT_SELF_SUFFICIENT-}" ] && echo set || echo null
 echo -n 'default search  -S OPT_INSECURE_SEARCH  ' && [ -n "${OPT_INSECURE_SEARCH-}" ] && echo set || echo null
 echo -n 'accept poison   -V OPT_NOVERIFY         ' && [ -n "${OPT_NOVERIFY-}" ] && echo set || echo null
@@ -37,17 +43,31 @@ echo
 
 maybe_yell
 
+
 canhas "${OPT_INSECURE_SEARCH-}" || secure_search=y
+[ -z "${OPT_NOVERIFY-}" -o -n "${OPT_FORCE-}" ]
 
-
+[ 0.0.0.0/0 = $ALLOW ] || refuse=0.0.0.0/0
 [ -f "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf" ] || cp "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf.sample" "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf"
 diff -q "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf.sample" "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf" && [ ! -s "${CHROOTDIR-}/etc/resolvconf.conf" ]
-[ -z "${OPT_NOVERIFY-}" -o -n "${OPT_FORCE-}" ]
 
 cat >> "${CHROOTDIR-}/etc/resolvconf.conf" <<'EOF'
 resolv_conf="/dev/null"
 EOF
 
+sed -i '' -Ee "
+	/^server:/,/^[[:graph:]]/{
+		/^[[:blank:]]*#[[:blank:]]*interface:/,/^[[:blank:]]*\$/{
+			/^[[:blank:]]*\$/i\\
+	interface: $LISTEN
+		}
+		/^[[:blank:]]*#[[:blank:]]*access-control:/,/^[[:blank:]]*\$/{
+			/^[[:blank:]]*\$/i\\
+${refuse:+	access-control: $refuse refuse\\
+}	access-control: $ALLOW allow
+		}
+	}
+" "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf"
 
 if [ -n "${OPT_NOVERIFY-}" ]; then
 	sed -i '' -Ee '

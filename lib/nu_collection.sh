@@ -200,7 +200,7 @@ collection_vars_init () {
 	
 	COLL_desktop='
 		server
-		graphics/drm-fbsd13-kmod
+		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
 		editors/libreoffice
 		graphics/gimp
@@ -208,6 +208,7 @@ collection_vars_init () {
 		graphics/inkscape
 		audio/audacity
 		print/scribus-devel
+		deskutils/calibre
 		print/fontforge
 		x11/xorg
 		x11/kde5
