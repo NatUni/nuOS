@@ -70,7 +70,7 @@ collection_vars_init () {
 		misc/buffer
 		sysutils/pipemeter
 		archivers/zstd
-		archivers/ppmd-7z
+		archivers/7-zip
 		sysutils/pciutils
 		sysutils/dmidecode
 		sysutils/smartmontools
@@ -141,6 +141,7 @@ collection_vars_init () {
 		www/apache24
 		www/nginx
 		net/haproxy
+		security/snort3
 		net-im/ejabberd
 		net/rabbitmq
 		lang/erlang-runtime25
