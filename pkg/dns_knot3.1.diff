@@ -1,9 +1,0 @@
---- ../knot3.orig/Makefile	2022-09-10 13:28:42.072873000 -0400
-+++ Makefile	2022-09-10 15:46:12.999293000 -0400
-@@ -1,5 +1,5 @@
- PORTNAME=	knot
--DISTVERSION=	3.2.0
-+DISTVERSION=	3.2.1
- CATEGORIES=	dns
- MASTER_SITES=	https://secure.nic.cz/files/knot-dns/ \
- 		https://dns.company/downloads/knot-dns/
