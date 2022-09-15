@@ -212,6 +212,7 @@ collection_vars_init () {
 		deskutils/calibre
 		print/fontforge
 		x11/xorg
+		x11/gnome
 		x11/kde5
 		x11/sddm
 		lang/pharo
@@ -221,6 +222,7 @@ collection_vars_init () {
 		net/x11vnc
 		net/tightvnc
 		www/firefox
+		www/chromium
 		java/icedtea-web
 		mail/thunderbird
 		net/quiterss
