@@ -450,7 +450,7 @@ save_git_info () {
 		opt_rev=y; shift
 	fi
 	code_dir="${1:-`realpath .`}"
-	if ! [ "$code_dir/.git/info.txt" -nt "$code_dir/.git/index" ]; then
+	if ! [ "$code_dir/.git/info.txt" -nt "$code_dir/.git/FETCH_HEAD" ]; then
 		which git > /dev/null
 		echo Commit: "`env TZ=UTC git -C "$code_dir" rev-parse HEAD`" >| "$code_dir/.git/info.txt"
 	fi
