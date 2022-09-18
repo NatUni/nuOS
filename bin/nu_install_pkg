@@ -85,6 +85,10 @@ fi
 
 for port in `grep / "$deps"`; do
 	underscore port
+	while [ -f "$metainfo_dir/$port_.substitute" ]; do
+		port=`cat "$metainfo_dir/$port_.substitute"`
+		underscore port
+	done
 	uni=${port_%%@*}
 	flavor=
 	case $port in

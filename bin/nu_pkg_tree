@@ -62,6 +62,9 @@ done
 walk () {
 	local node=$1
 	for dep in `cat "$dir/$node/dependencies/collection" "$dir/$node/dependencies/$recurse" 2> /dev/null | underscore`; do
+		while [ -f "$metainfo_dir/$dep.substitute" ]; do
+			dep=`cat "$metainfo_dir/$dep.substitute" | underscore`
+		done
 		[ -f "$work_dir/$dep" ] || walk $dep
 	done
 	echo $node
@@ -70,6 +73,7 @@ walk () {
 	[ $# -eq 0 ] || walk $1
 }
 
+metainfo_dir="$(dirname "$(realpath "$0")")/../pkg"
 require_tmp -d work_dir
 
 if [ -n "${INPUT-}" ]; then
@@ -128,7 +132,6 @@ if [ -n "${out_dir-}" ]; then
 	[ ! -e "$out_dir" -o -L "$out_dir" ] || ([ -d "$out_dir" ] && [ "`ls -a "$out_dir" | xargs`" = '. ..' ])
 fi
 ports_tag > "$work_dir/tag"
-metainfo_dir="$(dirname "$(realpath "$0")")/../pkg"
 main () {
 	local depth=$((${depth--1}+1))
 	[ $depth -gt 0 ] || echo $@ | xargs -n1 > "$work_dir/root"
@@ -143,10 +146,10 @@ main () {
 		local arg_
 		underscore arg
 		local dep_type=
-		if [ -f "$metainfo_dir/$arg_.substitute" ]; then
+		while [ -f "$metainfo_dir/$arg_.substitute" ]; do
 			arg=`cat "$metainfo_dir/$arg_.substitute"`
 			underscore arg
-		fi
+		done
 		if [ ! -d "$work_dir/$arg_/dependencies" ]; then
 			mkdir -p "$work_dir/$arg_/dependencies"
 			case $arg in

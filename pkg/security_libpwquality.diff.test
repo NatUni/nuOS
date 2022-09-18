@@ -1,0 +1,1 @@
+grep -A2 post-stage Makefile | grep _OSRELEASE | ! grep -qw egg-info
