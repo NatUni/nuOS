@@ -51,6 +51,7 @@ collection_vars_init () {
 		pkg
 		net/ipxe
 		net/isboot-kmod
+		net/realtek-re-kmod
 		sysutils/pefs-kmod
 		security/openssh-portable@hpn
 		security/wpa_supplicant
@@ -79,6 +80,7 @@ collection_vars_init () {
 		sysutils/lsof
 		textproc/jq
 		textproc/xsv-rs
+		sysutils/ztop
 		sysutils/bhyve-firmware
 		sysutils/grub2-bhyve
 	'
@@ -92,6 +94,7 @@ collection_vars_init () {
 		textproc/gsed
 		devel/gmake
 		sysutils/coreutils
+		textproc/ydiff
 		lang/v
 		lang/expect
 		math/convertall
@@ -127,8 +130,9 @@ collection_vars_init () {
 		mail/cyrus-imapd34
 		security/cyrus-sasl2-saslauthd
 		databases/postgresql14-server
+		databases/postgis33
+		databases/pg_activity
 		databases/mysql80-server
-		databases/mongodb50
 		databases/redis
 		lang/go
 		lang/squeak
@@ -142,6 +146,8 @@ collection_vars_init () {
 		www/nginx
 		net/haproxy
 		security/snort3
+		security/barnyard2
+		security/suricata
 		net-im/ejabberd
 		net/rabbitmq
 		lang/erlang-runtime25
@@ -219,6 +225,7 @@ collection_vars_init () {
 		net-p2p/bitcoin
 		net-p2p/litecoin
 		net-p2p/namecoin
+		x11/kitty
 		net/x11vnc
 		net/tightvnc
 		www/firefox
@@ -242,8 +249,11 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		databases/mongodb60
 		multimedia/obs-ndi
+		games/openarena
 		security/palisade
+		cad/opencascade
 		math/fplll
 		math/maxima
 		audio/zrythm
