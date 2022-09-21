@@ -166,7 +166,9 @@ pkg_name () {
 		esac
 		metainfo_dir="$(dirname "$(realpath "$0")")/../pkg"
 		makeargs="$metainfo_dir/$port_.makeargs"
-		(cd /usr/ports/${port%%@*} && make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -VPKGNAME)
+		cd /usr/ports/${port%%@*}
+		make __MAKE_CONF="$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -v PKGNAME
+		cd "$OLDPWD"
 		$retire_make_conf_cmd make_conf
 	fi
 }
@@ -187,47 +189,6 @@ pkg_orgn () {
 	else
 		(cd /usr/ports && make search name=$pkg | sed -nEe "/^Port:[[:blank:]]*$pkg\$/{N;s|^.*\nPath:[[:blank:]]*/usr/ports/(.*)\$|\1|;p;}")
 	fi
-}
-
-port_deps () {
-	for new in def opt lib run build fetch extract patch; do
-		eval local ret_${new}_var=\$1; shift
-		if eval [ \"\$ret_${new}_var\" != _ ]; then
-			eval local ret_${new}_tmp=
-			eval require_tmp -l \$ret_${new}_var ret_${new}_tmp
-		fi
-	done
-	local port=$1; shift
-
-	[ $# = 0 ]
-
-	local port_dir=/usr/ports/${port%%@*}
-	[ -d $port_dir ]
-
-	local port_= metainfo_dir= makeargs= make_conf= retire_make_conf_cmd= flavor=
-	prepare_make_conf make_conf retire_make_conf_cmd
-	case $port in
-		*@*)
-			flavor=${port##*@}
-		;;
-	esac
-	metainfo_dir="$(dirname "$(realpath "$0")")/../pkg"
-	port_=`echo $port | tr / _`
-	makeargs="$metainfo_dir/$port_.makeargs"
-	[ -z "${ret_def_tmp-}" ] || (cd $port_dir && make "__MAKE_CONF=$make_conf" PORT_DBDIR=/var/empty ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -D BATCH showconfig) >| "$ret_def_tmp"
-	[ -z "${ret_opt_tmp-}" ] || (cd $port_dir && make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -D BATCH showconfig) >| "$ret_opt_tmp"
-	for action in lib run build fetch extract patch; do
-		eval local outfile=\"\$ret_${action}_tmp\"
-		if [ $action = build -a $port != ports-mgmt/pkg ]; then
-			echo ports-mgmt/pkg >| "$outfile"
-		fi
-		(cd $port_dir && make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -D BATCH -V $(echo $action | tr [:lower:] [:upper:])_DEPENDS | xargs -n 1 | cut -d : -f 2) >> "$outfile"
-	done
-	$retire_make_conf_cmd make_conf
-
-	for new in def opt lib run build fetch extract patch; do
-		eval [ \"\$ret_${new}_var\" = _ ] || eval setvar \$ret_${new}_var \"\$ret_${new}_tmp\"
-	done
 }
 
 pkg_deps () {

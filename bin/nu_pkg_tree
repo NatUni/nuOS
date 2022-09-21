@@ -16,7 +16,7 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts Dfi:ko:NOpRSrxv OPT; do case $OPT in
+while getopts Dfi:ko:OpRSrxv OPT; do case $OPT in
 	D) OPT_DEBUG=y;;
 	f) OPT_FILENAME=y;;
 	i) INPUT=$OPTARG;;
@@ -25,7 +25,6 @@ while getopts Dfi:ko:NOpRSrxv OPT; do case $OPT in
 		dot|xml|txt|tbl|dir)
 			setvar out_$type "$file";;
 		*) exit 22; esac; shift $OPTIND;;
-	N) OPT_NONAME=y;;
 	O) OPT_NOOPTIONS=y;;
 	p) OPT_PKGNAME=y;;
 	R) OPT_NORECURSE=y;;
@@ -52,22 +51,17 @@ else
 	recurse=all
 fi
 
-for type in dot xml txt tbl; do
-	if eval [ -n \"\${out_$type-}\" ]; then
-		eval [ ! -e \"\$out_$type\" -o ! -s \"\$out_$type\" ]
-		require_tmp tmp_$type
-	fi
-done
-
 walk () {
-	local node=$1
-	for dep in `cat "$dir/$node/dependencies/collection" "$dir/$node/dependencies/$recurse" 2> /dev/null | underscore`; do
-		while [ -f "$metainfo_dir/$dep.substitute" ]; do
-			dep=`cat "$metainfo_dir/$dep.substitute" | underscore`
+	# global work_dir dir recurse
+	local node=$1 \
+		dep_=
+	for dep_ in `cat "$dir/$node/dependencies/collection" "$dir/$node/dependencies/$recurse" 2> /dev/null | underscore`; do
+		while [ -f "$metainfo_dir/$dep_.substitute" ]; do
+			dep_=`cat "$metainfo_dir/$dep_.substitute" | underscore`
 		done
-		[ -f "$work_dir/$dep" ] || walk $dep
+		[ -f "$work_dir/$dep_" ] || walk $dep_
 	done
-	echo $node
+	eko $node
 	touch "$work_dir/$node"
 	shift
 	[ $# -eq 0 ] || walk $1
@@ -82,7 +76,7 @@ if [ -n "${INPUT-}" ]; then
 		if [ $# -eq 0 ]; then
 			start="`cat "$INPUT/root" | underscore`"
 		else
-			start="`echo $@ | underscore`"
+			start="`eko $@ | underscore`"
 		fi
 	elif [ -f "$INPUT/name" ]; then
 		dir="`dirname "$INPUT"`"
@@ -114,17 +108,19 @@ if [ -n "${INPUT-}" ]; then
 	else
 		walk $start | sed -e s+_+/+
 	fi
-	retire_tmp ${OPT_KEEP:+-k} work_dir
 	exit
 fi
 
 require_ports_tree
+prepare_make_conf make_conf retire_make_conf_cmd
 
-if [ -n "${OPT_NOOPTIONS-}" ]; then
-	opt_args="_ _"
-else
-	opt_args="def_opts my_opts"
-fi
+for type in dot xml txt tbl; do
+	if eval [ -n \"\${out_$type-}\" ]; then
+		eval [ ! -e \"\$out_$type\" -o ! -s \"\$out_$type\" ]
+		require_tmp tmp_$type
+	fi
+done
+
 if [ -n "${out_dir-}" ]; then
 	while [ "$out_dir" != "${out_dir%/}" ]; do
 		out_dir=${out_dir%/}
@@ -132,20 +128,37 @@ if [ -n "${out_dir-}" ]; then
 	[ ! -e "$out_dir" -o -L "$out_dir" ] || ([ -d "$out_dir" ] && [ "`ls -a "$out_dir" | xargs`" = '. ..' ])
 fi
 ports_tag > "$work_dir/tag"
+
+mark_dependant () {
+	# global work_dir
+	local port=$1 action=$2 needs=$3 \
+		needs_=
+	underscore needs
+	mkdir -p "$work_dir/$needs_/dependants"
+	eko $port >> "$work_dir/$needs_/dependants/$action"
+}
+
 main () {
-	local depth=$((${depth--1}+1))
-	[ $depth -gt 0 ] || echo $@ | xargs -n1 > "$work_dir/root"
-	mark_as_dependant () {
-		local dep_
-		underscore dep
-		mkdir -p "$work_dir/$dep_/dependants"
-		echo $arg >> "$work_dir/$dep_/dependants/$dep_type"
-	}
-	local arg=
+	local depth=$((${depth--1}+1)) \
+		arg= arg_= \
+		port= port_= port_dir= \
+		collection= \
+		makeargs= \
+		flavor= \
+		port_data= \
+		action= \
+		dep= dep_= \
+		deps= these_deps= \
+		def_opts= my_opts= \
+		opts_diff= \
+		lib_deps= run_deps= build_deps= \
+		fetch_deps= extract_deps= patch_deps= \
+		buildonly_deps= use_deps= all_deps= \
+		master= master_=
+	
+	[ $depth -gt 0 ] || eko $@ | xargs -n1 > "$work_dir/root"
 	for arg in $@; do
-		local arg_
 		underscore arg
-		local dep_type=
 		while [ -f "$metainfo_dir/$arg_.substitute" ]; do
 			arg=`cat "$metainfo_dir/$arg_.substitute"`
 			underscore arg
@@ -154,84 +167,143 @@ main () {
 			mkdir -p "$work_dir/$arg_/dependencies"
 			case $arg in
 				[^/]*/*)
-					if [ -z "${OPT_NONAME-}" -a ! -e "$work_dir/$arg_/name" ]; then
-						pkg_name $arg > "$work_dir/$arg_/name"
+					port=$arg
+					underscore port
+											
+					port_dir=/usr/ports/${port%%@*}
+					[ -d $port_dir ]
+					
+					case $port in
+						*@*) flavor=${port##*@};;
+						*) flavor=
+					esac
+					underscore port
+					makeargs="$metainfo_dir/$port_.makeargs"
+					
+					cd "$port_dir"
+					if ! canhas "${OPT_NOOPTIONS-}"; then
+						require_tmp def_opts
+						make __MAKE_CONF="$make_conf" PORT_DBDIR=/var/empty \
+							${flavor:+FLAVOR=$flavor} \
+							`cat "$makeargs" 2>/dev/null` \
+							-D BATCH \
+							showconfig \
+								>| "$def_opts"
+						require_tmp my_opts
+						make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" \
+							${flavor:+FLAVOR=$flavor} \
+							`cat "$makeargs" 2>/dev/null` \
+							-D BATCH showconfig \
+								>| "$my_opts"
 					fi
+					
+					require_tmp port_data
+					
+					make __MAKE_CONF="$make_conf" PORT_DBDIR="$PORT_DBDIR" \
+						${flavor:+FLAVOR=$flavor} \
+						`cat "$makeargs" 2>/dev/null` \
+						-D BATCH \
+						-v 'PKGNAME:C/^.*://:S/^/n:/' \
+						-v 'LIB_DEPENDS:C/^.*://:C/^./l:&/' \
+						-v 'RUN_DEPENDS:C/^.*://:C/^./r:&/' \
+						-v 'BUILD_DEPENDS:C/^.*://:C/^./b:&/' \
+						-v 'FETCH_DEPENDS:C/^.*://:C/^./f:&/' \
+						-v 'EXTRACT_DEPENDS:C/^.*://:C/^./x:&/' \
+						-v 'PATCH_DEPENDS:C/^.*://:C/^./p:&/' \
+						-v '${SLAVE_PORT:N[nN][oO]:C/.+/${MASTERDIR}/:tA:C+^/usr/ports/+s:+}' \
+							| xargs -n 1 >| "$port_data"
+					cd "$OLDPWD"
+					
+					if [ -e "$work_dir/$port_/name" ]; then
+						[ `cat "$work_dir/$port_/name"` = `grep ^n: "$port_data" | cut -d : -f 2` ]
+					else
+						grep ^n: "$port_data" | cut -d : -f 2 > "$work_dir/$port_/name"
+					fi
+					require_tmp lib_deps
+					grep ^l: "$port_data" | cut -d : -f 2 >| "$lib_deps"
+					require_tmp run_deps
+					grep ^r: "$port_data" | cut -d : -f 2 >| "$run_deps"
+					require_tmp build_deps
+					grep ^b: "$port_data" | cut -d : -f 2 >| "$build_deps"
+					require_tmp fetch_deps
+					grep ^f: "$port_data" | cut -d : -f 2 >| "$fetch_deps"
+					require_tmp extract_deps
+					grep ^x: "$port_data" | cut -d : -f 2 >| "$extract_deps"
+					require_tmp patch_deps
+					grep ^p: "$port_data" | cut -d : -f 2 >| "$patch_deps"
+					if ! srsly "${OPT_NOSLAVE-}"; then
+						master=`grep ^s: "$port_data" | cut -d : -f 2`
+						if canhas $master; then
+							eko $master > "$work_dir/$port_/master"
+						fi
+					fi
+					
+					sets_union use_deps "$lib_deps" "$run_deps"
+					sets_union all_deps "$use_deps" "$build_deps" "$fetch_deps" "$extract_deps" "$patch_deps"
+					sets_sym_diff buildonly_deps "$all_deps" "$use_deps"
 
-					local def_opts= my_opts= lib_deps= run_deps= build_deps= fetch_deps= extract_deps= patch_deps=
-					port_deps $opt_args lib_deps run_deps build_deps fetch_deps extract_deps patch_deps $arg
-					local       all_deps= use_deps=
-					sets_union  use_deps "$lib_deps" "$run_deps"
-					sets_union  all_deps "$use_deps" "$build_deps" "$fetch_deps" "$extract_deps" "$patch_deps"
-					local          buildonly_deps=
-					sets_sym_diff  buildonly_deps  "$all_deps" "$use_deps"
-
-					for dep_type in lib run build fetch extract patch all use buildonly; do
-						eval local dep_file=\"\$${dep_type}_deps\"
-						if [ -s "$dep_file" ]; then
-							cat "$dep_file" > "$work_dir/$arg_/dependencies/$dep_type"
+					for action in lib run build fetch extract patch all use buildonly; do
+						eval these_deps=\"\$${action}_deps\"
+						if [ -s "$these_deps" ]; then
+							cat "$these_deps" > "$work_dir/$port_/dependencies/$action"
 							local dep=
-							for dep in `cat "$dep_file"`; do
-								mark_as_dependant
+							for dep in `cat "$these_deps"`; do
+								mark_dependant $port $action $dep
 							done
 						fi
+						[ $action = $recurse ] || retire_tmp ${action}_deps
 					done
-					retire_tmp build_deps
-					retire_tmp fetch_deps
-					retire_tmp extract_deps
-					retire_tmp patch_deps
-					retire_tmp buildonly_deps
-					if [ -z "${OPT_NOSLAVE-}" ]; then
-						local slave=`cd /usr/ports/${arg%%@*} && make PORT_DBDIR="$PORT_DBDIR" -V SLAVE_PORT`
-						if [ -n "$slave" -a "$slave" != no ]; then
-							local master=$(realpath "`cd /usr/ports/${arg%%@*} && make PORT_DBDIR="$PORT_DBDIR" -V MASTERDIR`")
-							master=${master#/usr/ports/}
-							echo $master > "$work_dir/$arg_/master"
-							local master_
-							underscore master
-							mkdir -p "$work_dir/$master_"
-							if [ -z "${OPT_NONAME-}" -a ! -e "$work_dir/$master_/name" ]; then
-								pkg_name $master > "$work_dir/$master_/name"
-							fi
-							echo $arg >> "$work_dir/$master_/slaves"
-						fi
+
+					if ! canhas ${OPT_NORECURSE-}; then
+						eval local recurse_deps=\"\$${recurse}_deps\"
+						main `cat "$recurse_deps"`
 					fi
-					if [ -z "${OPT_NOOPTIONS-}" ]; then
+
+					if canhas $master; then
+						underscore master
+						if [ ! -e "$work_dir/$master_/name" ]; then
+							mkdir -p "$work_dir/$master_"
+							makeargs="$metainfo_dir/$master_.makeargs"
+							cd /usr/ports/$master
+							make __MAKE_CONF="$make_conf" PORT_DBDIR="$PORT_DBDIR" \
+								${flavor:+FLAVOR=$flavor} \
+								`cat "$makeargs" 2>/dev/null` \
+								-v PKGNAME \
+									> "$work_dir/$master_/name"
+							cd "$OLDPWD"
+						fi
+						eko $port >> "$work_dir/$master_/slaves"
+					fi
+					if ! srsly "${OPT_NOOPTIONS-}"; then
 						if [ -s "$def_opts" ]; then
-							cat "$def_opts" > "$work_dir/$arg_/options"
-							local opts_diff=
+							cat "$def_opts" > "$work_dir/$port_/options"
 							require_tmp opts_diff
 							diff "$def_opts" "$my_opts" >| "$opts_diff" || true
 							if [ -s "$opts_diff" ]; then
-								sed -nEe '/^>[[:blank:]]+([^=]+=[^:]*):?.*$/{s//\1/;p;}' "$opts_diff" > "$work_dir/$arg_/settings"
+								sed -nEe '/^>[[:blank:]]+([^=]+=[^:]*):?.*$/{s//\1/;p;}' "$opts_diff" > "$work_dir/$port_/settings"
 							fi
 							retire_tmp opts_diff
 						fi
 						retire_tmp def_opts
 						retire_tmp my_opts
 					fi
-					if ! canhas ${OPT_NORECURSE-}; then
-						eval local recurse_deps=\"\$${recurse}_deps\"
-						main `cat "$recurse_deps"`
-					fi
-					retire_tmp lib_deps
-					retire_tmp run_deps
-					retire_tmp use_deps
-					retire_tmp all_deps
-					;;
+					retire_tmp port_data
+					
+					retire_tmp ${recurse}_deps
+				;;
 				[^/]*)
-					eval local deps=\"\$COLL_$arg\"
-					dep_type=collection
-					echo $deps | xargs -n 1 >> "$work_dir/$arg_/dependencies/$dep_type"
+					collection=$arg
+					eval deps=\"\$COLL_$collection\"
+					eko $deps | xargs -n 1 >> "$work_dir/$collection/dependencies/collection"
 					for dep in $deps; do
-						mark_as_dependant
+						mark_dependant $collection collection $dep
 					done
 					main $deps
-					;;
+				;;
 				*) exit 22
 			esac
-			echo $arg
-			[ -z "${out_txt-}" ] || echo "`printf %${depth}s | tr ' ' '\t'`$arg" >> "$tmp_txt"
+			eko $arg
+			[ -z "${out_txt-}" ] || eko "`printf %${depth}s | tr ' ' '\t'`$arg" >> "$tmp_txt"
 		fi
 	done
 }
@@ -251,5 +323,7 @@ for type in dot xml txt tbl; do
 	fi
 done
 
-echo
-echo "Port dependency mapping complete."
+$retire_make_conf_cmd make_conf
+
+eko
+eko "Port dependency mapping complete."
