@@ -4,12 +4,12 @@
  CONFLICTS=	snort-2*
  
  OPTIONS_DEFINE=		ADDRESSSANITIZER DEBUG DOCS FLATBUFFERS HYPERSCAN \
--			LARGEPCAP PIE STATICDAQ THREADSANITIZER
-+			LARGEPCAP LIBUNWIND PIE STATICDAQ THREADSANITIZER
- OPTIONS_DEFINE_amd64=	TSC
+-			LARGEPCAP PIE STATICDAQ THREADSANITIZER TSC
++			LARGEPCAP LIBUNWIND PIE STATICDAQ THREADSANITIZER TSC
  OPTIONS_DEFAULT=	STATICDAQ
  OPTIONS_DEFAULT_amd64=	HYPERSCAN
-@@ -42,6 +42,7 @@
+ OPTIONS_SUB=		yes
+@@ -41,6 +41,7 @@
  FLATBUFFERS_DESC=	Enable flatbuffers support
  HYPERSCAN_DESC=		Enable high-performance regular expression lib
  LARGEPCAP_DESC=		Enable support for pcaps larger than 2 GB
@@ -17,7 +17,7 @@
  PIE_DESC=		Enable PIE (Broken)
  STATICDAQ_DESC=		Link static DAQ modules
  THREADSANITIZER_DESC=	Enable thread sanitizer
-@@ -54,12 +55,17 @@
+@@ -53,12 +54,17 @@
  HYPERSCAN_LIB_DEPENDS=		libhs.so:devel/hyperscan
  HYPERSCAN_PLIST_SUB=		HYPERSCAN=""
  HYPERSCAN_PLIST_SUB_OFF=	HYPERSCAN="@comment "
@@ -35,7 +35,7 @@
  .include <bsd.port.options.mk>
  
  .if ${ARCH:Mpowerpc64*}
-@@ -75,5 +81,8 @@
+@@ -74,5 +80,8 @@
  post-patch:
  	${REINPLACE_CMD} -e 's|_LIBDIR}/pkgconfig|_PREFIX}/libdata/pkgconfig|g' \
  		${WRKSRC}/cmake/create_pkg_config.cmake

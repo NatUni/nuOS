@@ -138,6 +138,8 @@ collection_vars_init () {
 		lang/squeak
 		lang/gravity
 		lang/crystal
+		textproc/zed
+		math/or-tools
 		www/npm
 		lang/php81-extensions
 		graphics/pecl-imagick-im7
@@ -148,6 +150,9 @@ collection_vars_init () {
 		security/snort3
 		security/barnyard2
 		security/suricata
+		security/zeek
+		www/matomo
+		www/authelia
 		net-im/ejabberd
 		net/rabbitmq
 		lang/erlang-runtime25
