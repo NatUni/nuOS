@@ -56,195 +56,57 @@ if [ -n "${JAIL_NAME-}" ]; then
 	[ -n "$CHROOTDIR" ] || (echo "Error: Cannot find jail $JAIL_NAME running." && exit 1)
 fi
 
-. "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_ports.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_install.sh"
+load_lib nu_make nu_ports nu_install
+
+make_vars_init
+pkg_suffix_init
 
 maybe_pause
 maybe_yell
+
+cd /var/empty
 
 old_tag=`pkg_db_tag`
 ports_tag=`ports_tag`
 
 [ $ports_tag = $old_tag ]
 
-if echo $ports_tag | grep -q ^r; then
-	ports_svn=y;
+if echo $ports_tag | grep -q ^g; then
+	ports_git=y;
 fi
 
-if [ -n "${OPT_NO_SNAP-}" ]; then
-	require_tmp previous_moved_tbl
-	cat /usr/ports/MOVED >| "$previous_moved_tbl"
-else
+if ! srsly ${OPT_NO_SNAP-}; then
 	packages_dataset=`mount -p | awk '{if ($2=="/usr/ports/packages") print $1}'`
 	snaptime=t`date +%s`
 	zfs snapshot -r $POOL_BOOT_NAME/os/$BASEOS_TYPE/ports@$snaptime $packages_dataset@$snaptime
-	previous_moved_tbl=/usr/ports/.zfs/snapshot/$snaptime/MOVED
 fi
-[ -z "${OPT_ONLY_SNAP-}" ] || exit
+! srsly ${OPT_ONLY_SNAP-} || exit
 
 require_ports_tree -e
 
+
 [ -d "${CHROOTDIR-}$PKG_DBDIR" -a ! -L "${CHROOTDIR-}$PKG_DBDIR" ]
 mv "${CHROOTDIR-}$PKG_DBDIR" "${CHROOTDIR-}$PKG_DBDIR.$old_tag"
-ln -s pkg.$old_tag "${CHROOTDIR-}$PKG_DBDIR"
+ln -s `basename $PKG_DBDIR`.$old_tag "${CHROOTDIR-}$PKG_DBDIR"
 
-require_tmp all_updated_ports
-if [ -n "${ports_svn-}" ]; then
-	which svn > /dev/null
-	require_tmp svn_update_out
-	(
-		cd /var/empty
-		svn revert -R /usr/ports
-		svn status /usr/ports | grep '^\?' | cut -c 9- | grep ^/usr/ports/ | while read -r extra_file; do
-			rm -rv -- "$extra_file"
-		done
-		svn update /usr/ports | tee -a "$svn_update_out"
-	)
-	sed -nEe '/^ *[[:graph:]]+ +\/usr\/ports\//{s///;/^[[:lower:]]/{p;};}' "$svn_update_out" | cut -d / -f 1-2 | sort -u >| "$all_updated_ports"
-	retire_tmp svn_update_out
+if srsly ${ports_git-}; then
+	which git > /dev/null
+	git -C /usr/ports reset --hard HEAD
+	git -C /usr/ports clean -fd
+	git -C /usr/ports pull
 else
 	portsnap fetch
-	require_tmp portsnap_update_out
-	portsnap update | tee -a "$portsnap_update_out"
-	sed -nEe '/^\/usr\/ports\/([[:lower:]].*)\/$/{s//\1/;s/\/$//;p;}' "$portsnap_update_out" >| "$all_updated_ports"
-	retire_tmp portsnap_update_out
+	portsnap update
 fi
 
-require_tmp interested_ports
-ls "${CHROOTDIR-}$PKG_DBDIR" | grep _ | sed -e 's|_|/|' >| "$interested_ports"
-
-require_tmp -d new_to_old
-require_tmp -d old_to_new
-for port in `cat "$interested_ports"`; do
-	port_=`echo $port | tr / _`
-	echo $port > "$new_to_old/$port_"
-	echo $port > "$old_to_new/$port_"
-done
-
-require_tmp old_moved
-grep -v '^#' "$previous_moved_tbl" | cut -d '|' -f 1-3 >| $old_moved
-if [ -n "${OPT_NO_SNAP-}" ]; then
-	retire_tmp previous_moved_tbl
-fi
-require_tmp new_moved
-grep -v '^#' /usr/ports/MOVED | cut -d '|' -f 1-3 >| $new_moved
-require_tmp moved_ports
-diff "$old_moved" "$new_moved" | sed -nEe '/^>[[:blank:]]+/{s///;p;}' >| "$moved_ports"
-retire_tmp old_moved
-retire_tmp new_moved
-
-require_tmp -d deleted_ports_dir
-while IFS='|' read old new date; do
-	old_=`echo $old | tr / _`
-	if [ -e "$new_to_old/$old_" ]; then
-		if [ -n "$new" ]; then
-			echo $new >| "$old_to_new/`cat "$new_to_old/$old_" | tr / _`"
-			new_=`echo $new | tr / _`
-			mv -n "$new_to_old/$old_" "$new_to_old/$new_"
-		else
-			: >| "$old_to_new/`cat "$new_to_old/$port_" | tr / _`"
-			mv -n "$new_to_old/$old_" "$deleted_ports_dir/"
-		fi
-	fi
-done < "$moved_ports"
-retire_tmp moved_ports
-
-require_tmp my_ports
-for port in `cat "$interested_ports"`; do
-	port_=`echo $port | tr / _`
-	if [ -e "$deleted_ports_dir/$port_" ]; then
-		require_tmp -l deleted_ports my_deleted_ports
-		echo $port `pkg_name -d $port` >> "$my_deleted_ports"
-	else
-		if [ -s "$old_to_new/$port_" ]; then
-			cat "$old_to_new/$port_" >> "$my_ports"
-		fi 
-	fi
-done
-retire_tmp interested_ports
-retire_tmp deleted_ports_dir
-retire_tmp -k my_deleted_ports
-
-sets_intrsctn updated_ports "$my_ports" "$all_updated_ports"
-retire_tmp my_ports
-retire_tmp all_updated_ports
-
-require_tmp -l upgraded_principals prncpls
-require_tmp -l dependants_of_upgrades deps
-require_tmp -l slaves_of_upgrades slvs
-require_tmp -l updated_principals updt_prncpls
-require_tmp -l dependants_of_updates updt_deps
-require_tmp -l slaves_of_updates updt_slvs
-for port in `cat "$updated_ports"`; do
-	port_=`echo $port | tr / _`
-	old_port=`cat "$new_to_old/$port_"`
-	old_port_=`echo $old_port | tr / _`
-	metainfo_dir="${CHROOTDIR-}$PKG_DBDIR/$old_port_"
-	old=`cat "$metainfo_dir/name"`
-	[ -n "$old" ]
-	new=`pkg_name $port`
-	[ -n "$new" ]
-	if [ $old = $new ]; then
-		indicator==
-		principals=$updt_prncpls
-		dependants=$updt_deps
-		slaves=$updt_slvs
-	else
-		indicator=+
-		principals=$prncpls
-		dependants=$deps
-		slaves=$slvs
-	fi
-	echo "$old_port	$old" >> "$principals"
-	for dep_port in `cat "$metainfo_dir/dependants/all" 2> /dev/null`; do
-		dep=$(cat "${CHROOTDIR-}$PKG_DBDIR/`echo $dep_port | tr / _`/name")
-		echo "$old_port	$old	$dep_port	$dep" >> "$dependants"
-	done
-	if [ -e "$metainfo_dir/slaves" ]; then
-		for slave_port in `cat "$metainfo_dir/slaves"`; do
-			slave=$(cat "${CHROOTDIR-}$PKG_DBDIR/`echo $slave_port | tr / _`/name")
-			echo "$old_port	$old	$slave_port	$slave" >> "$slaves"
-		done
-	fi
-	echo $indicator $old_port $port $old $new
-done
-retire_tmp updated_ports
-retire_tmp new_to_old
-retire_tmp old_to_new
-
-require_tmp obsolete_pkgs
-cat "$prncpls" >> "$obsolete_pkgs"
-cat "$slvs" | cut -w -f 3,4 >> "$obsolete_pkgs"
-[ -z "${OPT_DEPS-}" ] || cat "$deps" | cut -w -f 3,4 >> "$obsolete_pkgs"
-[ -z "${OPT_UPDATES-}" ] || cat "$updt_prncpls" >> "$obsolete_pkgs"
-[ -z "${OPT_UPDATES-}" ] || cat "$updt_slvs" | cut -w -f 3,4 >> "$obsolete_pkgs"
-[ -z "${OPT_DEP_UPDATES-}" ] || cat "$updt_deps" | cut -w -f 3,4 >> "$obsolete_pkgs"
-retire_tmp prncpls
-retire_tmp deps
-retire_tmp slvs
-retire_tmp updt_prncpls
-retire_tmp updt_deps
-retire_tmp updt_slvs
-
-if [ -n "${ports_svn-}" ]; then
-	save_svn_info /usr/ports
-	new_tag=r`grep ^Revision: /usr/ports/.svn/info.txt | cut -w -f 2`
-	last_modified=$(date -j -f "%F %T" "$(sed -e '/^Last Changed Date: /!d;s///;s/ +0000 (.*$//' /usr/ports/.svn/info.txt)")
+if [ -n "${ports_git-}" ]; then
+	new_tag=`save_git_info -r /usr/ports`
+# 	last_modified=$(date -j -f "%F %T" "$(sed -e '/^Last Changed Date: /!d;s///;s/ +0000$//' /usr/ports/.git/info.txt)")
+	last_modified=$(env TZ=UTC date -j -f '%F %T %z' "$(sed -e '/^Last Changed Date: /!d;s///' /usr/ports/.git/info.txt)")
 else
 	new_tag=`cut -d '|' -f 2 /var/db/portsnap/tag`
 	last_modified=`env TZ=UTC date -j -f %s $new_tag`
 fi
-
-if [ -s "$obsolete_pkgs" ]; then
-	sort -u "$obsolete_pkgs" >| "$OUTPUT_FILE"
-	changed=y
-else
-	rm "${CHROOTDIR-}$PKG_DBDIR"
-	mv "${CHROOTDIR-}$PKG_DBDIR.$old_tag" "${CHROOTDIR-}$PKG_DBDIR"
-	echo $new_tag >| "${CHROOTDIR-}$PKG_DBDIR/tag"
-fi
-retire_tmp obsolete_pkgs
 
 echo
 echo "Ports tree is now tagged $new_tag ($last_modified)."
@@ -253,7 +115,7 @@ if canhas ${OPT_FREEBSD-}; then
 	make_vars_init
 	build_vars_init
 	require_base_src -n
-	before_rev=`save_svn_info -r /usr/src`
+	before_rev=`save_git_info -r /usr/src`
 	if ! srsly ${OPT_NO_SNAP-}; then
 		before_src_ds=`mount -p | awk '$2 == "/usr/src" {print $1}' | tail -n 1`
 		before_obj_ds=`mount -p | awk '$2 == "/usr/obj" {print $1}' | tail -n 1`
@@ -262,20 +124,27 @@ if canhas ${OPT_FREEBSD-}; then
 		zfs unmount $before_src_ds
 		zfs clone -o mountpoint=/usr/src $before_src_ds@$snaptime ${before_src_ds%.r*}.$snaptime
 	fi
-	want_src=`echo "https://$SVN_SERVER/$SVN_PATH" | tr [[:upper:]] [[:lower:]]`
-	have_src=`grep ^URL: /usr/src/.svn/info.txt | cut -w -f 2 | tr [[:upper:]] [[:lower:]]`
-	if [ "${want_src%/}" = "${have_src%/}" ]; then
-		svn update /usr/src
-	else
-		svn switch "https://$SVN_SERVER/$SVN_PATH" /usr/src
+	want_src="https://$GIT_SERVER/$GIT_PATH.git"
+	have_src=`git -C /usr/src config --get remote.origin.url`
+	want_branch=$GIT_BRANCH
+	have_branch=`git -C /usr/src branch | grep '^* ' | cut -w -f 2`
+	lower_case -s want_src have_src
+	git -C /usr/src reset --hard HEAD
+	git -C /usr/src clean -fd
+	if [ _"$want_src_lc" != _"$have_src_lc" ]; then
+		git -C /usr/src remote set-url origin "$want_src"
 	fi
-	after_rev=`save_svn_info -r /usr/src`
+	git -C /usr/src pull
+	if [ _"$want_branch" != _"$have_branch" ]; then
+		git -C /usr/src checkout "$want_branch"
+	fi
+	after_rev=`save_git_info -r /usr/src`
 	before_ver=$BASEOS_VER
 	baseos_init
 	echo -n "FreeBSD source tree: $before_ver.$before_rev"
 	if [ $before_rev != $after_rev -o $before_ver != $BASEOS_VER ]; then
 		echo " -> $BASEOS_VER.$after_rev"
-		if [ $before_ver != $BASEOS_VER ] || [ -n "`svn diff --summarize -r $before_rev:$after_rev /usr/src | head -c 16`" ]; then
+		if [ $before_ver != $BASEOS_VER ] || canhas "`git -C /usr/src diff $before_rev $after_rev | head -c 16`" ]; then
 			if ! srsly ${OPT_NO_SNAP-}; then
 				zfs set canmount=noauto $before_obj_ds
 				zfs unmount $before_obj_ds
@@ -309,6 +178,7 @@ if canhas ${OPT_FREEBSD-}; then
 					spill POOL_BOOT_NAME
 					spill BASEOS_TYPE
 					spill TRGT_MACH
+					spill TRGT_CODE
 					spill BASEOS_VER
 					spill same_ver
 					spill after_rev
@@ -340,8 +210,10 @@ if canhas ${OPT_FREEBSD-}; then
 				fi
 			fi
 		elif ! srsly ${OPT_NO_SNAP-}; then
-			zfs rename ${before_src_ds%.r*}.$snaptime $POOL_BOOT_NAME/os/$BASEOS_TYPE/src/$BASEOS_VER.$after_rev
-			zfs rename $before_obj_ds $POOL_BOOT_NAME/os/$BASEOS_TYPE/src/obj/$TRGT_MACH/$BASEOS_VER.$after_rev
+			srsly ${new_build-} || obj_trgt=$TRGT
+			srsly ${old_build-} || obj_trgt=$TRGT_CODE
+			zfs rename ${before_src_ds%.g*}.$snaptime $POOL_BOOT_NAME/os/$BASEOS_TYPE/src/$BASEOS_VER.$after_rev
+			zfs rename $before_obj_ds $POOL_BOOT_NAME/os/$BASEOS_TYPE/src/obj/$obj_trgt/$BASEOS_VER.$after_rev
 		fi
 	else
 		echo
@@ -354,7 +226,13 @@ if canhas ${OPT_FREEBSD-}; then
 fi
 
 if canhas ${OPT_AUTO-} && [ -L $PKG_DBDIR ]; then
-	sister nu_pkg_tree -o dir $PKG_DBDIR $PKG_COLLECTION
+	pkgs_dir=/usr/ports/packages/Index.nuOS/$BASEOS_TYPE-${BASEOS_VER%%-*}-$TRGT
+	if [ "$old_tag" = "$new_tag" ]; then
+		rm "${CHROOTDIR-}$PKG_DBDIR"
+		mv "${CHROOTDIR-}$PKG_DBDIR.$old_tag" "${CHROOTDIR-}$PKG_DBDIR"
+	else
+		sister nu_pkg_tree -o dir $PKG_DBDIR $PKG_COLLECTION
+	fi
 	sister nu_pkg_chk_tree || error 62 'Loop found in package directives'
 	
 	require_tmp want
@@ -366,53 +244,25 @@ if canhas ${OPT_AUTO-} && [ -L $PKG_DBDIR ]; then
 	require_tmp make
 	diff "$have" "$want" | grep '^>' | cut -wf2 >| "$make"
 	
-	if [ ${OPT_AUTO-} -ge 2 ]; then
+	if [ ${OPT_AUTO-} -ge 2 -a -s "$kill" ]; then
+# 		newest_pkg_before=`ls -t $pkgs_dir | head -n 1`
 		pkg delete -fy `cat "$kill"`
 		while read -r pkg; do
-			rm -v /usr/ports/packages/All/$pkg.txz || true
-			rm -v /usr/ports/packages/Index.nuOS/$BASEOS_TYPE-${BASEOS_VER%%-*}-$TRGT_MACH/$pkg.r*.*.txz || true
+			rm -v /usr/ports/packages/All/$pkg.$PKG_SUFFIX || true
+			mkdir -p $pkgs_dir.old
+			mv -v $pkgs_dir/$pkg.g*.*.$PKG_SUFFIX \
+					$pkgs_dir.old/ \
+				|| true
 		done < "$kill"
-		if [ ${OPT_AUTO-} -ge 3 ]; then
-			[ ${OPT_AUTO-} -le 3 ] || all=y
-			[ ${OPT_AUTO-} -le 4 ] || every=y
-			sister nu_pkg_build_cluster ${all:+-a} ${every:+-a} -w 3
-		fi
 	fi
+	if [ ${OPT_AUTO-} -ge 3 -a -s "$make" ]; then
+# 			[ ${OPT_AUTO-} -le 3 ] || all=y
+# 			[ ${OPT_AUTO-} -le 4 ] || every=y
+# 			sister nu_pkg_build_cluster ${all:+-a} ${every:+-a} -w 3
+		sister nu_install_pkg -d $PKG_DBDIR
+		echo Done building new $PKG_COLLECTION packages.
+	fi
+# 	newest_pkg_after=`ls -t $pkgs_dir | head -n 1`
 fi
 
-if [ -n "${OPT_DEPRECATED_AUTO_PROCESS-}" ]; then
-	if [ -n "${changed-}" ]; then
-		echo
-		while read port pkg; do
-			rm -v /usr/ports/packages/All/$pkg.txz || true
-			if [ $port = ports-mgmt/pkg -o $port = ports-mgmt/pkg-devel ]; then
-				push post_delete_pkgs $pkg
-				push post_delete_ports $port
-			else
-				pkg -c "$CHROOTDIR" delete -fy $pkg || true
-			fi
-		done < "$OUTPUT_FILE"
-		if [ -n "${post_delete_pkgs-}" ]; then
-			for pkg in $post_delete_pkgs; do
-				pkg -c "$CHROOTDIR" delete -fy $pkg || true
-			done
-		fi
-		if [ "$OPT_DEPRECATED_AUTO_PROCESS" -ge 2 ]; then
-			echo
-			if [ -n "${post_delete_ports-}" ]; then
-				sister -C "$CHROOTDIR" nu_install_pkg -R $post_delete_ports
-			fi
-			require_tmp -c pkg_tree
-			sister -C "$CHROOTDIR" nu_pkg_tree -o dir $PKG_DBDIR -o txt "${pkg_tree#"$CHROOTDIR"}" $PKG_COLLECTION
-			if [ "$OPT_DEPRECATED_AUTO_PROCESS" -ge 3 ]; then
-				sister -C "$CHROOTDIR" nu_install_pkg -R `grep / "$pkg_tree"`
-				retire_tmp pkg_tree
-				echo Done building new $PKG_COLLECTION packages.
-			fi
-		else
-			echo Be sure to run nu_pkg_tree to regenerate the package metadatabase.
-		fi
-	else
-		retire_tmp auto_output
-	fi
-fi
+echo Update done.
