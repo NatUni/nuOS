@@ -452,7 +452,10 @@ save_git_info () {
 	code_dir="${1:-`realpath .`}"
 	if ! [ "$code_dir/.git/info.txt" -nt "$code_dir/.git/FETCH_HEAD" ]; then
 		which git > /dev/null
-		echo Commit: "`env TZ=UTC git -C "$code_dir" rev-parse HEAD`" >| "$code_dir/.git/info.txt"
+		cat >| "$code_dir/.git/info.txt" <<EOF
+Commit: `git -C "$code_dir" rev-parse HEAD`
+Last Changed Date: `git -C "$code_dir" show -s --format=%ci HEAD`
+EOF
 	fi
 	if srsly ${opt_rev-}; then
 		r=`grep ^Commit: "$code_dir/.git/info.txt" | cut -w -f 2 | head -c 12`
