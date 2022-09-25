@@ -526,8 +526,8 @@ EOF
 		require_tmp -c -C $pool_mnt pkg_tree
 		mount -r -t nullfs /usr/ports $pool_mnt/usr/ports
 		mount -r -t nullfs /var/db/portsnap $pool_mnt/var/db/portsnap
-		#sister -C $pool_mnt nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $PKG_DBDIR -o txt "${pkg_tree#"$pool_mnt"}" $PKG_COLLECTION
-		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $pool_mnt/$PKG_DBDIR -o txt "$pkg_tree" $PKG_COLLECTION
+		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $pool_mnt/$PKG_DBDIR $PKG_COLLECTION
+		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -i $pool_mnt/$PKG_DBDIR $PKG_COLLECTION | tee "$pkg_tree"
 		umount $pool_mnt/var/db/portsnap
 		umount $pool_mnt/usr/ports
 		for tree_node in `cat "$pkg_tree"`; do
