@@ -1,0 +1,10 @@
+--- ../sratom.orig/Makefile	2022-10-29 01:19:03.430602000 +0000
++++ Makefile	2022-10-29 01:19:19.615553000 +0000
+@@ -20,6 +20,7 @@
+ USE_LDCONFIG=	yes
+ 
+ PLIST_SUB=	VERSION=${PORTVERSION}
++MESON_ARGS+=	-Ddocs=disabled
+ 
+ post-install:
+ 	@${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/libsratom-0.so.${PORTVERSION}

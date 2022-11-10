@@ -169,11 +169,12 @@ collection_vars_init () {
 		misc/toilet
 		www/httrack
 		net/netatalk3
-		net/samba413
+		net/samba416
 		multimedia/ffmpeg
 		multimedia/Bento4
 		www/yt-dlp
 		www/lux
+		www/gallery-dl
 		net-p2p/rtorrent
 		net-p2p/createtorrent
 		net-p2p/torrentcheck
