@@ -134,6 +134,7 @@ collection_vars_init () {
 		databases/pg_activity
 		databases/mysql80-server
 		databases/redis
+		databases/mongodb60
 		lang/go
 		lang/squeak
 		lang/gravity
@@ -255,7 +256,6 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
-		databases/mongodb60
 		multimedia/obs-ndi
 		games/openarena
 		security/palisade
