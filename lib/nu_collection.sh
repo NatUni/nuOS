@@ -129,7 +129,7 @@ collection_vars_init () {
 		net/mosquitto
 		mail/cyrus-imapd34
 		security/cyrus-sasl2-saslauthd
-		databases/postgresql14-server
+		databases/postgresql15-server
 		databases/postgis33
 		databases/pg_activity
 		databases/mysql80-server
@@ -142,9 +142,9 @@ collection_vars_init () {
 		textproc/zed
 		math/or-tools
 		www/npm
-		lang/php81-extensions
+		lang/php82-extensions
 		graphics/pecl-imagick-im7
-		www/mod_php81
+		www/mod_php82
 		www/apache24
 		www/nginx
 		net/haproxy
