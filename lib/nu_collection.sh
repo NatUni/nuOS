@@ -120,6 +120,7 @@ collection_vars_init () {
 		net/openldap26-server
 		security/openvpn
 		net/mpd5
+		textproc/gtk-doc
 		net/avahi
 		dns/nss_mdns
 		net/3proxy
@@ -151,7 +152,6 @@ collection_vars_init () {
 		security/snort3
 		security/barnyard2
 		security/suricata
-		security/zeek
 		www/matomo
 		www/authelia
 		net-im/ejabberd
@@ -159,10 +159,8 @@ collection_vars_init () {
 		lang/erlang-runtime25
 		lang/elixir
 		devel/stack
-		net/kamailio
 		sysutils/ipfs-go
 		security/tor
-		net-im/py-matrix-synapse
 	'
 	
 	COLL_mediaserver='
@@ -256,6 +254,9 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		security/zeek
+		net/kamailio
+		net-im/py-matrix-synapse
 		multimedia/obs-ndi
 		games/openarena
 		security/palisade
