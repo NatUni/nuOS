@@ -2,6 +2,8 @@ NUOS_VER=0.0.12.99a0
 . /usr/nuos/lib/nu_system.sh
 nuos_init
 
+load_lib nu_genesis
+
 set_infras -v
 read_set_ips -v
 
@@ -28,7 +30,7 @@ if [ ! -d /var/jail/ns -a ! -d /var/jail/a.ns -a ! -d /var/jail/b.ns ]; then
 	push start_jails ns a.ns b.ns
 fi
 
-canhas ${start_jails-} || service jail start $start_jails; start_jails=
+! canhas ${start_jails-} || service jail start $start_jails; start_jails=
 
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
 	for z in $zones_lc; do
