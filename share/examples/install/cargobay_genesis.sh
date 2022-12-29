@@ -8,33 +8,14 @@ read_set_ips -v
 
 enable_svc jail
 
-if [ ! -d /var/jail/resolv ]; then
-	nu_jail -q -x -t vnet -H domain -T =::domain -j resolv
-	nu_ns_cache -C /var/jail/resolv -l all -s
-	{ grep -w -v nameserver /var/jail/resolv/etc/resolv.conf; getent hosts resolv.jail | cut -w -f 1 | xargs -n 1 echo nameserver; } > /etc/resolv.conf
-	cp -av /var/jail/resolv/etc/resolvconf.conf /etc/resolvconf.conf
-	push start_jails resolv
-fi
-
-if [ ! -d /var/jail/ns -a ! -d /var/jail/a.ns -a ! -d /var/jail/b.ns ]; then
-	nu_jail -x -q -t vnet -H domain -S $my_ip_1:domain -j a.ns
-	nu_jail -x -q -t vnet -H domain -S $my_ip_2:domain -j b.ns
-	nu_jail -x -q -t vnet -H domain -T =:a.ns.jail:domain -T =:b.ns.jail:domain -j ns
-	nu_ns_server -C /var/jail/ns -l all -d -k 4096 -z 2048 -i $my_ip_1 -i $my_ip_2 -s a.ns.jail -s b.ns.jail
-	nu_ns_server -C /var/jail/a.ns -l all -i $my_ip_1 -i $my_ip_2 -m ns.jail
-	nu_ns_server -C /var/jail/b.ns -l all -i $my_ip_1 -i $my_ip_2 -m ns.jail
-	if [ -d /root/nuos_deliverance/ns ]; then
-		tar -cf - -C /root/nuos_deliverance/ns/knotdb keys | tar -xvf - -C /var/jail/ns/var/db/knot
-	fi
-	push start_jails ns a.ns b.ns
-fi
+init_jail resolv ns
 
 ! canhas ${start_jails-} || service jail start $start_jails; start_jails=
 
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
 	for z in $zones_lc; do
 		[ ! -f /var/jail/ns/var/db/knot/$z.zone ] || continue
-		for j in ns a.ns b.ns; do
+		for j in $ns_jails; do
 			nu_ns_host -j $j -h $z
 		done
 		nu_sshfp -j ns -F -h $z
