@@ -1,7 +1,6 @@
 NUOS_VER=0.0.12.99a0
-. /usr/nuos/lib/nu_system.sh
+. ${NUOS_CODE:=/usr/nuos}/lib/nu_system.sh
 nuos_init
-
 load_lib nu_genesis
 
 set_infras -v
@@ -10,20 +9,20 @@ read_set_ips -v
 enable_svc jail
 
 if [ ! -d /var/jail/resolv ]; then
-	nu_jail -j resolv -S domain -T a.ns -T b.ns -x -q
-	nu_ns_cache -C /var/jail/resolv -s
+	nu_jail -q -x -t vnet -H domain -T =::domain -j resolv
+	nu_ns_cache -C /var/jail/resolv -l all -s
 	{ grep -w -v nameserver /var/jail/resolv/etc/resolv.conf; getent hosts resolv.jail | cut -w -f 1 | xargs -n 1 echo nameserver; } > /etc/resolv.conf
 	cp -av /var/jail/resolv/etc/resolvconf.conf /etc/resolvconf.conf
 	push start_jails resolv
 fi
 
 if [ ! -d /var/jail/ns -a ! -d /var/jail/a.ns -a ! -d /var/jail/b.ns ]; then
-	nu_jail -j ns -S domain -x -q
-	env ALIAS_IP=$my_ip_1 nu_jail -j a.ns -AP -S domain -x -q
-	env ALIAS_IP=$my_ip_2 nu_jail -j b.ns -AP -S domain -x -q
-	nu_ns_server -C /var/jail/ns -d -k 4096 -z 2048 -i $my_ip_1 -i $my_ip_2 -s a.ns.jail -s b.ns.jail
-	nu_ns_server -C /var/jail/a.ns -i $my_ip_1 -i $my_ip_2 -m ns.jail
-	nu_ns_server -C /var/jail/b.ns -i $my_ip_1 -i $my_ip_2 -m ns.jail
+	nu_jail -x -q -t vnet -H domain -S $my_ip_1:domain -j a.ns
+	nu_jail -x -q -t vnet -H domain -S $my_ip_2:domain -j b.ns
+	nu_jail -x -q -t vnet -H domain -T =:a.ns.jail:domain -T =:b.ns.jail:domain -j ns
+	nu_ns_server -C /var/jail/ns -l all -d -k 4096 -z 2048 -i $my_ip_1 -i $my_ip_2 -s a.ns.jail -s b.ns.jail
+	nu_ns_server -C /var/jail/a.ns -l all -i $my_ip_1 -i $my_ip_2 -m ns.jail
+	nu_ns_server -C /var/jail/b.ns -l all -i $my_ip_1 -i $my_ip_2 -m ns.jail
 	if [ -d /root/nuos_deliverance/ns ]; then
 		tar -cf - -C /root/nuos_deliverance/ns/knotdb keys | tar -xvf - -C /var/jail/ns/var/db/knot
 	fi
@@ -52,8 +51,8 @@ done
 report_expired_domains
 
 echo
-echo Sleeping three minutes to allow canonical DNS authority to be established
-sleep 180 &
+echo Sleeping five minutes to allow canonical DNS authority to be established
+sleep 300 &
 p=$!
 echo "(kill -STOP $p; kill -CONT $p) to pause and resume"
 wait $p
