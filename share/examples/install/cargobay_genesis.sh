@@ -70,18 +70,18 @@ fi
 
 
 if [ ! -d /var/jail/postmaster ]; then
-	nu_jail -j postmaster -P -S smtp -I submission -x -q
+	nu_jail -x -q -t vnet -H submission -S $my_ip_1:smtp -S $my_ip_2:smtp -j postmaster
 	(cd /etc/ssl && tar -cf - certs/$INFRA_HOST_lc.ca.crt certs/$INFRA_HOST_lc.crt csrs.next/$INFRA_HOST_lc.csr csrs/$INFRA_HOST_lc.csr private/$INFRA_HOST_lc.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/)
 	mkdir -p /var/jail/postmaster/var/imap/socket
 	service jail start postmaster
 	nu_smtp -j postmaster -s -e -h $INFRA_HOST_lc
 	for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qq $inf
-		nu_user -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -a -d net -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`}
+		nu_user -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -a -d net -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`
 	done
 fi
 
 if [ ! -d /var/jail/postoffice ]; then
-	nu_jail -j postoffice -m -P -I imap -I imaps -I pop3 -I pop3s -I sieve -x -q
+	nu_jail -x -q -t vnet -m -S $my_ip_1:imaps -S $my_ip_2:imaps -j postoffice
 	(cd /etc/ssl && tar -cf - certs/$INFRA_HOST_lc.ca.crt certs/$INFRA_HOST_lc.crt csrs.next/$INFRA_HOST_lc.csr csrs/$INFRA_HOST_lc.csr private/$INFRA_HOST_lc.key | tar -xvf - -C /var/jail/postoffice/etc/ssl/)
 	service jail start postoffice
 	nu_imap -j postoffice -s -e -h $INFRA_HOST_lc
@@ -92,18 +92,18 @@ imap 8
 imaps 2
 lmtp(unix)? 1
 EOF
-	sed -i '' -E -e "/^SERVICES {/,/^}/{$prgm}" /var/jail/postoffice/usr/local/etc/cyrus.conf
+	sed -i '' -E -e "/^SERVICES /,/^}/{$prgm}" /var/jail/postoffice/usr/local/etc/cyrus.conf
 	echo /var/jail/postoffice/var/imap/socket /var/jail/postmaster/var/imap/socket nullfs ro >| /etc/fstab.postoffice
 	if [ -d /root/nuos_deliverance/po ]; then
 		tar -cf - -C /root/nuos_deliverance/po . | tar -xvf - -C /var/jail/postoffice/var
 	fi
 	for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qq $inf
-		nu_user -C /var/jail/postoffice -h $INFRA_DOMAIN_lc -a -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`}
+		nu_user -C /var/jail/postoffice -h $INFRA_DOMAIN_lc -a -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`
 	done
 	service jail restart postmaster postoffice
 fi
 
-for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qq $inf
+for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
 	for z in $zones_lc; do
 		grep -w ^$z /var/jail/postmaster/usr/local/etc/postfix/domains || nu_smtp_host -C /var/jail/postmaster -h $z
 		for b in operator security hostmaster postmaster webmaster whois-data; do
@@ -133,24 +133,25 @@ done
 
 ADMIN_USER=`pw usershow -u 1001 | cut -d : -f 1`
 if [ ! -d /var/jail/www ]; then
-	nu_jail -j www -m -P -I http -I https -x ${ADMIN_USER:+-u $ADMIN_USER} -q
+	nu_jail -t vnet -m -S $my_ip_1:http -S $my_ip_2:http -S $my_ip_1:https -S $my_ip_2:https -j www -x ${ADMIN_USER:+-u $ADMIN_USER} -q
 	nu_http -C /var/jail/www -s -IIII
 fi
-for z in $all_zones_lc; do
-	[ -f /var/jail/www/etc/ssl/certs/$z.crt -a ! /etc/ssl/certs/$z.crt -nt /var/jail/www/etc/ssl/certs/$z.crt ] || (cd /etc/ssl && tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/www/etc/ssl/)
-	http_host_extra_flags=`get_domains | match_names $z | extract_flags`
-	[ -f /var/jail/www/usr/local/etc/apache*/Includes/$z.conf ] || nu_http_host -C /var/jail/www -a -kkf -G -P -i $http_host_extra_flags -u ${ADMIN_USER:-root} -h $z
-
-	if [ ccsys.com = $z ] && [ ! -f /var/jail/www/home/$ADMIN_USER/$z/www/public/index.html ]; then
-		sed -i '' -e "/\\<Content-Security-Policy\\>/s:object-src 'none':plugin-types application/pdf:" /var/jail/www/usr/local/etc/apache*/Includes/$z.conf
-		${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www /bin/sh <<EOF
+for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
+	for z in $zones_lc; do
+		[ -f /var/jail/www/etc/ssl/certs/$z.crt -a ! /etc/ssl/certs/$z.crt -nt /var/jail/www/etc/ssl/certs/$z.crt ] || (cd /etc/ssl && tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/www/etc/ssl/)
+		http_host_extra_flags=`get_domains | match_names $z | extract_flags`
+		[ -f /var/jail/www/usr/local/etc/apache*/Includes/$z.conf ] || nu_http_host -C /var/jail/www -a -kkf -G -P -i $http_host_extra_flags -u ${ADMIN_USER:-root} -h $z
+		
+		if [ ccsys.com = $z ] && [ ! -f /var/jail/www/home/$ADMIN_USER/$z/www/public/index.html ]; then
+			sed -i '' -e "/\\<Content-Security-Policy\\>/s:object-src 'none':plugin-types application/pdf:" /var/jail/www/usr/local/etc/apache*/Includes/$z.conf
+			${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www /bin/sh <<EOF
 d=\`mktemp -d\`
 cd \$d
 `which pdftex` /usr/nuos/share/examples/tex/cv.tex
 mv cv.pdf /home/$ADMIN_USER/$z/www/public/resume.pdf
 rm -rv \$d
 EOF
-		${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www /bin/sh -c "cat > /home/$ADMIN_USER/$z/www/public/index.css" <<'EOF'
+			${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www /bin/sh -c "cat > /home/$ADMIN_USER/$z/www/public/index.css" <<'EOF'
 html {
 	background: LightSteelBlue;
 	color: DimGray;
@@ -199,7 +200,7 @@ address {
 	font-style: italic;
 }
 EOF
-		${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www /bin/sh -c "cat > /home/$ADMIN_USER/$z/www/public/index.html" <<'EOF'
+			${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www /bin/sh -c "cat > /home/$ADMIN_USER/$z/www/public/index.html" <<'EOF'
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -220,8 +221,9 @@ EOF
 </p>
 </body>
 EOF
-	fi
-
+		fi
+	done
+	
 	case $INFRA_DOMAIN_lc in
 		cargobay.net) link=lobby/;;
 		woneye.site) link=https://UglyBagsOfMostlyWater.club/;;
@@ -233,11 +235,10 @@ EOF
 		[ ! -f /var/jail/www/usr/local/etc/apache*/Includes/VirtualHost.custom/$z.conf ] || continue
 		${ADMIN_USER:+env -i} chroot ${ADMIN_USER:+-u 1001 -g 1001} /var/jail/www `which nu_http_host_snowtube` -h $Z -l $link -S "`echo $org_zones | xargs -n 1 | sed -E -e 's|^(.*)$|https://\1/|'`" -s $i -g >> `echo /var/jail/www/usr/local/etc/apache*/Includes/VirtualHost.custom`/$z.conf
 	i=$(($i+1)); done
-
+	
 	admin_home=${ADMIN_USER:+home/$ADMIN_USER}
 	: ${admin_home:=root}
 	for z in $prod_zones_lc; do
-		z=`lower_case $Z`
 		[ -z "`find /var/jail/www/$admin_home/$z/www/public -type f | head -n 1`" ] || continue
 		if [ -d /root/nuos_deliverance/www/$z ]; then
 			tar -cf - -C /root/nuos_deliverance/www/$z . | tar -xvf - -C /var/jail/www/$admin_home/$z/www
@@ -246,18 +247,18 @@ EOF
 			cp -v /root/nuos_deliverance/www/$z.conf /var/jail/www/usr/local/etc/apache*/Includes/VirtualHost.custom/
 		fi
 	done
-
+	
 	for z in $zones_lc; do
 		if [ -f /root/nuos_deliverance/www/$z.fstab ]; then
-			awk "\$2 !~ \"^/var/jail/www/home/[^/]*/$z/www(\$|/)\"" /etc/fstab.www > /etc/fstab.www.$$
-			cat /root/nuos_deliverance/www/$z.fstab >> /etc/fstab.www.$$
-			mv /etc/fstab.www.$$ /etc/fstab.www
+			awk "\$2 !~ \"^/var/jail/www/home/[^/]*/$z/www(\$|/)\"" /etc/fstab.www > /etc/fstab.www.tmp_$$
+			cat /root/nuos_deliverance/www/$z.fstab >> /etc/fstab.www.tmp_$$
+			mv /etc/fstab.www.tmp_$$ /etc/fstab.www
 		fi
 	done
+done
 
 mount -F /etc/fstab.www -a
 service jail restart www
-
 
 # nu_pgsql -n -s -h $INFRA_HOST_lc
 # nu_ftp -s -h $INFRA_HOST_lc

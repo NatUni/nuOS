@@ -187,7 +187,7 @@ if [ -n "${OPT_LETS_ENCRYPT-}" ]; then
 	sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h $parent_zone -c letsencrypt.org
 	sleep 3
 	require_tmp acme_output
-	acme.sh --signcsr --csr /etc/ssl/csrs/$SSL_HOST.csr --dns $dom_args --yes-I-know-dns-manual-mode-enough-go-ahead-please ${OPT_FORCE:+--force} >| "$acme_output" 2>&1 || true
+	acme.sh --signcsr --csr /etc/ssl/csrs/$SSL_HOST.csr --dns $dom_args --server letsencrypt --yes-I-know-dns-manual-mode-enough-go-ahead-please ${OPT_FORCE:+--force} >| "$acme_output" 2>&1 || true
 	require_tmp acme_challenge
 	sed -n -E -e "/^\\[[^\]+\\] Domain: '([[:alnum:]\\._\\-]+)'$/{s//\\1/;N;{/\\n\\[[^\]+\\] TXT value: '([[:alnum:]_\\-]+)'$/s// \\1/p;};}" "$acme_output" >| "$acme_challenge"
 	#retire_tmp acme_output
@@ -201,7 +201,7 @@ if [ -n "${OPT_LETS_ENCRYPT-}" ]; then
 		fi
 	done
 	sleep 120
-	acme.sh --renew $dom_args --yes-I-know-dns-manual-mode-enough-go-ahead-please ${OPT_FORCE:+--force} 2>&1 || true
+	acme.sh --renew $dom_args --server letsencrypt --yes-I-know-dns-manual-mode-enough-go-ahead-please ${OPT_FORCE:+--force} 2>&1 || true
 	sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h $parent_zone -c -d
 	CERT_FILE=$HOME/.acme.sh/$SSL_HOST/$SSL_HOST.cer
 	AUTH_FILE=$HOME/.acme.sh/$SSL_HOST/ca.cer
