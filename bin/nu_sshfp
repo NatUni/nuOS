@@ -44,7 +44,7 @@ ${CHROOTDIR:+chroot "$CHROOTDIR"} $SSH_CMD-keygen -r __inconsequential_ | while 
 		srsly "${deld-}" || sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -dd -h $HOST_NAME -r sshfp
 		deld=y
 	fi
-	sleep 2
+	sleep 5
 	sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h $HOST_NAME -r sshfp -s -i "$key_type $fp_type $fp"
 done
 

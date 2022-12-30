@@ -246,6 +246,8 @@ set_infra_metadata () {
 	OWNER_NAME=`infra ${1-} | extract_own_name`
 	! srsly ${opt_verbose-} || spill INFRA_DOMAIN OWNER_ACCT OWNER_NAME
 	
+	lower_case -s INFRA_DOMAIN
+	
 	if srsly ${opt_really_quick-}; then
 		unset corp_zones org_zones prod_zones client_zones zones
 	else

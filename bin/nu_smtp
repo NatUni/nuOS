@@ -58,7 +58,7 @@ maybe_yell
 
 [ -n "${OPT_ELECT-}" ] || [ "$HOST_NAME" = "$hostname" ]
 
-[ ! -e "${alt_root-}/usr/local/etc/postfix/virtual" ]
+diff -q "${alt_root-}/usr/local/etc/postfix/virtual.sample" "${alt_root-}/usr/local/etc/postfix/virtual"
 
 touch "${alt_root-}/usr/local/etc/postfix/virtual" "${alt_root-}/usr/local/etc/postfix/aliases" "${alt_root-}/usr/local/etc/postfix/domains" "${alt_root-}/usr/local/etc/postfix/senders" "${alt_root-}/usr/local/etc/postfix/transport"
 
