@@ -515,6 +515,8 @@ nuos_ssl_init () {
 		SSL_CONF=/etc/ssl/openssl.cnf
 	fi
 	: ${HOST:=`hostname`}
+	: ${ACME_PROVIDER:=letsencrypt.org}
+	: ${ACME_SERVER:=letsencrypt}
 	if [ ${HOST%%.*} != "`readlink /etc/ssl/certs.installed/localhost`" ]; then
 		mkdir -p /etc/ssl/certs.installed/${HOST%%.*}
 		ln -sf ${HOST%%.*} /etc/ssl/certs.installed/localhost
