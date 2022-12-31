@@ -9,8 +9,7 @@ read_set_ips -v
 enable_svc jail
 
 init_jail resolv ns
-
-! canhas ${start_jails-} || service jail start $start_jails; start_jails=
+service jail start
 
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
 	for z in $zones_lc; do
@@ -73,6 +72,7 @@ if [ ! -d /var/jail/postmaster ]; then
 	nu_jail -x -q -t vnet -H submission -S $my_ip_1:smtp -S $my_ip_2:smtp -j postmaster
 	(cd /etc/ssl && tar -cf - certs/$INFRA_HOST_lc.ca.crt certs/$INFRA_HOST_lc.crt csrs.next/$INFRA_HOST_lc.csr csrs/$INFRA_HOST_lc.csr private/$INFRA_HOST_lc.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/)
 	mkdir -p /var/jail/postmaster/var/imap/socket
+	sysrc -f /etc/rc.conf.d/jail jail_list+=postmaster
 	service jail start postmaster
 	nu_smtp -j postmaster -s -e -h $INFRA_HOST_lc
 	for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qq $inf
@@ -83,6 +83,7 @@ fi
 if [ ! -d /var/jail/postoffice ]; then
 	nu_jail -x -q -t vnet -m -S $my_ip_1:imaps -S $my_ip_2:imaps -j postoffice
 	(cd /etc/ssl && tar -cf - certs/$INFRA_HOST_lc.ca.crt certs/$INFRA_HOST_lc.crt csrs.next/$INFRA_HOST_lc.csr csrs/$INFRA_HOST_lc.csr private/$INFRA_HOST_lc.key | tar -xvf - -C /var/jail/postoffice/etc/ssl/)
+	sysrc -f /etc/rc.conf.d/jail jail_list+=postoffice
 	service jail start postoffice
 	nu_imap -j postoffice -s -e -h $INFRA_HOST_lc
 	while read -r proto procs; do
@@ -135,6 +136,7 @@ ADMIN_USER=`pw usershow -u 1001 | cut -d : -f 1`
 if [ ! -d /var/jail/www ]; then
 	nu_jail -t vnet -m -S $my_ip_1:http -S $my_ip_2:http -S $my_ip_1:https -S $my_ip_2:https -j www -x ${ADMIN_USER:+-u $ADMIN_USER} -q
 	nu_http -C /var/jail/www -s -IIII
+	sysrc -f /etc/rc.conf.d/jail jail_list+=www
 fi
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
 	for z in $zones_lc; do
@@ -252,12 +254,12 @@ EOF
 		if [ -f /root/nuos_deliverance/www/$z.fstab ]; then
 			awk "\$2 !~ \"^/var/jail/www/home/[^/]*/$z/www(\$|/)\"" /etc/fstab.www > /etc/fstab.www.tmp_$$
 			cat /root/nuos_deliverance/www/$z.fstab >> /etc/fstab.www.tmp_$$
+			mount -F /root/nuos_deliverance/www/$z.fstab -a
 			mv /etc/fstab.www.tmp_$$ /etc/fstab.www
 		fi
 	done
 done
 
-mount -F /etc/fstab.www -a
 service jail restart www
 
 # nu_pgsql -n -s -h $INFRA_HOST_lc

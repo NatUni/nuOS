@@ -287,7 +287,7 @@ init_jail () {
 					nu_ns_cache -C /var/jail/resolv -l all -s
 					{ grep -w -v nameserver /var/jail/resolv/etc/resolv.conf; getent hosts resolv.jail | cut -w -f 1 | xargs -n 1 echo nameserver; } > /etc/resolv.conf
 					cp -av /var/jail/resolv/etc/resolvconf.conf /etc/resolvconf.conf
-					push start_jails resolv
+					sysrc -f /etc/rc.conf.d/jail jail_list+=resolv
 				fi
 			;;
 			ns)
@@ -301,8 +301,7 @@ init_jail () {
 # 					if [ -d /root/nuos_deliverance/ns ]; then
 # 						tar -cf - -C /root/nuos_deliverance/ns/knotdb keys | tar -xvf - -C /var/jail/ns/var/db/knot
 # 					fi
-# 					ns_jails="ns a.ns b.ns"
-# 					push start_jails $ns_jails
+# 					sysrc -f /etc/rc.conf.d/jail jail_list+="ns a.ns b.ns"
 # 				fi
 				if [ ! -d /var/jail/ns ]; then
 					nu_jail -x -q -t vnet -H domain -S $my_ip_1:domain -S $my_ip_2:domain -j ns
@@ -311,7 +310,7 @@ init_jail () {
 						tar -cf - -C /root/nuos_deliverance/ns/knotdb keys | tar -xvf - -C /var/jail/ns/var/db/knot
 					fi
 					ns_jails=ns
-					push start_jails $ns_jails
+					sysrc -f /etc/rc.conf.d/jail jail_list+=ns
 				fi
 			;;
 		esac
