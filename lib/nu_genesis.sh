@@ -70,6 +70,10 @@ require_infra_metadata () {
 	[ -r ${ZONE_DIR:=$CONF_DIR}/infrastructure.csv ] || error 6 'no infrastructure metadata found, check configuration'
 }
 
+list_ns_jails () {
+	sysrc -f /etc/rc.conf.d/jail -n jail_list | xargs -n1 | grep -w 'ns$'
+}
+
 infra () {
 	require_infra_metadata
 	local infra= infra_re=
