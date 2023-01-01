@@ -14,7 +14,7 @@ service jail start
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
 	for z in $zones_lc; do
 		[ ! -f /var/jail/ns/var/db/knot/$z.zone ] || continue
-		for j in $ns_jails; do
+		for j in `list_ns_jails`; do
 			nu_ns_host -j $j -h $z
 		done
 		nu_sshfp -j ns -F -h $z
@@ -76,7 +76,7 @@ if [ ! -d /var/jail/postmaster ]; then
 	service jail start postmaster
 	nu_smtp -j postmaster -s -e -h $INFRA_HOST_lc
 	for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qq $inf
-		nu_user -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -a -d net -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`
+		nu_user -C /var/jail/postmaster -h $INFRA_HOST_lc -a -d net -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`
 	done
 fi
 
@@ -99,7 +99,7 @@ EOF
 		tar -cf - -C /root/nuos_deliverance/po . | tar -xvf - -C /var/jail/postoffice/var
 	fi
 	for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qq $inf
-		nu_user -C /var/jail/postoffice -h $INFRA_DOMAIN_lc -a -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`
+		nu_user -C /var/jail/postoffice -h $INFRA_HOST_lc -a -u $OWNER_ACCT -n "$OWNER_NAME" < /root/owner_pass`[ ! -f /root/owner_pass.$OWNER_ACCT ] || echo .$OWNER_ACCT`
 	done
 	service jail restart postmaster postoffice
 fi
