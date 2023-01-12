@@ -69,7 +69,7 @@ fi
 
 
 if [ ! -d /var/jail/postmaster ]; then
-	nu_jail -x -q -t vnet -H submission -S $my_ip_1:smtp -S $my_ip_2:smtp -j postmaster
+	nu_jail -x -q -t vnet -S $my_ip_1:smtp -S $my_ip_2:smtp -S $my_ip_1:submission -S $my_ip_2:submission -j postmaster
 	(cd /etc/ssl && tar -cf - certs/$INFRA_HOST_lc.ca.crt certs/$INFRA_HOST_lc.crt csrs.next/$INFRA_HOST_lc.csr csrs/$INFRA_HOST_lc.csr private/$INFRA_HOST_lc.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/)
 	mkdir -p /var/jail/postmaster/var/imap/socket
 	sysrc -f /etc/rc.conf.d/jail jail_list+=postmaster
