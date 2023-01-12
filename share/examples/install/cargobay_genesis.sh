@@ -136,6 +136,7 @@ ADMIN_USER=`pw usershow -u 1001 | cut -d : -f 1`
 if [ ! -d /var/jail/www ]; then
 	nu_jail -t vnet -m -S $my_ip_1:http -S $my_ip_2:http -S $my_ip_1:https -S $my_ip_2:https -j www -x ${ADMIN_USER:+-u $ADMIN_USER} -q
 	nu_http -C /var/jail/www -s -IIII
+	echo /var/jail/postmaster/var/spool/postfix/maildrop /var/jail/www/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.www
 	sysrc -f /etc/rc.conf.d/jail jail_list+=www
 fi
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
