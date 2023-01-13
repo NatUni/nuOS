@@ -56,6 +56,7 @@ if [ "${MAIL_ADDRESS#@}" = "$MAIL_ADDRESS" ]; then
 $MAIL_ADDRESS	$USER_NAME@$HOST_NAME
 EOF
 fi
+[ -e "${CHROOTDIR-}/usr/local/etc/postfix/domains" ] || touch "${CHROOTDIR-}/usr/local/etc/postfix/domains"
 require_tmp domains
 cut -w -f 1 < "${CHROOTDIR-}/usr/local/etc/postfix/virtual" | cut -d @ -f 2 | sort -u | sed -e 's/$/	OK/' >| "$domains"
 if ! cmp -z -s "${CHROOTDIR-}/usr/local/etc/postfix/domains" "$domains"; then
