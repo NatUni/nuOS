@@ -1,4 +1,4 @@
-sister nu_ns_cache -C "$TRGT"
+sister nu_ns_cache -C "$TRGT" -s
 sister enable_svc -C "$TRGT" openssh ntpd dhcpcd dbus avahi_daemon netatalk
 
 sed -Ee 's/^\+(afp interfaces)/+;\1/' "$NUOS"/share/examples/etc/afp.conf.diff | patch "$TRGT"/usr/local/etc/afp.conf
