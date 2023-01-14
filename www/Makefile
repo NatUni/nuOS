@@ -1,5 +1,6 @@
 dev: dashboard/node_modules ## Start a local development server with live reloading
 	@echo "=====> Target: dev"
+	@[ 0.0.0.0 = "${HOST}" ] || echo "Note: Put HOST=0.0.0.0 in the environment in order to access development server from the network."
 	cd dashboard && npm run dev
 .PHONY: dev
 
