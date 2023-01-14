@@ -1,1 +1,0 @@
-grep -qw g202202 Makefile && ! grep -Eqw '(22130dcd98b4d4b76ac8d922adb4a2dbc86fa52c|85021f8cf22d1bd4114803c6c610dea5ef0059f1)' Makefile
