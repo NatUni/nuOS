@@ -1,4 +1,4 @@
-build: dashboard/public/build ## Build a production-ready binary or set of files
+build: dashboard/public/build engine_umbrella/mix.exs ## Build a production-ready binary or set of files
 	@echo '=====> Target: build'
 	@echo Done.
 .PHONY: build
@@ -47,6 +47,26 @@ dashboard/node_modules: dashboard/package.json
 
 dashboard/package.json:
 	npx degit sveltejs/template dashboard
+
+engine_umbrella/mix.exs: phx
+	@grep -Fow Engine.Umbrella.MixProject engine_umbrella/mix.exs || \
+		mix phx.new --install engine --umbrella --no-assets --no-ecto --no-html --no-gettext --no-dashboard --no-live
+
+mix:
+	@mix -v || ( \
+		echo; \
+		echo 'Error: Elixir is not installed. Contact your system administrator.'; \
+		echo; \
+	false)
+.PHONY: mix
+
+hex: mix
+	@mix hex.info || mix local.hex --force
+.PHONY: hex
+
+phx: hex
+	@mix phx.new -v || mix archive.install --force hex phx_new
+.PHONY: phx
 
 help: ## Show this help
 	@echo 
