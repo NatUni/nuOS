@@ -1,3 +1,5 @@
+BIND?=localhost
+
 build: dashboard/public/build engine/mix.exs ## Build a production-ready binary or set of files
 	@echo '=====> Target: build'
 	@echo Done.
@@ -5,7 +7,7 @@ build: dashboard/public/build engine/mix.exs ## Build a production-ready binary 
 
 server-info:
 	@echo
-	@[ 0.0.0.0 = "${HOST}" ] || echo 'Note: Put HOST=0.0.0.0 in the environment in order to access development server from the network.'
+	@[ 0.0.0.0 = "${BIND}" ] || echo 'Note: Put BIND=0.0.0.0 in the environment in order to access development server from the network.'
 	@echo
 .PHONY: server-info
 
@@ -13,9 +15,9 @@ start: dashboard/public/build server-info
 	cd dashboard && npm start
 .PHONY: start
 
-dev: dashboard/node_modules server-info ## Start a local development server with live reloading
+dev: dashboard/node_modules bind-phoenix-dev server-info ## Start a local development server with live reloading
 	@echo '=====> Target: dev'
-	cd dashboard && npm run dev
+	cd dashboard && env HOST=${BIND} npm run dev
 .PHONY: dev
 
 deploy: ## Tag a release for CI to build, or rsync files to a server
@@ -38,6 +40,7 @@ clean: ## Remove all build artifacts and downloaded dependencies
 	@echo '=====> Target: clean'
 	rm -rf dashboard/public/build dashboard/node_modules
 	rm -rf engine/_build engine/deps
+	[ ! -e engine/config/dev.exs.bak ] || mv engine/config/dev.exs.bak engine/config/dev.exs
 .PHONY: clean
 
 clean-world: ## Remove all dependencies from development environment (may have unwanted side effects)
@@ -54,6 +57,10 @@ dashboard/node_modules: dashboard/package.json
 
 dashboard/package.json:
 	npx --yes degit sveltejs/template dashboard
+
+bind-phoenix-dev: engine/mix.exs server-info
+	sed -i "${:![ -e engine/config/dev.exs.bak ] || echo .bak!}" -Ee 's/^([^#]*\<ip:[[:blank:]]*)\{([[:digit:][:blank:],]+)}(.*)$$/\1{${BIND:tl:S/^*$/0.0.0.0/W:S/^localhost$/127.0.0.1/W:S/./, /g}}\3/g' engine/config/dev.exs
+.PHONY: bind-phoenix-dev
 
 engine/mix.exs: phx
 	@grep -Fow Engine.Umbrella.MixProject engine/mix.exs || ( \
