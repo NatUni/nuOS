@@ -7,7 +7,7 @@ defmodule Sparkplug.Endpoint do
   @session_options [
     store: :cookie,
     key: "_sparkplug_key",
-    signing_salt: "pGFWDCwo"
+    signing_salt: "zQncwb4y"
   ]
 
   # socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
