@@ -143,6 +143,8 @@ collection_vars_init () {
 		textproc/zed
 		math/or-tools
 		www/npm
+		sysutils/hivemind
+		sysutils/hilite
 		lang/php82-extensions
 		graphics/pecl-imagick-im7
 		www/mod_php82
