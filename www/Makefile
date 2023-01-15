@@ -36,8 +36,15 @@ test: ## Run a full set of test suites
 
 clean: ## Remove all build artifacts and downloaded dependencies
 	@echo '=====> Target: clean'
-	rm -rvf dashboard/public/build dashboard/node_modules
+	rm -rf dashboard/public/build dashboard/node_modules
+	rm -rf engine/_build engine/deps
 .PHONY: clean
+
+clean-world: ## Remove all dependencies from development environment (may have unwanted side effects)
+	@echo '=====> Target: clean-world'
+	rm -rf ~/.degit ~/.npm
+	rm -rf ~/.hex ~/.mix
+.PHONY: clean-world
 
 dashboard/public/build: dashboard/node_modules
 	cd dashboard && npm run build
@@ -46,7 +53,7 @@ dashboard/node_modules: dashboard/package.json
 	cd dashboard && npm install
 
 dashboard/package.json:
-	npx degit sveltejs/template dashboard
+	npx --yes degit sveltejs/template dashboard
 
 engine/mix.exs: phx
 	@grep -Fow Engine.Umbrella.MixProject engine/mix.exs || ( \
@@ -62,6 +69,9 @@ engine/mix.exs: phx
 		grep -Frl Crankshaft.Umbrella xxxdistinctlynuosuniquexxx_umbrella | xargs sed -i '' -e 's/Crankshaft\.Umbrella/Engine.Umbrella/g'; \
 		mv xxxdistinctlynuosuniquexxx_umbrella engine; \
 	)
+
+engine/deps: engine/mix.exs mix
+	cd engine && mix deps.get
 
 mix:
 	@mix -v || ( \
