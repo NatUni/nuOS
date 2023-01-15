@@ -7,7 +7,7 @@ build: dashboard/public/build engine/mix.exs ## Build a production-ready binary 
 
 server-info:
 	@echo
-	@[ 0.0.0.0 = "${BIND}" ] || echo 'Note: Put BIND=0.0.0.0 in the environment in order to access development server from the network.'
+	@[ 0.0.0.0 = "${BIND:tl:S/^*$/0.0.0.0/W}" ] || echo 'Note: Put BIND=0.0.0.0 in the environment in order to access development server from the network.'
 	@echo
 .PHONY: server-info
 
@@ -15,10 +15,18 @@ start: dashboard/public/build server-info
 	cd dashboard && npm start
 .PHONY: start
 
-dev: dashboard/node_modules bind-phoenix-dev server-info ## Start a local development server with live reloading
+dev: server-info ## Start a local development server with live reloading
 	@echo '=====> Target: dev'
-	cd dashboard && env HOST=${BIND} npm run dev
+	honcho start
 .PHONY: dev
+
+dev-svelte: dashboard/node_modules
+	cd dashboard && env HOST=${BIND} npm run dev
+.PHONY: dev-svelte
+
+dev-phoenix: engine/deps rebar bind-phoenix-dev
+	cd engine && mix phx.server
+.PHONY: dev-phoenix
 
 deploy: ## Tag a release for CI to build, or rsync files to a server
 	@echo '=====> Target: deploy'
@@ -58,7 +66,7 @@ dashboard/node_modules: dashboard/package.json
 dashboard/package.json:
 	npx --yes degit sveltejs/template dashboard
 
-bind-phoenix-dev: engine/mix.exs server-info
+bind-phoenix-dev: engine/mix.exs
 	sed -i "${:![ -e engine/config/dev.exs.bak ] || echo .bak!}" -Ee 's/^([^#]*\<ip:[[:blank:]]*)\{([[:digit:][:blank:],]+)}(.*)$$/\1{${BIND:tl:S/^*$/0.0.0.0/W:S/^localhost$/127.0.0.1/W:S/./, /g}}\3/g' engine/config/dev.exs
 .PHONY: bind-phoenix-dev
 

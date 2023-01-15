@@ -1,0 +1,2 @@
+web: make dev-svelte
+api: make dev-phoenix
