@@ -4,7 +4,7 @@ import Config
 # you can enable the server option below.
 config :sparkplug, Sparkplug.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "i8conw8uJ1EvHb/iYN1cld4b67P2+pCerRepVEvc/Yk9QUzB0GawBGEmM4Pa0sS3",
+  secret_key_base: "j42O3LH1YTP6NMmFExwkANBuQ0CjYU3DOvGBPOajh+lk+M/NxP8QmraZd3zPqy5V",
   server: false
 
 # Print only warnings and errors during test

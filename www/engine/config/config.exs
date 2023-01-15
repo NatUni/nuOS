@@ -30,7 +30,7 @@ config :sparkplug, Sparkplug.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: Sparkplug.ErrorView, accepts: ~w(json), layout: false],
   pubsub_server: Crankshaft.PubSub,
-  live_view: [signing_salt: "m7z0mj7o"]
+  live_view: [signing_salt: "gQcLB55k"]
 
 # Configures Elixir's Logger
 config :logger, :console,

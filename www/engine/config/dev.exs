@@ -13,7 +13,7 @@ config :sparkplug, Sparkplug.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "pj/qwwzEAcjp94HdS8AbXhVhckN20M+dqm+ZF8N3Z8NL9ZwpqkIMdTk300gO2u2A",
+  secret_key_base: "IjQ5EKVr/mQhIZsN7dfrXt+X5pAgIut51Rvb4GgEUWJH69CnR1gZT533ATLKpIVV",
   watchers: []
 
 # ## SSL Support
