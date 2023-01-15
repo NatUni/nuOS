@@ -60,6 +60,10 @@ mix:
 	false)
 .PHONY: mix
 
+rebar: mix
+	@~/.mix/rebar3 -v || mix local.rebar --force
+.PHONY: rebar
+
 hex: mix
 	@mix hex.info || mix local.hex --force
 .PHONY: hex
