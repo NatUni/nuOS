@@ -1,4 +1,4 @@
-build: dashboard/public/build engine_umbrella/mix.exs ## Build a production-ready binary or set of files
+build: dashboard/public/build engine/mix.exs ## Build a production-ready binary or set of files
 	@echo '=====> Target: build'
 	@echo Done.
 .PHONY: build
@@ -48,9 +48,20 @@ dashboard/node_modules: dashboard/package.json
 dashboard/package.json:
 	npx degit sveltejs/template dashboard
 
-engine_umbrella/mix.exs: phx
-	@grep -Fow Engine.Umbrella.MixProject engine_umbrella/mix.exs || \
-		mix phx.new --install engine --umbrella --no-assets --no-ecto --no-html --no-gettext --no-dashboard --no-live
+engine/mix.exs: phx
+	@grep -Fow Engine.Umbrella.MixProject engine/mix.exs || ( \
+		mix phx.new --install xxxdistinctlynuosuniquexxx --umbrella --no-assets --no-ecto --no-html --no-gettext --no-dashboard --no-live; \
+		grep -rl xxxdistinctlynuosuniquexxx_web xxxdistinctlynuosuniquexxx_umbrella | xargs sed -i '' -e s/xxxdistinctlynuosuniquexxx_web/sparkplug/g; \
+		grep -rl XxxdistinctlynuosuniquexxxWeb xxxdistinctlynuosuniquexxx_umbrella | xargs sed -i '' -e s/XxxdistinctlynuosuniquexxxWeb/Sparkplug/g; \
+		grep -rl xxxdistinctlynuosuniquexxx xxxdistinctlynuosuniquexxx_umbrella | xargs sed -i '' -e s/xxxdistinctlynuosuniquexxx/crankshaft/g; \
+		grep -rl Xxxdistinctlynuosuniquexxx xxxdistinctlynuosuniquexxx_umbrella | xargs sed -i '' -e s/Xxxdistinctlynuosuniquexxx/Crankshaft/g; \
+		find xxxdistinctlynuosuniquexxx_umbrella -name xxxdistinctlynuosuniquexxx_web -type d | tail -r | sh -c 'while read -r p; do mv "$$p" "$${p%/*}/sparkplug"; done'; \
+		find xxxdistinctlynuosuniquexxx_umbrella -name xxxdistinctlynuosuniquexxx -type d | tail -r | sh -c 'while read -r p; do mv "$$p" "$${p%/*}/crankshaft"; done'; \
+		find xxxdistinctlynuosuniquexxx_umbrella -name xxxdistinctlynuosuniquexxx_web.ex -type f | sh -c 'while read -r p; do mv "$$p" "$${p%/*}/sparkplug.ex"; done'; \
+		find xxxdistinctlynuosuniquexxx_umbrella -name xxxdistinctlynuosuniquexxx.ex -type f | sh -c 'while read -r p; do mv "$$p" "$${p%/*}/crankshaft.ex"; done'; \
+		grep -Frl Crankshaft.Umbrella xxxdistinctlynuosuniquexxx_umbrella | xargs sed -i '' -e 's/Crankshaft\.Umbrella/Engine.Umbrella/g'; \
+		mv xxxdistinctlynuosuniquexxx_umbrella engine; \
+	)
 
 mix:
 	@mix -v || ( \
