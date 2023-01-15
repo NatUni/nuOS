@@ -135,7 +135,7 @@ collection_vars_init () {
 		databases/pg_activity
 		databases/mysql80-server
 		databases/redis
-		databases/mongodb60
+		databases/mongodb50
 		lang/go
 		lang/squeak
 		lang/gravity
@@ -216,6 +216,7 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
+		sysutils/touchegg
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
