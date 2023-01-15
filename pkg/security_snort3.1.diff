@@ -17,7 +17,7 @@
  PIE_DESC=		Enable PIE (Broken)
  STATICDAQ_DESC=		Link static DAQ modules
  THREADSANITIZER_DESC=	Enable thread sanitizer
-@@ -53,12 +54,17 @@
+@@ -53,12 +54,16 @@
  HYPERSCAN_LIB_DEPENDS=		libhs.so:devel/hyperscan
  HYPERSCAN_PLIST_SUB=		HYPERSCAN=""
  HYPERSCAN_PLIST_SUB_OFF=	HYPERSCAN="@comment "
@@ -29,13 +29,12 @@
  THREADSANITIZER_CMAKE_BOOL=	ENABLE_THREAD_SANITIZER
  TSC_CMAKE_BOOL=			ENABLE_TSC_CLOCK
  
-+DOCS_USE=			ruby=yes
-+DOCS_VARS=			ruby_no_run_depends=yes
++DOCS_USES=			ruby:build
 +
  .include <bsd.port.options.mk>
  
  .if ${OPSYS} == FreeBSD && ${OSVERSION} < 1300000
-@@ -68,5 +74,8 @@
+@@ -68,5 +73,8 @@
  post-patch:
  	${REINPLACE_CMD} -e 's|_LIBDIR}/pkgconfig|_PREFIX}/libdata/pkgconfig|g' \
  		${WRKSRC}/cmake/create_pkg_config.cmake
