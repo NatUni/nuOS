@@ -21,7 +21,7 @@ dev: server-info ## Start a local development server with live reloading
 .PHONY: dev
 
 dev-svelte: dashboard/node_modules
-	cd dashboard && env HOST=${BIND} npm run dev
+	cd dashboard && env HOST=${BIND:tl:S/^*$/0.0.0.0/W} npm run dev
 .PHONY: dev-svelte
 
 dev-phoenix: engine/deps rebar bind-phoenix-dev
