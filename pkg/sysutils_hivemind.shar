@@ -2,6 +2,20 @@
 # This is a shell archive
 echo x hivemind
 mkdir -p hivemind > /dev/null 2>&1
+echo x hivemind/pkg-descr
+sed 's/^X//' > hivemind/pkg-descr << 'SHAR_END'
+XHivemind is a process manager for Procfile-based applications. Hivemind uses
+Xpty to capture process output. That fixes any problem with log clipping,
+Xdelays, and TTY colors other process management tools may have.
+SHAR_END
+echo x hivemind/distinfo
+sed 's/^X//' > hivemind/distinfo << 'SHAR_END'
+XTIMESTAMP = 1673765068
+XSHA256 (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.mod) = 72a1ae4b580605b2d92a4e838d13452afc1c61eeaa29ca219aed21db4a7ceb5a
+XSIZE (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.mod) = 271
+XSHA256 (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.zip) = c5ab2f7b3739304f18be0200cca6320af80874190b297a6cba307af824715bd0
+XSIZE (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.zip) = 17314
+SHAR_END
 echo x hivemind/Makefile
 sed 's/^X//' > hivemind/Makefile << 'SHAR_END'
 XPORTNAME=	hivemind
@@ -18,23 +32,22 @@ XLICENSE_FILE=	${WRKSRC}/LICENSE
 X
 XUSES=		go:modules
 XGO_MODULE=	github.com/DarthSim/hivemind
+XCGO_ENABLED=	0
+XGO_BUILDFLAGS=	-a -installsuffix cgo
+XGO_LDFLAGS= 	-s -w -X main.version=${DISTVERSIONPREFIX}${DISTVERSION}
 X
 XPLIST_FILES=	bin/hivemind
 X
+XGH_TUPLE=	\
+X		DarthSim:godotenv:v1.3.1:darthsim_godotenv/vendor/github.com/DarthSim/godotenv \
+X		cpuguy83:go-md2man:f79a8a8ca69d:cpuguy83_go_md2man_v2/vendor/github.com/cpuguy83/go-md2man/v2 \
+X		golang:sys:fe61309f8881:golang_sys/vendor/golang.org/x/sys \
+X		joho:godotenv:v1.4.0:joho_godotenv/vendor/github.com/joho/godotenv \
+X		pkg:term:v1.2.0-beta.2:pkg_term/vendor/github.com/pkg/term \
+X		russross:blackfriday:v2.0.1:russross_blackfriday_v2/vendor/github.com/russross/blackfriday/v2 \
+X		shurcooL:sanitized_anchor_name:v1.0.0:shurcool_sanitized_anchor_name/vendor/github.com/shurcooL/sanitized_anchor_name \
+X		urfave:cli:v1.22.5:urfave_cli/vendor/github.com/urfave/cli
+X
 X.include <bsd.port.mk>
-SHAR_END
-echo x hivemind/distinfo
-sed 's/^X//' > hivemind/distinfo << 'SHAR_END'
-XTIMESTAMP = 1673765068
-XSHA256 (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.mod) = 72a1ae4b580605b2d92a4e838d13452afc1c61eeaa29ca219aed21db4a7ceb5a
-XSIZE (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.mod) = 271
-XSHA256 (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.zip) = c5ab2f7b3739304f18be0200cca6320af80874190b297a6cba307af824715bd0
-XSIZE (go/sysutils_hivemind/hivemind-v1.1.0/v1.1.0.zip) = 17314
-SHAR_END
-echo x hivemind/pkg-descr
-sed 's/^X//' > hivemind/pkg-descr << 'SHAR_END'
-XHivemind is a process manager for Procfile-based applications. Hivemind uses
-Xpty to capture process output. That fixes any problem with log clipping,
-Xdelays, and TTY colors other process management tools may have.
 SHAR_END
 exit
