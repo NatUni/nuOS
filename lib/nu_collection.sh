@@ -157,6 +157,7 @@ collection_vars_init () {
 		security/suricata
 		www/matomo
 		www/authelia
+		net/keycloak
 		net-im/ejabberd
 		net/rabbitmq
 		lang/erlang-runtime25
