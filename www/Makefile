@@ -1,6 +1,9 @@
 BIND?=localhost
 
-build: dashboard/public/build engine/mix.exs ## Build a production-ready binary or set of files
+FRONTENDS=	dashboard
+FRONTENDS+=	org net
+
+build: ${FRONTENDS:S/^/build-/} build-engine ## Build a production-ready binary or set of files
 	@echo '=====> Target: build'
 	@echo Done.
 .PHONY: build
@@ -11,7 +14,7 @@ server-info:
 	@echo
 .PHONY: server-info
 
-start: dashboard/public/build server-info
+start: build-dashboard server-info
 	cd dashboard && npm start
 .PHONY: start
 
@@ -46,7 +49,7 @@ test: ## Run a full set of test suites
 
 clean: ## Remove all build artifacts and downloaded dependencies
 	@echo '=====> Target: clean'
-	rm -rf dashboard/public/build dashboard/node_modules
+	rm -rf ${FRONTENDS:S+$+/public/build+} ${FRONTENDS:S+$+/node_modules+}
 	rm -rf engine/_build engine/deps
 	[ ! -e engine/config/dev.exs.bak ] || mv engine/config/dev.exs.bak engine/config/dev.exs
 .PHONY: clean
@@ -57,18 +60,22 @@ clean-world: ## Remove all dependencies from development environment (may have u
 	rm -rf ~/.hex ~/.mix
 .PHONY: clean-world
 
-dashboard/public/build: dashboard/node_modules
-	cd dashboard && npm run build
+${FRONTENDS:S/^/build-/}: ${@:S/^build-//}/public/build
 
-dashboard/node_modules: dashboard/package.json
-	cd dashboard && npm install
+${FRONTENDS:S+$+/public/build+}: ${@:H:H}/node_modules
+	cd ${@:H:H} && npm run build
 
-dashboard/package.json:
-	npx --yes degit sveltejs/template dashboard
+${FRONTENDS:S+$+/node_modules+}: ${@:H}/package.json
+	cd ${@:H} && npm install
 
-bind-phoenix-dev: engine/mix.exs
+${FRONTENDS:S+$+/package.json+}:
+	npx --yes degit sveltejs/template ${@:H}
+
+bind-phoenix-dev: build-engine
 	sed -i "${:![ -e engine/config/dev.exs.bak ] || echo .bak!}" -Ee 's/^([^#]*\<ip:[[:blank:]]*)\{([[:digit:][:blank:],]+)}(.*)$$/\1{${BIND:tl:S/^*$/0.0.0.0/W:S/^localhost$/127.0.0.1/W:S/./, /g}}\3/g' engine/config/dev.exs
 .PHONY: bind-phoenix-dev
+
+build-engine: engine/mix.exs engine/deps
 
 engine/mix.exs: phx
 	@grep -Fow Engine.Umbrella.MixProject engine/mix.exs || ( \
