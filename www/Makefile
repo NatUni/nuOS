@@ -92,7 +92,7 @@ engine/mix.exs: phx
 		mv xxxdistinctlynuosuniquexxx_umbrella engine; \
 	)
 
-engine/deps: engine/mix.exs mix
+engine/deps: engine/mix.exs
 	cd engine && mix deps.get
 
 mix:
