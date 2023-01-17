@@ -48,11 +48,10 @@ test: ## Run a full set of test suites
 	@echo '=====> Target: test'
 .PHONY: test
 
-clean: ## Remove all build artifacts and downloaded dependencies
+clean: unbind-phoenix-dev ## Remove all build artifacts and downloaded dependencies
 	@echo '=====> Target: clean'
 	rm -rf ${FRONTENDS:S+$+/public/build+} ${FRONTENDS:S+$+/node_modules+}
 	rm -rf engine/_build engine/deps
-	[ ! -e engine/config/dev.exs.bak ] || mv engine/config/dev.exs.bak engine/config/dev.exs
 .PHONY: clean
 
 clean-world: ## Remove all dependencies from development environment (may have unwanted side effects)
@@ -75,6 +74,10 @@ ${FRONTENDS:S+$+/package.json+}:
 bind-phoenix-dev: build-engine
 	sed -i "${:![ -e engine/config/dev.exs.bak ] || echo .bak!}" -Ee 's/^([^#]*\<ip:[[:blank:]]*)\{([[:digit:][:blank:],]+)}(.*)$$/\1{${BIND:tl:S/^*$/0.0.0.0/W:S/^localhost$/127.0.0.1/W:S/./, /g}}\3/g' engine/config/dev.exs
 .PHONY: bind-phoenix-dev
+
+unbind-phoenix-dev:
+	[ ! -e engine/config/dev.exs.bak ] || mv engine/config/dev.exs.bak engine/config/dev.exs
+.PHONY: unbind-phoenix-dev
 
 build-engine: engine/mix.exs engine/deps
 
