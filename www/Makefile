@@ -18,14 +18,15 @@ start: build-dashboard server-info
 	cd dashboard && npm start
 .PHONY: start
 
-dev: server-info ## Start a local development server with live reloading
+dev: Procfile server-info ## Start a local development server with live reloading
 	@echo '=====> Target: dev'
+	...
 	honcho start
 .PHONY: dev
 
-dev-svelte: dashboard/node_modules
-	cd dashboard && env HOST=${BIND:tl:S/^*$/0.0.0.0/W} npm run dev
-.PHONY: dev-svelte
+${FRONTENDS:S/^/dev-/}: ${@:S/^dev-//}/node_modules
+	cd ${@:S/^dev-//} && env HOST=${BIND:tl:S/^*$/0.0.0.0/W} npm run dev
+.PHONY: ${FRONTENDS:S/^/dev-/}
 
 dev-phoenix: engine/deps rebar bind-phoenix-dev
 	cd engine && mix phx.server
@@ -114,6 +115,10 @@ hex: mix
 phx: hex
 	@mix phx.new -v || mix archive.install --force hex phx_new
 .PHONY: phx
+
+Procfile:
+	echo api: make dev-phoenix > Procfile
+	echo ${FRONTENDS} | xargs -n1 | sh -c 'while read -r fe; do echo $$fe: make PORT=$$((5000 + $${i=0})) dev-$$fe; i=$$(($$i + 1)); done >> Procfile'
 
 help: ## Show this help
 	@echo 
