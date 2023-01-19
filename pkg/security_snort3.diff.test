@@ -1,1 +1,1 @@
-[ aee2ccb7c4fe4f22e5a2692aa3f34c3d = `md5 -q Makefile` ]
+! grep -q ^LIBUNWIND_ Makefile
