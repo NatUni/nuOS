@@ -2,6 +2,7 @@ BIND?=localhost
 
 FRONTENDS=	dashboard
 FRONTENDS+=	org net
+FRONTENDS+=	wall gold cash
 
 build: ${FRONTENDS:S/^/build-/} build-engine ## Build a production-ready binary or set of files
 	@echo '=====> Target: build'
@@ -50,7 +51,7 @@ test: ## Run a full set of test suites
 
 clean: unbind-phoenix-dev ## Remove all build artifacts and downloaded dependencies
 	@echo '=====> Target: clean'
-	rm -rf ${FRONTENDS:S+$+/public/build+} ${FRONTENDS:S+$+/node_modules+}
+	rm -rf Procfile ${FRONTENDS:S+$+/public/build+} ${FRONTENDS:S+$+/node_modules+}
 	rm -rf engine/_build engine/deps
 .PHONY: clean
 
