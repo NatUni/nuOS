@@ -140,6 +140,7 @@ collection_vars_init () {
 		lang/squeak
 		lang/gravity
 		lang/crystal
+		java/openjdk19
 		textproc/zed
 		math/or-tools
 		www/npm
