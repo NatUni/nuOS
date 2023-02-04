@@ -1,0 +1,77 @@
+#!/bin/sh
+# This is a shell archive
+echo x dragonfly
+mkdir -p dragonfly > /dev/null 2>&1
+echo x dragonfly/pkg-descr
+sed 's/^X//' > dragonfly/pkg-descr << 'SHAR_END'
+XProbably, the fastest in-memory store in the universe!
+X
+XDragonfly is a modern in-memory datastore, fully compatible with Redis and Memcached APIs. Dragonfly implements novel algorithms and data structures on top of a multi-threaded, shared-nothing architecture. As a result, Dragonfly reaches x25 performance compared to Redis and supports millions of QPS on a single instance.
+X
+XDragonfly's core properties make it a cost-effective, high-performing, and easy-to-use Redis replacement.
+SHAR_END
+echo x dragonfly/Makefile
+sed 's/^X//' > dragonfly/Makefile << 'SHAR_END'
+XPORTNAME=	dragonfly
+XPORTVERSION=	0.14.0
+XCATEGORIES=	databases
+X
+XMAINTAINER=	milios@ccsys.com
+XCOMMENT=	Probably, the fastest in-memory store in the universe!
+X
+XLICENSE=	BSL
+X
+XUSES=		shebangfix cmake:noninja ninja gmake autoreconf:build compiler:c++17-lang libtool:build ssl
+X
+XUSE_GITHUB=	yes
+XGH_ACCOUNT=	dragonflydb romange:helio
+XGH_PROJECT=	dragonfly helio:helio
+XGH_TAGNAME=	v${PORTVERSION} v0.2.0:helio
+XGH_SUBDIR=	helio:helio
+X
+XSHEBANG_FILES=	helio/blaze.sh
+X
+X#PLIST_FILES=	lib/libwren.a lib/libwren.so bin/wren_test
+XBUILD_DEPENDS=	bash:shells/bash
+XLIB_DEPENDS=	libboost_system.so:devel/boost-libs \
+X		libunwind.so:devel/libunwind \
+X		libzstd.so:archivers/zstd
+X
+XCONFIGURE_SHELL=	${LOCALBASE}/bin/bash
+XCONFIGURE_ENV=	CMAKE_C_COMPILER=${CC} CMAKE_CXX_COMPILER=${CXX} M4=gm4 BASH_EXECUTABLE=${CONFIGURE_SHELL} CMAKE_MAKE_PROGRAM=${MAKE_CMD}
+X
+Xpost-patch:
+X	${REINPLACE_CMD} -Ee '/^if\(.+\{CMAKE_SYSTEM_NAME}/,/endif\(/d' ${WRKSRC}/helio/cmake/internal.cmake ${WRKSRC}/helio/CMakeLists.txt
+X	${REINPLACE_CMD} -e 's/x86_64/amd64/' ${WRKSRC}/helio/cmake/internal.cmake
+X	${REINPLACE_CMD} -e 's/cmake/& -Wno-dev/' ${WRKSRC}/helio/blaze.sh
+X
+Xdo-configure:
+X	cd ${WRKSRC} && helio/blaze.sh -release -clang
+X	${REINPLACE_CMD} -e 's/\<make\>/${MAKE_CMD}/' ${WRKSRC}/clang-opt/third_party/src/uring_project-stamp/uring_project-build-Release.cmake
+X	${REINPLACE_CMD} -e 's/--prefix=/--cc=${CC};--cxx=${CXX};&/' ${WRKSRC}/clang-opt/third_party/src/uring_project-stamp/uring_project-configure-Release.cmake
+X
+Xpost-configure:
+X	cd ${WRKSRC}/clang-opt/third_party/src && ${REINPLACE_CMD} -e 's+set(command "+&/usr/local/bin/bash;+' uring_project-stamp/uring_project-configure-Release.cmake gperf_project-stamp/gperf_project-configure-Release.cmake
+X	#${REINPLACE_CMD} -e s+linux/swab.h+machine/endian.h+ ${WRKSRC}/clang-opt/third_party/uring/src/include/liburing.h
+X#	make -C "${.CURDIR}" SHEBANG_FILES="`cd ${WRKSRC} && grep -lr \#\!/bin/sh clang-opt | xargs`" fix-shebang
+X
+Xdo-build:
+X	cd ${WRKSRC}/clang-opt && ${CONFIGURE_ENV} ${NINJA_CMD} ${PORTNAME}
+X
+Xdo-install:
+X#	${INSTALL_PROGRAM} ${WRKSRC}/lib/libwren.a ${STAGEDIR}${PREFIX}/lib
+X#	${INSTALL_PROGRAM} ${WRKSRC}/lib/libwren.so ${STAGEDIR}${PREFIX}/lib
+X#	${INSTALL_PROGRAM} ${WRKSRC}/bin/wren_test ${STAGEDIR}${PREFIX}/bin
+X	@echo foo
+X
+X.include <bsd.port.mk>
+SHAR_END
+echo x dragonfly/distinfo
+sed 's/^X//' > dragonfly/distinfo << 'SHAR_END'
+XTIMESTAMP = 1675438131
+XSHA256 (dragonflydb-dragonfly-0.14.0-v0.14.0_GH0.tar.gz) = 6667b8047195e83d28aa9ec7b21df088b95af9aaa499cf17c3e8be74f8f867c9
+XSIZE (dragonflydb-dragonfly-0.14.0-v0.14.0_GH0.tar.gz) = 900945
+XSHA256 (romange-helio-v0.2.0_GH0.tar.gz) = 7754db4a9c8b8c88b7763ad990ed778b7023e17613e96011489bf577f9a9ece9
+XSIZE (romange-helio-v0.2.0_GH0.tar.gz) = 1145189
+SHAR_END
+exit
