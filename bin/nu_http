@@ -70,6 +70,7 @@ maybe_yell
 [ -n "${OPT_SSL-}" -o -z "${OPT_OBSOLETE-}" ]
 
 service=apache24
+ssl_ciphersuite_setting='HIGH:MEDIUM:!SSLv3:!kRSA:!ECDHE-RSA-AES256-SHA384:!DHE-RSA-AES256-SHA256:!ECDHE-RSA-CAMELLIA256-SHA384:!DHE-RSA-CAMELLIA128-SHA256:!ECDHE-RSA-AES128-SHA256:!DHE-RSA-AES128-SHA256:!ECDHE-RSA-CAMELLIA128-SHA256:!DHE-RSA-CAMELLIA256-SHA256:!ECDHE-RSA-AES256-SHA:!ECDHE-RSA-AES128-SHA'
 
 [ ! -e "${CHROOTDIR-}/etc/rc.conf.d/$service" ] || [ `wc -l "${CHROOTDIR-}/etc/rc.conf.d/$service" | xargs | cut -w -f 1` = 1 ]
 
@@ -129,8 +130,8 @@ if [ -n "${OPT_SSL-}" ]; then
 			[ "$ln" -ge 1 ]
 			sed -i '' -Ee "
 				${ln}a\\
-SSLCipherSuite HIGH:MEDIUM:!SSLv3:!kRSA\\
-SSLProxyCipherSuite HIGH:MEDIUM:!SSLv3:!kRSA
+SSLCipherSuite $ssl_ciphersuite_setting\\
+SSLProxyCipherSuite $ssl_ciphersuite_setting
 			" "${CHROOTDIR-}/usr/local/etc/$service/extra/httpd-ssl.conf"
 		fi
 	fi
