@@ -34,7 +34,7 @@ build_vars_init () {
 	echo 'target optimize    TRGT_OPTZ      ' $TRGT_OPTZ
 	echo 'git server         GIT_SERVER     ' ${GIT_SERVER=git.FreeBSD.org}
 	echo 'git path           GIT_PATH       ' ${GIT_PATH:=src}
-	echo 'git branch         GIT_BRANCH     ' ${GIT_BRANCH:=releng/13.1}
+	echo 'git branch         GIT_BRANCH     ' ${GIT_BRANCH:=releng/13.2}
 }
 
 install_vars_init () {
