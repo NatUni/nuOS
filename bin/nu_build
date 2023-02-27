@@ -227,7 +227,7 @@ firewall_logif="YES"
 ifconfig_vtnet0_name="net0"
 
 # if you have a static IP address asignment, replace 'up' with your inet configuration
-ifconfig_net0="up -rxcsum -rxcsum6 -txcsum -txcsum6 -lro -tso -vlanhwtso"
+ifconfig_net0="up -rxcsum -rxcsum6 -txcsum -txcsum6 -lro -tso -vlanhwcsum -vlanhwtso -vxlanhwcsum -vxlanhwtso"
 EOF
 	
 	cat >> $pool_mnt/etc/sysctl.conf <<'EOF'
