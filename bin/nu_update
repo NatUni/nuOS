@@ -144,7 +144,7 @@ if canhas ${OPT_FREEBSD-}; then
 	echo -n "FreeBSD source tree: $before_ver.$before_rev"
 	if [ $before_rev != $after_rev -o $before_ver != $BASEOS_VER ]; then
 		echo " -> $BASEOS_VER.$after_rev"
-		if [ $before_ver != $BASEOS_VER ] || canhas "`git -C /usr/src diff $before_rev $after_rev | head -c 16`" ]; then
+		if [ $before_ver != $BASEOS_VER ] || canhas "`git -C /usr/src diff ${before_rev#g} ${after_rev#g} | head -c 16`" ]; then
 			if ! srsly ${OPT_NO_SNAP-}; then
 				zfs set canmount=noauto $before_obj_ds
 				zfs unmount $before_obj_ds
