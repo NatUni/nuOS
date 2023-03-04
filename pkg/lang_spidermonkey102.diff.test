@@ -1,0 +1,1 @@
+grep -qw PYTHON3_DEFAULT Makefile

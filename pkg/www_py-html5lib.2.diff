@@ -1,0 +1,13 @@
+--- ../py-html5lib.orig/files/extra-patch-html5lib___trie___base.py	1970-01-01 00:00:00.000000000 +0000
++++ ./files/extra-patch-html5lib___trie___base.py	2023-02-28 01:26:05.332977000 +0000
+@@ -0,0 +1,10 @@
++--- html5lib/_trie/_base.py.orig	2017-12-07 12:25:26 UTC
+++++ html5lib/_trie/_base.py
++@@ -1,6 +1,6 @@
++ from __future__ import absolute_import, division, unicode_literals
++ 
++-from collections import Mapping
+++from collections.abc import Mapping
++ 
++ 
++ class Trie(Mapping):

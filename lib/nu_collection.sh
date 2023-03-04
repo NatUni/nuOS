@@ -139,6 +139,7 @@ collection_vars_init () {
 		lang/squeak
 		lang/gravity
 		lang/crystal
+		lang/python
 		lang/ruby32
 		java/openjdk19
 		textproc/zed
@@ -238,7 +239,6 @@ collection_vars_init () {
 		net-p2p/namecoin
 		x11/kitty
 		net/x11vnc
-		net/tightvnc
 		www/firefox
 		www/chromium
 		java/icedtea-web
@@ -246,11 +246,7 @@ collection_vars_init () {
 		net/quiterss
 		multimedia/vlc
 		multimedia/obs-studio
-		multimedia/obs-websocket
-		multimedia/obs-scrab
 		multimedia/wlrobs
-		multimedia/obs-v4l2sink
-		multimedia/obs-transition-matrix
 		multimedia/obs-streamfx
 		multimedia/obs-qtwebkit
 		multimedia/shotcut
@@ -264,6 +260,7 @@ collection_vars_init () {
 		net/kamailio
 		net-im/py-matrix-synapse
 		multimedia/obs-ndi
+		multimedia/obs-scrab
 		games/openarena
 		security/palisade
 		cad/opencascade
