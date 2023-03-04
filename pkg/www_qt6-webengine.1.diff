@@ -1,0 +1,11 @@
+--- ../qt6-webengine.orig/Makefile	2023-02-27 18:25:20.345922000 +0000
++++ Makefile	2023-02-27 18:25:32.784807000 +0000
+@@ -46,7 +46,7 @@
+ 		libxkbcommon.so:x11/libxkbcommon
+ 
+ USES=	bison cmake gl gnome gperf jpeg localbase:ldflags minizip ninja:build \
+-	nodejs:build,lts pkgconfig python:build qt-dist:6,webengine xorg
++	nodejs:build pkgconfig python:build qt-dist:6,webengine xorg
+ USE_GL=		gl
+ USE_GNOME=	glib20 libxml2 libxslt
+ USE_QT=		base declarative:run positioning quick3d:build webchannel

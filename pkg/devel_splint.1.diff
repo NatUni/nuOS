@@ -1,0 +1,10 @@
+--- ../splint.orig/Makefile	2023-03-01 05:47:30.318062000 +0000
++++ Makefile	2023-03-01 05:47:25.088520000 +0000
+@@ -12,6 +12,7 @@
+ 
+ USES=		gmake
+ GNU_CONFIGURE=	yes
++CONFIGURE_ENV=	BISON=no
+ MAKE_JOBS_UNSAFE=	yes
+ 
+ post-patch:
