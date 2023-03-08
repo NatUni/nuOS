@@ -75,6 +75,9 @@ collection_vars_init () {
 		sysutils/pciutils
 		sysutils/dmidecode
 		sysutils/smartmontools
+		sysutils/ipmitool
+		sysutils/freeipmi
+		sysutils/openipmi
 		net/rsync
 		security/sudo
 		sysutils/lsof
