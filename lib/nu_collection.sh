@@ -25,10 +25,9 @@ nuos_lib_collection_loaded=y
 reset_pkg_collection () {
 	: ${PKG_COLLECTION:=$HOSTOS_PKG_COLLECTION}
 	
-	local src_ver="${BASEOS_TYPE}-${BASEOS_VER}"
-	local host_base_ver="`uname -s`-`uname -r`"
+	local host_base_ver="`uname -r`"
 	
-	if [ ${src_ver%-p*} != ${host_base_ver%-p*} ]; then
+	if [ "${BASEOS_VER%%-*}" != "${host_base_ver%%-*}" ]; then
 		PKG_COLLECTION=blank
 	fi
 	if [ -q != "${1-}" ]; then
