@@ -219,8 +219,8 @@ jail_list=""
 EOF
 	
 	cat > $pool_mnt/etc/rc.conf.local <<'EOF'
-gateway_enable="YES"
-firewall_nat_enable="YES"
+#gateway_enable="YES"
+#firewall_nat_enable="YES"
 firewall_logif="YES"
 
 # replace 'vtnet0' with the name of your primary upstream network interface

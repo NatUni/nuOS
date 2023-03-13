@@ -141,6 +141,8 @@ collection_vars_init () {
 		lang/squeak
 		lang/gravity
 		lang/crystal
+		lang/wren
+		lang/janet
 		lang/python
 		lang/ruby32
 		java/openjdk19
@@ -180,6 +182,7 @@ collection_vars_init () {
 		multimedia/ffmpeg
 		multimedia/Bento4
 		www/yt-dlp
+		www/flexget
 		www/lux
 		www/gallery-dl
 		net-p2p/rtorrent
@@ -196,8 +199,6 @@ collection_vars_init () {
 		net-p2p/namecoin-daemon
 		net-p2p/namecoin-utils
 		net-p2p/monero-cli
-		net-p2p/cardano-node
-		net-p2p/cardano-db-sync
 	'
 	
 	COLL_commonserver='
@@ -249,7 +250,6 @@ collection_vars_init () {
 		multimedia/vlc
 		multimedia/obs-studio
 		multimedia/wlrobs
-		multimedia/obs-streamfx
 		multimedia/obs-qtwebkit
 		multimedia/shotcut
 		graphics/blender
@@ -258,11 +258,14 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		net-p2p/cardano-node
+		net-p2p/cardano-db-sync
 		security/zeek
 		net/kamailio
 		net-im/py-matrix-synapse
 		multimedia/obs-ndi
 		multimedia/obs-scrab
+		multimedia/obs-streamfx
 		games/openarena
 		security/palisade
 		cad/opencascade
