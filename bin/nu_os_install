@@ -18,8 +18,10 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts c:p:P:qv OPT; do case $OPT in
+while getopts c:i:o:p:P:qv OPT; do case $OPT in
 	c) PKG_COLLECTION=$OPTARG;;
+	i) INPUT=$OPTARG;;
+	o) OUTPUT=$OPTARG;;
 	p) POOL_NAME=$OPTARG;;
 	P) SOURCE_POOL=$OPTARG;;
 	q) OPT_QUICK=y;;
@@ -34,11 +36,24 @@ nuos_init
 make_vars_init
 collection_vars_init
 
-echo 'pool name       -P SOURCE_POOL    ' ${SOURCE_POOL:=$POOL_BOOT_NAME}
-echo 'pool name       -p POOL_NAME      ' $POOL_NAME
+if canhas ${INPUT-}; then
+	echo 'input file      -i INPUT          ' $INPUT
+else
+	echo 'source pool     -P SOURCE_POOL    ' ${SOURCE_POOL:=$POOL_BOOT_NAME}
+fi
+
+if canhas ${OUTPUT-}; then
+	echo 'output file     -o OUTPUT         ' $OUTPUT
+else
+	echo 'target pool     -p POOL_NAME      ' $POOL_NAME
+	pool_mnt=`zpool get -H -o value altroot $POOL_NAME`
+	[ -n "$pool_mnt" -a x- != "x$pool_mnt" ]
+fi
 
 maybe_pause
 maybe_yell
+
+[ -z "${INPUT-}" -o -z "${OUTPUT-}" ]
 
 os_software_ds_name=os
 
@@ -50,27 +65,36 @@ nuos_proj_ds_name=$os_software_ds_name/nuOS
 nuos_os_ds_name=$nuos_proj_ds_name/$NUOS_VER
 nuos_bin_ds_name=$nuos_os_ds_name/$TRGT
 
-pool_mnt=`zpool get -H -o value altroot $POOL_NAME`
-[ -n "$pool_mnt" -a x- != "x$pool_mnt" ]
-
-src_rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$nuos_bin_ds_name`
+if canhas ${INPUT-}; then
+	require_tmp restore_log
+	sister nu_restore -t $POOL_NAME < "$INPUT" | tee -a "$restore_log"
+	src_rev=`grep "^$POOL_NAME/$nuos_bin_ds_name/" "$restore_log" | cut -d / -f 6 | cut -d @ -f 1 | head -n 1`
+else
+	src_rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$nuos_bin_ds_name`
+fi
 
 nuos_sysroot_source_ds=$nuos_bin_ds_name/$src_rev
 
-# as of FBSD 11.2 this borks any custom properties: GARBANZO!
-sister nu_backup -p $SOURCE_POOL $nuos_sysroot_source_ds@$PKG_COLLECTION | sister nu_restore -t $POOL_NAME
+if canhas ${OUTPUT-}; then
+	sister nu_backup -p $SOURCE_POOL $nuos_sysroot_source_ds@$PKG_COLLECTION > "$OUTPUT"
+	echo "Saved installation zstream."
+	exit
+elif ! canhas ${INPUT-}; then
+	sister nu_backup -p $SOURCE_POOL $nuos_sysroot_source_ds@$PKG_COLLECTION | sister nu_restore -t $POOL_NAME
+fi
+
 
 
 
 # XXX: GARBANZO
 
-# HOPING https://github.com/zfsonlinux/zfs/issues/5563 was all it is, but it wasnt
-#sister nu_backup -p $SOURCE_POOL $nuos_sysroot_source_ds@blank | sister nu_restore -t $POOL_NAME
-#sister nu_backup -p $SOURCE_POOL -f blank $nuos_sysroot_source_ds@$PKG_COLLECTION | sister nu_restore -t $POOL_NAME
-
 # BECAUSE https://github.com/zfsonlinux/zfs/pull/5189 SEEMS to be not included in FBSD 11.2
 zfs set org.nuos:active_revision=$src_rev $POOL_NAME/$nuos_bin_ds_name
-fbsd_src_rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$fbsd_bin_ds_name`
+if canhas ${INPUT-}; then
+	fbsd_src_rev=`grep "^$POOL_NAME/$fbsd_bin_ds_name/" "$restore_log" | cut -d / -f 6 | cut -d @ -f 1 | head -n 1`
+else
+	fbsd_src_rev=`basename $(zfs get -H -p -o value origin $SOURCE_POOL/$nuos_sysroot_source_ds) | cut -d @ -f 1`
+fi
 zfs set org.nuos:active_revision=$fbsd_src_rev $POOL_NAME/$fbsd_bin_ds_name
 
 # /XXX: GARBANZO
