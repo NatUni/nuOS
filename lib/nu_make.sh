@@ -93,7 +93,7 @@ prepare_make_conf () {
 		require_tmp makeconf
 		cat >| "$makeconf" <<EOF
 CPUTYPE?=$TRGT_CODE
-DEFAULT_VERSIONS= bdb=18 gcc=12 ghostscript=9 java=19 llvm=15 lua=5.4 mysql=8.0 nodejs=19 perl5=5.36 pgsql=15 php=8.2 python=3.11 python3=3.11 ruby=3.1 samba=4.16 ssl=openssl
+DEFAULT_VERSIONS= bdb=18 gcc=12 java=19 llvm=15 lua=5.4 mysql=8.0 nodejs=19 perl5=5.36 pgsql=15 php=8.2 python=3.11 python3=3.11 ruby=3.1 samba=4.16 ssl=openssl
 EOF
 		setvar $ret_file_var "$makeconf"
 		setvar $ret_cmd_var retire_tmp
