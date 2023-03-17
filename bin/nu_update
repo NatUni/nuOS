@@ -122,7 +122,7 @@ if canhas ${OPT_FREEBSD-}; then
 		zfs snapshot -r $before_src_ds@$snaptime $before_obj_ds@$snaptime
 		zfs set canmount=noauto $before_src_ds
 		zfs unmount $before_src_ds
-		zfs clone -o mountpoint=/usr/src $before_src_ds@$snaptime ${before_src_ds%.r*}.$snaptime
+		zfs clone -o mountpoint=/usr/src $before_src_ds@$snaptime ${before_src_ds%.g*}.$snaptime
 	fi
 	want_src="https://$GIT_SERVER/$GIT_PATH.git"
 	have_src=`git -C /usr/src config --get remote.origin.url`
@@ -151,12 +151,12 @@ if canhas ${OPT_FREEBSD-}; then
 			fi
 			if [ $before_ver = $BASEOS_VER ]; then
 				same_ver=y
-				after_obj_ds=${before_obj_ds%.r*}${same_ver:+.$after_rev}
+				after_obj_ds=${before_obj_ds%.g*}${same_ver:+.$after_rev}
 			else
 				after_obj_ds=${before_obj_ds%/*}/$BASEOS_VER
 			fi
 			if ! srsly ${OPT_NO_SNAP-}; then
-				zfs rename ${before_src_ds%.r*}.$snaptime $POOL_BOOT_NAME/os/$BASEOS_TYPE/src/$BASEOS_VER${same_ver:+.$after_rev}
+				zfs rename ${before_src_ds%.g*}.$snaptime $POOL_BOOT_NAME/os/$BASEOS_TYPE/src/$BASEOS_VER${same_ver:+.$after_rev}
 				zfs create -o mountpoint=/usr/obj ${after_obj_ds}__tmp
 			fi
 			if [ ${OPT_FREEBSD-} -ge 2 ]; then
@@ -218,7 +218,7 @@ if canhas ${OPT_FREEBSD-}; then
 	else
 		echo
 		if ! srsly ${OPT_NO_SNAP-}; then
-			zfs destroy ${before_src_ds%.r*}.$snaptime
+			zfs destroy ${before_src_ds%.g*}.$snaptime
 			zfs set canmount=on $before_src_ds
 			zfs mount $before_src_ds
 		fi
