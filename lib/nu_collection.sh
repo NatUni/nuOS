@@ -52,7 +52,7 @@ collection_vars_init () {
 		net/isboot-kmod
 		net/realtek-re-kmod
 		sysutils/pefs-kmod
-		security/openssh-portable@hpn
+		security/openssh-portable
 		security/wpa_supplicant
 		net/hostapd
 		net/dhcpcd
