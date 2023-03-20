@@ -195,37 +195,37 @@ warn () {
 
 spill () {
 	if [ x-e = "x${1-}" ]; then
-		local explicit_unset=y
+		local __nuOS_lib_system_spill_explicit_unset=y
 		shift
 	else
-		local explicit_unset=
+		local __nuOS_lib_system_spill_explicit_unset=
 	fi
 	while [ $# -gt 0 ]; do
 		case "${1-}" in
 			-p)
 				shift
-				local pvar=$1
+				local __nuOS_lib_system_spill_printed_variable_name=$1
 				shift
 			;;
-			*) local pvar=$1;;
+			*) local __nuOS_lib_system_spill_printed_variable_name=$1;;
 		esac
-		local var=$1 val=
+		local __nuOS_lib_system_spill_read_variable_name=$1 __nuOS_lib_system_spill_variable_value=
 		shift
-		if eval [ -z \"\${$var-}\" -a -n \"\${$var-x}\" ]; then
-			if srsly $explicit_unset; then
-				echo unset $pvar
+		if eval [ -z \"\${$__nuOS_lib_system_spill_read_variable_name-}\" -a -n \"\${$__nuOS_lib_system_spill_read_variable_name-x}\" ]; then
+			if srsly $__nuOS_lib_system_spill_explicit_unset; then
+				echo unset $__nuOS_lib_system_spill_printed_variable_name
 			fi
 			continue
 		fi
-		eval setvar val \"\$$var\"
-		echo -n "$pvar="
-		printf %s "$val" | case y in
-			`printf %s "$val" | grep -q \' && echo y`)
+		eval setvar __nuOS_lib_system_spill_variable_value \"\$$__nuOS_lib_system_spill_read_variable_name\"
+		echo -n "$__nuOS_lib_system_spill_printed_variable_name="
+		printf %s "$__nuOS_lib_system_spill_variable_value" | case y in
+			`printf %s "$__nuOS_lib_system_spill_variable_value" | grep -q \' && echo y`)
 					echo -n \"
 					sed -e 's/\\/\\\\/g;s/`/\\`/g;s/"/\\"/g;s/\$/\\&/g'
 					echo \"
 			;;
-			`printf %s "$val" | awk 'NR==2{print "$";exit}{print $0}' | grep -qE '[^[:alnum:]./_@%^+=:-]' && echo y`)
+			`printf %s "$__nuOS_lib_system_spill_variable_value" | awk 'NR==2{print "$";exit}{print $0}' | grep -qE '[^[:alnum:]./_@%^+=:-]' && echo y`)
 					echo -n \'
 					cat
 					echo \'
