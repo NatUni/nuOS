@@ -194,6 +194,12 @@ warn () {
 }
 
 spill () {
+	if [ x-e = "x${1-}" ]; then
+		local explicit_unset=y
+		shift
+	else
+		local explicit_unset=
+	fi
 	while [ $# -gt 0 ]; do
 		case "${1-}" in
 			-p)
@@ -204,8 +210,12 @@ spill () {
 			*) local pvar=$1;;
 		esac
 		local var=$1 val=
+		shift
 		if eval [ -z \"\${$var-}\" -a -n \"\${$var-x}\" ]; then
-			return
+			if srsly $explicit_unset; then
+				echo unset $pvar
+			fi
+			continue
 		fi
 		eval setvar val \"\$$var\"
 		echo -n "$pvar="
@@ -225,7 +235,6 @@ spill () {
 					echo
 			;;
 		esac
-		shift
 	done
 }
 
