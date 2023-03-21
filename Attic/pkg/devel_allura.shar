@@ -1,0 +1,61 @@
+#!/bin/sh
+# This is a shell archive
+echo x allura
+mkdir -p allura > /dev/null 2>&1
+echo x allura/distinfo
+sed 's/^X//' > allura/distinfo << 'SHAR_END'
+XTIMESTAMP = 1679257606
+XSHA256 (apache-allura-1.14.0-rel-1.14.0_GH0.tar.gz) = 6bfa72b56733bc1ddc987be67ffd1cef930822446248f70576bf3440aa071579
+XSIZE (apache-allura-1.14.0-rel-1.14.0_GH0.tar.gz) = 3069938
+SHAR_END
+echo x allura/Makefile
+sed 's/^X//' > allura/Makefile << 'SHAR_END'
+X# $FreeBSD$
+X
+XPORTNAME=	allura
+XPORTVERSION=	1.14.0
+XCATEGORIES=	devel www
+X
+XMAINTAINER=	milios@ccsys.com
+XCOMMENT=	Apache Allura software development platform
+X
+XLICENSE=	APACHE20
+X
+XUSE_GITHUB=	yes
+XGH_ACCOUNT=	apache
+XGH_PROJECT=	allura
+XGH_TAGNAME=	rel/${PORTVERSION}
+X
+XBUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pip>=22.3.1:devel/py-pip@${PY_FLAVOR} \
+X		${PYTHON_PKGNAMEPREFIX}virtualenv>=20.20.0:devel/py-virtualenv@${PY_FLAVOR} \
+X		bash>=5.2.15:shells/bash \
+X		libffi>=3.4.4:devel/libffi \
+X		libjpeg-turbo>=2.1.5.1:graphics/libjpeg-turbo \
+X		cyrus-sasl>=2.1.28:security/cyrus-sasl2 \
+X		openldap26-client>=2.6.4:net/openldap26-client \
+X		git>=2.40.0:devel/git \
+X		subversion>=1.14.2:devel/subversion \
+X		${PYTHON_PKGNAMEPREFIX}subversion>=1.14.2:devel/py-subversion@${PY_FLAVOR} \
+X		mercurial>=6.3.2:devel/mercurial
+X
+XUSES=		python:3.7 ssl compiler:gcc-c++11-lib gmake
+XUSE_PYTHON=	distutils autoplist
+X
+XNO_ARCH=yes
+XNO_BUILD=yes
+X
+X# Installation directory and user/group settings
+XALLURA_USER?=allura
+XALLURA_GROUP?=allura
+XALLURA_LOGDIR?=/var/log/allura
+X
+Xdo-install:
+X	@${PYTHON_CMD} -m virtualenv ${STAGEDIR}${PREFIX}/${PORTNAME}
+X	@${ECHO_CMD} 'PYTHONPATH=${PREFIX}/${PORTNAME}/lib/${PYTHON_VERSION}/site-packages:${PREFIX}/${PORTNAME}/lib/${PYTHON_VERSION}/site-packages/MarkupSafe-2.0.1-py${PYTHON_VER}.egg' >> ${STAGEDIR}${PREFIX}/${PORTNAME}/bin/activate
+X	@${ECHO_CMD} 'export PYTHONPATH' >> ${STAGEDIR}${PREFIX}/${PORTNAME}/bin/activate
+X	@${ECHO_CMD} 'if [ ! -d ${ALLURA_LOGDIR} ]; then mkdir -p ${ALLURA_LOGDIR} && chown ${ALLURA_USER}:${ALLURA_GROUP} ${ALLURA_LOGDIR}; fi' >> ${STAGEDIR}${PREFIX}/${PORTNAME}/bin/activate
+X	@${ECHO_CMD} 'cd ${WRKSRC} && ${PREFIX}/${PORTNAME}/bin/python setup.py install --root=${STAGEDIR}' | su ${ALLURA_USER} -c 'bash'
+X
+X.include <bsd.port.mk>
+SHAR_END
+exit
