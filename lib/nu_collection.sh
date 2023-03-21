@@ -181,6 +181,7 @@ collection_vars_init () {
 		net/samba416
 		multimedia/ffmpeg
 		multimedia/Bento4
+		www/youtube_dl
 		www/yt-dlp
 		www/flexget
 		www/lux
