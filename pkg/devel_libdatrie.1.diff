@@ -1,0 +1,13 @@
+--- ../libdatrie.orig/Makefile	2023-03-21 02:40:04.442146000 +0000
++++ Makefile	2023-03-21 02:43:08.779728000 +0000
+@@ -14,7 +14,9 @@
+ GNU_CONFIGURE=	yes
+ USE_LDCONFIG=	yes
+ 
+-LDFLAGS+=	${ICONV_LIB}
++LIB_DEPENDS=	libiconv.so.2:converters/libiconv
++
++LDFLAGS+=	-liconv
+ 
+ INSTALL_TARGET=	install-strip
+ 
