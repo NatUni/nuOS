@@ -193,6 +193,14 @@ warn () {
 	printf '%s\n' "WARNING: $*" | tr -dc [[:graph:]][[:space:]] 2>&1
 }
 
+strlen () {
+	# returns chars according to locale, not bytes
+	while [ $# -gt 0 ]; do
+		printf %s "$1" | wc -m | xargs
+		shift
+	done
+}
+
 spill () {
 	if [ x-e = "x${1-}" ]; then
 		local __nuOS_lib_system_spill_explicit_unset=y
