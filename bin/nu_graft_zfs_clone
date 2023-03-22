@@ -1,0 +1,147 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.99a0 - bin/nu_graft_zfs_clone
+#
+# Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.99a0
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+while getopts qs:Sv OPT; do case $OPT in
+	q) OPT_QUICK=y;;
+	s) SNAPSHOT=$OPTARG;;
+	S) OPT_NO_SNAP=y;;
+	v) OPT_VERBOSE=y;;
+esac; done; shift $(($OPTIND-1))
+[ $# -eq 2 -o $# -eq 3 ]
+
+maybe_pause
+maybe_yell
+
+src_ds=$1
+mod_ds=$2
+tgt_ds=${3:-$2}
+
+bones () {
+	zfs list -rHoname,mountpoint "$1" | cut -c $((1+`strlen "$1"`))- | tr '\t' '@'
+}
+
+[ "x`bones $src_ds`" = "x`bones $mod_ds`" ] || error 18 incompatible bones
+
+while IFS=@ read -r dsp _; do
+	for ds in $src_ds $mod_ds; do
+		[ no = `zfs get -Hovalue mounted $ds$dsp` ]
+	done
+done <<EOF
+`bones $mod_ds`
+EOF
+
+which rsync > /dev/null
+
+[ "x$mod_ds" != "x$tgt_ds" ] || overwrite=y
+
+srsly ${OPT_NO_SNAP} || zfs snapshot -r $src_ds@${SNAPSHOT:=t`date +%s`}
+
+require_tmp -d src_mnt
+require_tmp -d mod_mnt
+require_tmp -d wip_mnt
+require_tmp -d rsync_pipe
+mkfifo -m 600 "$rsync_pipe/o"
+
+maybe_backward () {
+	if srsly ${overwrite-}; then
+		tail -r
+	else
+		cat
+	fi
+}
+
+require_tmp sub_zpaths
+bones $mod_ds | cut -d @ -f 1 | maybe_backward >| "$sub_zpaths"
+
+while read -r dsp; do
+	
+	for p in cm mp ro; do
+		read -r $p ${p}_src
+		eval src=\"\$${p}_src\"
+		case $src in
+			local|received) setvar ${p}_lcl y;;
+			*) setvar ${p}_lcl '';;
+		esac
+	done <<EOF
+`zfs get -Hovalue,source canmount,mountpoint,readonly $mod_ds$dsp`
+EOF
+	
+	if [ on = $ro ]; then
+		set_rw=y
+	else
+		set_rw=
+	fi
+	
+	#spill src_ds mod_ds
+	spill dsp cm cm_src cm_lcl mp mp_src mp_lcl ro ro_src ro_lcl set_rw
+	#exit 99
+	
+	zfs clone ${cm_lcl:+-o canmount=$cm} ${mp_lcl:+-o mountpoint="$mp"} ${set_rw:+-o readonly=off} $src_ds$dsp@$SNAPSHOT $tgt_ds${dsp}${overwrite:+__wip}
+	zfs unmount $tgt_ds${dsp}${overwrite:+__wip} 2> /dev/null || true
+	
+	mount -t zfs -r $src_ds$dsp $src_mnt
+	mount -t zfs -r $mod_ds$dsp $mod_mnt
+	mount -t zfs $tgt_ds${dsp}${overwrite:+__wip} $wip_mnt
+	
+	rsync -aHAXSIc --delete-before --inplace --fileflags --force-change --only-write-batch="$rsync_pipe/o" "$mod_mnt/" "$src_mnt/" &
+	rsync -aHAXSIcv --delete-before --inplace --fileflags --force-change --read-batch="$rsync_pipe/o" "$wip_mnt/"
+	wait
+	
+	
+	umount "$src_mnt"
+	umount "$mod_mnt"
+	umount "$wip_mnt"
+	
+	while read -r prop val; do
+		canhas $prop || continue
+		zfs set $prop="$val" $tgt_ds${dsp}${overwrite:+__wip}
+	done <<EOF
+`zfs get -Hpo property,value -slocal,received all $mod_ds$dsp | awk '{if ($1 ~ /:/){print $0}}'`
+EOF
+	
+	if srsly ${overwrite-}; then
+		zfs list -H -d 1 -o name $tgt_ds$dsp | tail -n +2 | while read -r child_ds; do
+			zfs rename $child_ds $tgt_ds${dsp}__wip/${child_ds#$tgt_ds$dsp/}
+		done
+		zfs destroy $tgt_ds$dsp@$SNAPSHOT
+		zfs destroy $tgt_ds$dsp
+	fi
+	
+	if [ on = $ro ]; then
+		if srsly $ro_lcl; then
+			zfs set readonly=on $tgt_ds${dsp}${overwrite:+__wip}
+		else
+			zfs inherit readonly $tgt_ds${dsp}${overwrite:+__wip}
+		fi
+	fi
+	
+	if srsly ${overwrite-}; then
+		zfs rename $tgt_ds${dsp}__wip $tgt_ds$dsp
+	fi
+	
+done < "$sub_zpaths"
+
+zfs snapshot -r $tgt_ds@$SNAPSHOT
+
+retire_tmp sub_zpaths
+retire_tmp rsync_pipe
+retire_tmp wip_mnt
+retire_tmp mod_mnt
+retire_tmp src_mnt
