@@ -131,7 +131,7 @@ dismounter () {
 			fi
 		fi
 		[ \( -n "$opt_remount" -a -z "$alt_mnt" \) -o \( -n "$opt_sys" -a -n "$alt_mnt" \) ] || zfs unmount -f $ds || true
-		[ -z "$cm" -a -z "$mp" -a -z "ro" ] || zfs set ${cm:+canmount=$cm} ${ro:+readonly=$ro} ${mp:+"mountpoint=$mp"} $ds
+		[ -z "$cm" -a -z "$mp" -a -z "$ro" ] || zfs set ${cm:+canmount=$cm} ${ro:+readonly=$ro} ${mp:+"mountpoint=$mp"} $ds
 		if [ -n "$opt_remount" -a -n "$alt_mnt" -a -z "$opt_sys" ]; then
 			echo mount -t zfs $ds "$tmp_mp" >> "$remount_script"
 		fi
