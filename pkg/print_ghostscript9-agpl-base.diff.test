@@ -1,0 +1,1 @@
+[ -f files/patch-Resource_Init_FAPIcidfmap -a -f files/patch-Resource_Init_cidfmap ]
