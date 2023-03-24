@@ -60,7 +60,7 @@ feport=`ctladm portlist -q -f camsim | cut -w -f 1 | tail -n 1`
 sbdev=`camcontrol devlist -b | awk '$3 ~ /^camsim[[:digit:]]/ {print $1}' | tail -n 1`
 [ -n "$sbdev" ]
 
-zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/img
+zfs create -p -o volmode=dev -o mountpoint=none -o canmount=off $POOL_NAME/img
 
 for img_name in $@; do
 	
