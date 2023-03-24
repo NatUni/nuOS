@@ -245,6 +245,7 @@ collection_vars_init () {
 		net/x11vnc
 		www/firefox
 		www/chromium
+		multimedia/mpv
 		java/icedtea-web
 		mail/thunderbird
 		net/quiterss
