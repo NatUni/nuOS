@@ -87,9 +87,10 @@ else
 	zfs create $fbsd_sysroot_ds/var/db
 	
 	if [ -n "${OPT_NOMAKE-}" ]; then
-		mkdir $pool_mnt/boot $pool_mnt/boot/zfs $pool_mnt/etc/ssh
+		mkdir $pool_mnt/boot $pool_mnt/boot/zfs $pool_mnt/etc/ssh $pool_mnt/etc/rc.d
 		touch $pool_mnt/etc/login.conf.db
-		srsly ${new_motd-} || echo 'FreeBSD ?.?.?  (UNKNOWN)' > $pool_mnt/etc/motd
+		cp /usr/src/COPYRIGHT $pool_mnt/COPYRIGHT
+		echo 'FreeBSD ?.?.?  (UNKNOWN)' > $pool_mnt/etc/motd${new_motd:+.template}
 	else
 		(cd /usr/src && make -D WITHOUT_KERNEL_SYMBOLS DESTDIR=$pool_mnt KERNCONF=$TRGT_KERN installkernel installworld distribution)
 	fi
