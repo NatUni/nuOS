@@ -1,0 +1,10 @@
+--- ../mixxx.orig/Makefile	2023-02-26 02:40:38.031536000 +0000
++++ ./Makefile	2023-03-27 15:48:09.852300000 +0000
+@@ -1,6 +1,5 @@
+ PORTNAME=	mixxx
+-DISTVERSION=	2.3.2
+-PORTREVISION=	6
++DISTVERSION=	2.3.4
+ CATEGORIES=	audio
+ 
+ MAINTAINER=	acm@FreeBSD.org

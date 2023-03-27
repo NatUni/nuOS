@@ -162,6 +162,7 @@ collection_vars_init () {
 		www/nginx
 		net/haproxy
 		security/snort3
+		security/zeek
 		security/barnyard2
 		security/suricata
 		www/matomo
@@ -203,6 +204,7 @@ collection_vars_init () {
 		net-p2p/namecoin-daemon
 		net-p2p/namecoin-utils
 		net-p2p/monero-cli
+		security/palisade
 	'
 	
 	COLL_commonserver='
@@ -260,36 +262,34 @@ collection_vars_init () {
 		multimedia/obs-qtwebkit
 		multimedia/shotcut
 		audio/qtractor
+		audio/pt2-clone
+		audio/fasttracker2
 		audio/muse-sequencer
+		audio/mixxx
 		audio/zrythm
 		graphics/blender
 		cad/opencascade
 		games/sdlpop
 		games/openarena
+		devel/gwenhywfar
+		devel/p5-Module-Build-Tiny
+		finance/gnucash
+		finance/kmymoney
 	'
 	
 	COLL_nice='
 		server
 		net-p2p/cardano-node
 		net-p2p/cardano-db-sync
-		security/zeek
 		net-im/py-matrix-synapse
 		multimedia/obs-ndi
 		multimedia/obs-scrab
 		multimedia/obs-streamfx
-		security/palisade
-		math/fplll
 	'
 	
 	COLL_nasty='
 		nice
 		desktop
-		finance/gnucash
-		finance/kmymoney
-		finance/jgnash
 		math/sage
-		audio/protracker
-		audio/fasttracker2
-		audio/mixxx
 	'
 }
