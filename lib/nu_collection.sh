@@ -153,6 +153,7 @@ collection_vars_init () {
 		math/or-tools
 		www/npm
 		sysutils/parallel
+		security/pssh
 		sysutils/hilite
 		sysutils/py-honcho
 		lang/php82-extensions
@@ -170,6 +171,7 @@ collection_vars_init () {
 		net/keycloak
 		net-im/ejabberd
 		net/rabbitmq
+		net/nsq
 		lang/erlang-runtime25
 		lang/elixir
 		devel/stack
@@ -183,6 +185,7 @@ collection_vars_init () {
 		www/httrack
 		net/netatalk3
 		net/samba416
+		www/minio
 		multimedia/ffmpeg
 		multimedia/Bento4
 		www/youtube_dl
@@ -269,8 +272,10 @@ collection_vars_init () {
 		audio/zrythm
 		graphics/blender
 		cad/opencascade
+		games/sgt-puzzles
 		games/sdlpop
 		games/openarena
+		games/warzone2100
 		devel/gwenhywfar
 		devel/p5-Module-Build-Tiny
 		finance/gnucash
