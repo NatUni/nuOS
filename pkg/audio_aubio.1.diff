@@ -1,0 +1,25 @@
+--- Makefile.orig	2023-03-26 16:10:00.966494000 +0000
++++ Makefile	2023-03-26 16:22:19.199684000 +0000
+@@ -65,6 +65,16 @@
+ 
+ PORTDOCS=	*
+ 
++.endif # !defined(SLAVEPORT)
++
++.include <bsd.port.pre.mk>
++
++.if ${PYTHON_REL} >= 31100
++EXTRA_PATCHES+=		${PATCHDIR}/extra-patch-waflib_Context.py \
++			${PATCHDIR}/extra-patch-waflib_ConfigSet.py
++.endif
++
++.if !defined(SLAVEPORT)
+ post-patch:
+ 	@${REINPLACE_CMD} -e \
+ 		'/pkgconfig/s|$${LIBDIR}|&data|' ${WRKSRC}/waflib/TaskGen.py
+@@ -77,4 +87,4 @@
+ 
+ .endif # !defined(SLAVEPORT)
+ 
+-.include <bsd.port.mk>
++.include <bsd.port.post.mk>
