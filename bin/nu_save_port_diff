@@ -1,0 +1,55 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.99a0 - bin/nu_save_port_diff
+#
+# Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.99a0
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+baseos_init -q
+nuos_init -q
+
+pkgdir=$NUOS_CODE/pkg
+wd=`realpath .`
+category=`eko "$wd" | rev | cut -d/ -f 2 | rev`
+port=`eko "$wd" | rev | cut -d/ -f 1 | rev`
+
+
+[ ! -e "$pkgdir/${category}_$port.diff.test" ] || err 17
+[ -d "../$port.orig" ] || err 2
+
+user=`stat -f %Sg "$pkgdir"`
+
+require_tmp diff
+
+! diff -ruN ../$port.orig . >| "$diff"
+
+grep -wn ^diff < "$diff" | cut -d: -f1 | {
+	read s
+	while read e; do
+		echo $(($s+1)):$(($e-1))
+		s=$e
+	done
+	echo $(($s+1)):'$'
+} | grep -n . | while IFS=: read i s e; do
+	sed -ne "$s,${e}p" "$diff" > "$pkgdir/${category}_$port.$i.diff"
+	chown $user "$pkgdir/${category}_$port.$i.diff"
+done
+
+retire_tmp diff
+
+echo '[ `find * -type f | sort | xargs md5 | md5` =' `cd ../$port.orig; find * -type f | sort | xargs md5 | md5` ] > "$pkgdir/${category}_$port.diff.test"
+chown $user "$pkgdir/${category}_$port.diff.test"
+

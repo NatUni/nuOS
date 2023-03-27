@@ -137,6 +137,9 @@ collection_vars_init () {
 		databases/mysql80-server
 		databases/redis
 		databases/mongodb50
+		databases/cassandra4
+		net/kafka
+		devel/zookeeper
 		lang/go
 		lang/squeak
 		lang/gravity
@@ -215,6 +218,7 @@ collection_vars_init () {
 		graphics/povray-meta
 		graphics/graphviz
 		x11-fonts/webfonts
+		net/kamailio
 		net-im/jitsi-videobridge
 		www/jitsi-meet
 		print/gutenprint
@@ -255,8 +259,13 @@ collection_vars_init () {
 		multimedia/wlrobs
 		multimedia/obs-qtwebkit
 		multimedia/shotcut
+		audio/qtractor
+		audio/muse-sequencer
+		audio/zrythm
 		graphics/blender
+		cad/opencascade
 		games/sdlpop
+		games/openarena
 	'
 	
 	COLL_nice='
@@ -264,18 +273,12 @@ collection_vars_init () {
 		net-p2p/cardano-node
 		net-p2p/cardano-db-sync
 		security/zeek
-		net/kamailio
 		net-im/py-matrix-synapse
 		multimedia/obs-ndi
 		multimedia/obs-scrab
 		multimedia/obs-streamfx
-		games/openarena
 		security/palisade
-		cad/opencascade
 		math/fplll
-		math/maxima
-		audio/zrythm
-		audio/muse-sequencer
 	'
 	
 	COLL_nasty='

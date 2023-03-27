@@ -1,0 +1,13 @@
+--- ../cassandra4.orig/files/patch-test_conf_cassandra-seeds.yaml	1970-01-01 00:00:00.000000000 +0000
++++ ./files/patch-test_conf_cassandra-seeds.yaml	2023-03-26 23:38:03.322102000 +0000
+@@ -0,0 +1,10 @@
++--- test/conf/cassandra-seeds.yaml.orig	2021-05-25 15:24:52 UTC
+++++ test/conf/cassandra-seeds.yaml
++@@ -37,7 +37,6 @@ server_encryption_options:
++ incremental_backups: true
++ concurrent_compactors: 4
++ compaction_throughput_mb_per_sec: 0
++-row_cache_class_name: org.apache.cassandra.cache.OHCProvider
++ row_cache_size_in_mb: 16
++ enable_user_defined_functions: true
++ enable_scripted_user_defined_functions: true
