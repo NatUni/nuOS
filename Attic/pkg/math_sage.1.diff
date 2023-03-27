@@ -1,0 +1,27 @@
+--- ../sage.orig/Makefile	2023-02-26 02:40:49.300595000 +0000
++++ ./Makefile	2023-03-27 11:38:38.357300000 +0000
+@@ -91,7 +91,6 @@
+ 		${PYTHON_PKGNAMEPREFIX}sqlite3>0:databases/py-sqlite3@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}requests>0:www/py-requests@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}rpy2>0:math/py-rpy2@${PY_FLAVOR}\
+-		${PYTHON_PKGNAMEPREFIX}scandir>0:sysutils/py-scandir@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}scipy>0:science/py-scipy@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}send2trash>0:deskutils/py-send2trash@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}simplegeneric>0:devel/py-simplegeneric@${PY_FLAVOR}\
+@@ -286,7 +285,6 @@
+ 		${PYTHON_PKGNAMEPREFIX}sqlite3>0:databases/py-sqlite3@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}requests>0:www/py-requests@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}rpy2>0:math/py-rpy2@${PY_FLAVOR}\
+-		${PYTHON_PKGNAMEPREFIX}scandir>0:sysutils/py-scandir@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}scipy>0:science/py-scipy@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}send2trash>0:deskutils/py-send2trash@${PY_FLAVOR}\
+ 		${PYTHON_PKGNAMEPREFIX}simplegeneric>0:devel/py-simplegeneric@${PY_FLAVOR}\
+@@ -404,7 +402,7 @@
+ 		nbconvert nbformat networkx nose notebook numpy packaging pandocfilters	\
+ 		parso pathpy pexpect pickleshare pillow pkgconfig pplpy		\
+ 		prometheus_client prompt_toolkit psutil ptyprocess pybind11 pycparser pyparsing	\
+-		pygments pyrsistent pytz pyzmq requests rpy2 scandir scipy send2trash simplegeneric	\
++		pygments pyrsistent pytz pyzmq requests rpy2 scipy send2trash simplegeneric	\
+ 		six snowballstemmer sphinx sphinxcontrib_applehelp sphinxcontrib_devhelp sphinxcontrib_htmlhelp sphinxcontrib_jsmath sphinxcontrib_qthelp sphinxcontrib_serializinghtml sphinxcontrib_websupport sympy terminado testpath tornado traitlets	\
+ 		tzlocal vcversioner wcwidth webencodings widgetsnbextension zipp zope_interface
+ JS_LIBS=	jmol mathjax threejs

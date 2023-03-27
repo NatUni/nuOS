@@ -1,0 +1,14 @@
+--- ../py-gmpy.orig/files/extra-patch-src_mpz__pylong.c	1970-01-01 00:00:00.000000000 +0000
++++ ./files/extra-patch-src_mpz__pylong.c	2023-03-27 10:33:55.218186000 +0000
+@@ -0,0 +1,11 @@
++--- src/mpz_pylong.c.orig	2023-03-27 10:29:44.735774000 +0000
+++++ src/mpz_pylong.c	2023-03-27 10:30:41.676560000 +0000
++@@ -265,7 +265,7 @@
++   {
++     mpn_get_pylong(lptr->ob_digit, size, z->_mp_d, ABS(z->_mp_size));
++     if (z->_mp_size < 0)
++-      Py_SIZE(lptr) = -(Py_SIZE(lptr));
+++      Py_SET_SIZE(lptr, -(Py_SIZE(lptr)));
++   }
++ 
++   return (PyObject *) lptr;
