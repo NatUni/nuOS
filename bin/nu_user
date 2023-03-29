@@ -16,13 +16,14 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts aC:d:D:eh:im:Mn:p:Psu:U:v OPT; do case $OPT in
+while getopts aC:d:D:eGh:im:Mn:p:Psu:U:v OPT; do case $OPT in
 	a) OPT_SASL=y;;
 	C) CHROOTDIR=$OPTARG;;
 	d) DELIVER_MAIL=$OPTARG; case $DELIVER_MAIL in
 		local|net) ;; *) exit 22; esac;;
 	D) DELIVER_HOST=$OPTARG;;
 	e) OPT_ELI=y;;
+	G) OPT_LOCAL_GUI=y;;
 	h) HOST_NAME=$OPTARG;;
 	i) OPT_IMPORT=y;;
 	m) USER_PATH=$OPTARG;;
@@ -65,7 +66,7 @@ maybe_yell
 if [ -n "${OPT_IMPORT-}" ]; then
 	while read user passwd name; do
 		[ -n "$user" -a -n "$passwd" ]
-		sh $0 ${OPT_SASL:+-a} ${OPT_SAMBA:+-s} ${OPT_VERBOSE:+-v} ${HOST_NAME:+-h "$HOST_NAME"} ${POOL_NAME:+-p "$POOL_NAME"} -d $DELIVER_MAIL ${DELIVER_HOST:+-D "$DELIVER_HOST"} ${CHROOTDIR:+-C "$CHROOTDIR"} -n "${name:-User $user}" -u $user <<EOF
+		sh $0 ${OPT_SASL:+-a} ${OPT_LOCAL_GUI:+-G} ${OPT_SAMBA:+-s} ${OPT_VERBOSE:+-v} ${HOST_NAME:+-h "$HOST_NAME"} ${POOL_NAME:+-p "$POOL_NAME"} -d $DELIVER_MAIL ${DELIVER_HOST:+-D "$DELIVER_HOST"} ${CHROOTDIR:+-C "$CHROOTDIR"} -n "${name:-User $user}" -u $user <<EOF
 $passwd
 EOF
 		subproc_exit_status=$?
@@ -139,6 +140,10 @@ EOF
 	fi
 else
 	${CHROOTDIR:+chroot "$CHROOTDIR"} pw useradd -m -n $USER_NAME ${ACCT_UID:+-u $ACCT_UID} -g $USER_NAME -c "$USER_FULL_NAME" ${USER_FLAGS-}
+fi
+
+if srsly ${OPT_LOCAL_GUI-}; then
+	${CHROOTDIR:+chroot "$CHROOTDIR"} pw groupmod video -m $USER_NAME
 fi
 
 if [ -n "${OPT_ELI-}" ] && zfs list $POOL_NAME-pvt > /dev/null 2>&1; then
