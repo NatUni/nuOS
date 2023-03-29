@@ -233,6 +233,7 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
+		sysutils/seatd
 		sysutils/touchegg
 		editors/libreoffice
 		graphics/gimp
