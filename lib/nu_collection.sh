@@ -233,6 +233,16 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
+		x11-wm/wayfire
+		x11/wf-shell
+		x11/wcm
+		x11/alacritty
+		x11/swaylock-effects
+		x11/swayidle
+		x11/wlogout
+		x11/kanshi
+		x11/mako
+		accessibility/wlsunset
 		sysutils/seatd
 		sysutils/touchegg
 		editors/libreoffice
@@ -277,6 +287,7 @@ collection_vars_init () {
 		games/sdlpop
 		games/openarena
 		games/warzone2100
+		games/openrct2
 		devel/gwenhywfar
 		devel/p5-Module-Build-Tiny
 		finance/gnucash

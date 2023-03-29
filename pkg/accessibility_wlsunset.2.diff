@@ -1,0 +1,11 @@
+--- ../wlsunset.orig/distinfo	2023-03-01 01:40:27.107740000 +0000
++++ ./distinfo	2023-03-29 16:29:54.139803000 +0000
+@@ -1,5 +1,5 @@
+-TIMESTAMP = 1650165989
++TIMESTAMP = 1680107394
+ SHA256 (wlsunset-0.2.0.tar.gz) = 88bce695722a09d79545f14d404cc0659f7176bb08d5db5f4f23228b6ba8bb03
+ SIZE (wlsunset-0.2.0.tar.gz) = 12605
+-SHA256 (601dfc87ff6e.patch) = c64c5287120feceecf066f9dd1228e3ca877820b8ee2dfbc735243bf1c82bd85
+-SIZE (601dfc87ff6e.patch) = 1289
++SHA256 (601dfc87ff6e.patch) = 1b255d747a1627f6790ddb6a140c7acc246c67976b0b9a978fbde2a7b65cf8ba
++SIZE (601dfc87ff6e.patch) = 1281
