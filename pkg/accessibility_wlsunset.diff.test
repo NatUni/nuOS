@@ -1,1 +1,0 @@
-[ `find * -type f | sort | xargs md5 | md5` = 332df9d0ef770ac2b6b5ce2e97c3177c ]
