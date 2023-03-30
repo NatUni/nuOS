@@ -70,11 +70,11 @@ curr_host_ver=`zfs get -H -o value org.nuos:active_revision $host_ds || true`
 if ! zfs create -o mountpoint=none -o canmount=off $host_ds; then
 	host_existed=y
 	existing_host_ds=$host_ds/`zfs get -H -o value org.nuos:active_revision $host_ds`
-	if [ -z "$alt_mnt" ] && [ yes = `zfs get -H -o value mounted $existing_host_ds` ]; then
+	if [ -z "$ALT_MNT" ] && [ yes = `zfs get -H -o value mounted $existing_host_ds` ]; then
 		existing_host_mp="`zfs get -H -o value mountpoint $existing_host_ds`"
-		if [ "$existing_host_mp" = "$pool_mnt" ]; then
+		if [ "$existing_host_mp" = "$POOL_MNT" ]; then
 			zfs set canmount=noauto $existing_host_ds
-			awk_pattern="$(echo "$pool_mnt/" | sed -e 's,/,\\/,g;s/\./\\\./g')"
+			awk_pattern="$(echo "$POOL_MNT/" | sed -e 's,/,\\/,g;s/\./\\\./g')"
 			mount | awk "\$3 ~ /^$awk_pattern/ {print \$3}" | tail -r | xargs -n1 umount
 			zfs unmount $existing_host_ds
 		fi
@@ -115,7 +115,7 @@ if [ 0 != "$SWAP_SIZE" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" ]; then
 	"
 else
 	cat
-fi < $pool_mnt/etc/fstab >| "$new_fstab"
+fi < $POOL_MNT/etc/fstab >| "$new_fstab"
 
 cat >> "$new_fstab" <<EOF
 /dev/gpt/esp0-$POOL_NAME /boot/efi msdosfs ro,failok 2 0
@@ -130,16 +130,16 @@ EOF
 	zfs set org.nuos:swap_space=${OPT_ELI_SWAP:+eli:}$SWAP_SIZE $new_host_ds
 fi
 
-cat "$new_fstab" >| $pool_mnt/etc/fstab
+cat "$new_fstab" >| $POOL_MNT/etc/fstab
 retire_tmp new_fstab
 
-cat >> $pool_mnt/etc/rc.conf.local <<EOF
+cat >> $POOL_MNT/etc/rc.conf.local <<EOF
 hostname="$NEW_HOST"
 EOF
 
-sed -i '' -e "s/\.my\.domain\$/.${NEW_HOST#*.} $NEW_HOST ${NEW_HOST%%.*}/;s/\<warden.myname.my.domain\>/warden.$NEW_HOST/" $pool_mnt/etc/hosts
+sed -i '' -e "s/\.my\.domain\$/.${NEW_HOST#*.} $NEW_HOST ${NEW_HOST%%.*}/;s/\<warden.myname.my.domain\>/warden.$NEW_HOST/" $POOL_MNT/etc/hosts
 
-cat >> $pool_mnt/etc/nuos/backup <<EOF
+cat >> $POOL_MNT/etc/nuos/backup <<EOF
 sys/$NEW_HOST/(org.nuos:active_revision)/etc
 sys/$NEW_HOST/(org.nuos:active_revision)/var
 EOF
@@ -153,9 +153,9 @@ while
 do
 	bl_rev=$(($bl_rev + 1))
 done
-sister nu_jail ${OPT_VERBOSE:+-v} -C $pool_mnt -p $POOL_NAME -t clone -w -j $bl_jail_name -o $BASEOS_TYPE/$BASEOS_VER/$TRGT -s pkg_ready -i 127.1.255.254 -x -q
+sister nu_jail ${OPT_VERBOSE:+-v} -C $POOL_MNT -p $POOL_NAME -t clone -w -j $bl_jail_name -o $BASEOS_TYPE/$BASEOS_VER/$TRGT -s pkg_ready -i 127.1.255.254 -x -q
 
-copy_ds=`CHROOTDIR=$pool_mnt; nuos_init -q; echo $POOL_NAME/os/$HOSTOS_TYPE/$HOSTOS_VER/$HOSTOS_TRGT`
+copy_ds=`CHROOTDIR=$POOL_MNT; nuos_init -q; echo $POOL_NAME/os/$HOSTOS_TYPE/$HOSTOS_VER/$HOSTOS_TRGT`
 
 nuos_rev=`zfs get -H -o value org.nuos:active_revision $copy_ds || true`
 [ "x$nuos_rev" != x- ] || nuos_rev=
@@ -167,7 +167,7 @@ if [ "$PKG_COLLECTION" != pkg -a "$PKG_COLLECTION" != blank ] && zfs list $copy_
 	do
 		nl_rev=$(($nl_rev + 1))
 	done
-	sister nu_jail ${OPT_VERBOSE:+-v} -C $pool_mnt -p $POOL_NAME -t clone -w -j $nl_jail_name -s pkg -i 127.1.255.253 -x -q
+	sister nu_jail ${OPT_VERBOSE:+-v} -C $POOL_MNT -p $POOL_NAME -t clone -w -j $nl_jail_name -s pkg -i 127.1.255.253 -x -q
 fi
 
 l_rev=0
@@ -177,19 +177,19 @@ while
 do
 	l_rev=$(($l_rev + 1))
 done
-sister nu_jail ${OPT_VERBOSE:+-v} -C $pool_mnt -p $POOL_NAME -t clone -w -j $l_jail_name -s $PKG_COLLECTION -i 127.1.255.252 -x -q
+sister nu_jail ${OPT_VERBOSE:+-v} -C $POOL_MNT -p $POOL_NAME -t clone -w -j $l_jail_name -s $PKG_COLLECTION -i 127.1.255.252 -x -q
 
-[ -n "$alt_mnt" ] || eval `stat -f "mode=%OMp%03OLp uid=%Du gid=%Dg flags=%Of" $pool_mnt/var/db/entropy`
-chflags schg $pool_mnt/var/db/entropy
-if [ -z "$alt_mnt" ]; then
+[ -n "$ALT_MNT" ] || eval `stat -f "mode=%OMp%03OLp uid=%Du gid=%Dg flags=%Of" $POOL_MNT/var/db/entropy`
+chflags schg $POOL_MNT/var/db/entropy
+if [ -z "$ALT_MNT" ]; then
 	while ! zfs create -o setuid=off -o exec=off -o mountpoint=/var/db/entropy -o logbias=throughput -o sync=disabled $POOL_NAME/entropy 2> /dev/null; do
 		zfs destroy $POOL_NAME/entropy
 	done
-	chown $uid:$gid $pool_mnt/var/db/entropy
-	chmod $mode $pool_mnt/var/db/entropy
-	(umask 77 && dd if=/dev/random of=$pool_mnt/var/db/entropy/seed count=1 bs=4k)
-	chown $uid:$gid $pool_mnt/var/db/entropy/seed
-	chflags $flags $pool_mnt/var/db/entropy
+	chown $uid:$gid $POOL_MNT/var/db/entropy
+	chmod $mode $POOL_MNT/var/db/entropy
+	(umask 77 && dd if=/dev/random of=$POOL_MNT/var/db/entropy/seed count=1 bs=4k)
+	chown $uid:$gid $POOL_MNT/var/db/entropy/seed
+	chflags $flags $POOL_MNT/var/db/entropy
 fi
 
 if [ -n "$curr_host_ver" ]; then
@@ -203,14 +203,14 @@ zfs snapshot -r $new_host_ds@boot_single_user
 if ! zfs create -o mountpoint=/home $POOL_NAME/home; then
 	home_existed=y
 	if ! zfs mount $POOL_NAME/home; then
-		if [ -n "$alt_mnt" ]; then
-			mkdir -p "$alt_mnt/home"
-			mount -t nullfs /home "$alt_mnt/home"
+		if [ -n "$ALT_MNT" ]; then
+			mkdir -p "$ALT_MNT/home"
+			mount -t nullfs /home "$ALT_MNT/home"
 		fi
 	fi
 fi
 
-admin_install -z $pool_mnt
+admin_install -z $POOL_MNT
 
 export BASEOS_TYPE
 export BASEOS_VER
@@ -218,7 +218,7 @@ export HOSTOS_TYPE
 export HOSTOS_VER
 export TRGT_TYPE=$TRGT
 export POOL=$POOL_NAME
-export TRGT=$pool_mnt
+export TRGT=$POOL_MNT
 export NAME=${NEW_HOST%%.*}
 export NUOS="$(realpath "$(dirname "$(realpath "$0")")/..")"
 while eval [ -n \"\${LOCAL_SCRIPT_${i:=0}-}\" ]; do

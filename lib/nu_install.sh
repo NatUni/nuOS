@@ -98,13 +98,13 @@ require_base_src () {
 }
 
 discover_install_mnt () {
-	pool_mnt=`zpool get -H -o value altroot $1`
-	[ -n "$pool_mnt" ]
-	if [ x- = "x$pool_mnt" ]; then
-		require_tmp -d alt_mnt
-		pool_mnt="$alt_mnt"
+	POOL_MNT=`zpool get -H -o value altroot $1`
+	[ -n "$POOL_MNT" ]
+	if [ x- = "x$POOL_MNT" ]; then
+		require_tmp -d ALT_MNT
+		POOL_MNT="$ALT_MNT"
 	else
-		alt_mnt=
+		ALT_MNT=
 	fi
 }
 
@@ -115,12 +115,12 @@ dismounter () {
 		s) opt_sys=y;;
 	esac; done; shift $(($OPTIND-1))
 	if [ -n "$opt_remount" ]; then
-		[ -z "$alt_mnt" -a -z "$opt_sys" ] || require_tmp remount_script
+		[ -z "$ALT_MNT" -a -z "$opt_sys" ] || require_tmp remount_script
 	fi
 	zfs list -H -r -o name $1 | tail -r | xargs -n 1 zfs get -H -o name,value,source mountpoint | while read -r ds mp src; do
 		tmp_mp="$mp"
 		mp="${mp%/}"
-		mp="${mp#$pool_mnt}"
+		mp="${mp#$POOL_MNT}"
 		if [ -z "$mp" ]; then root=y; else root=; fi
 		if [ -z "$opt_remount" -a -n "$root" -a -z "$opt_sys" ]; then ro=on; else ro=; fi
 		cm=noauto
@@ -129,7 +129,7 @@ dismounter () {
 		else
 			lcl=
 		fi
-		if [ -n "$lcl" -a -n "$alt_mnt" ]; then
+		if [ -n "$lcl" -a -n "$ALT_MNT" ]; then
 			: ${mp:=/}
 			if [ "$mp" = "$tmp_mp" ]; then
 				mp=
@@ -140,13 +140,13 @@ dismounter () {
 		else
 			set_mp=
 		fi
-		[ \( -n "$opt_remount" -a -z "$alt_mnt" \) -o \( -n "$opt_sys" -a -n "$alt_mnt" \) ] || zfs unmount -f $ds || true
+		[ \( -n "$opt_remount" -a -z "$ALT_MNT" \) -o \( -n "$opt_sys" -a -n "$ALT_MNT" \) ] || zfs unmount -f $ds || true
 		[ -z "$cm" -a -z "$mp" -a -z "$ro" ] || zfs set ${cm:+canmount=$cm} ${ro:+readonly=$ro} ${set_mp:+"mountpoint=$mp"} $ds
-		if [ -n "$opt_remount" -a -n "$alt_mnt" -a -z "$opt_sys" ]; then
+		if [ -n "$opt_remount" -a -n "$ALT_MNT" -a -z "$opt_sys" ]; then
 			echo mount -t zfs $ds "$tmp_mp" >> "$remount_script"
 		fi
 	done
-	if [ -n "$opt_remount" -a -n "$alt_mnt" ]; then
+	if [ -n "$opt_remount" -a -n "$ALT_MNT" ]; then
 		cat "$remount_script" | tail -r | sh
 		retire_tmp remount_script
 	fi
@@ -157,14 +157,14 @@ cloner () {
 	local from_ds=${from%@*} from_snap=${from#*@}
 	zfs list -H -r -o name $from_ds | xargs -n 1 zfs get -H -o name,value,source mountpoint | while read -r ds mp src; do
 		if [ local = "$src" -o received = "$src" ]; then
-			mp="${mp#$pool_mnt}"
+			mp="${mp#$POOL_MNT}"
 			mp="${mp%/}"
-			mp="$alt_mnt$mp"
+			mp="$ALT_MNT$mp"
 			: ${mp:=/}
 		else
 			mp=
 		fi
 		zfs clone ${mp:+-o "mountpoint=$mp"} $ds@$from_snap $to${ds#$from_ds}
 	done
-	[ -z "$alt_mnt" ] || dismounter -r $to
+	[ -z "$ALT_MNT" ] || dismounter -r $to
 }

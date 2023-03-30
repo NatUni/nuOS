@@ -107,15 +107,15 @@ admin_install () {
 			if [ -n "$opt_zfs_create" ]; then
 				if zfs create $POOL_NAME/home/$acct; then
 					user_home_fresh=y
-					if [ -n "${home_existed-}" -a -n "$alt_mnt" ]; then
-						mount -t nullfs /home/$acct "$alt_mnt/home/$acct" 
+					if [ -n "${home_existed-}" -a -n "$ALT_MNT" ]; then
+						mount -t nullfs /home/$acct "$ALT_MNT/home/$acct" 
 					fi
 				else
 					[ -n "${home_existed-}" ]
 					user_home_existed=y
 					if [ no = `zfs get -H -o value mounted $POOL_NAME/home/$acct` ]; then
-						if [ -n "$alt_mnt" ]; then
-							mount -t zfs $POOL_NAME/home/$acct "$alt_mnt/home/$acct"
+						if [ -n "$ALT_MNT" ]; then
+							mount -t zfs $POOL_NAME/home/$acct "$ALT_MNT/home/$acct"
 						else
 							zfs mount $POOL_NAME/home/$acct
 						fi
