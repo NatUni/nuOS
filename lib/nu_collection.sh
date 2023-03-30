@@ -121,6 +121,7 @@ collection_vars_init () {
 		net/openldap26-server
 		security/openvpn
 		net/mpd5
+		security/strongswan
 		textproc/gtk-doc
 		net/avahi
 		dns/nss_mdns
@@ -160,6 +161,7 @@ collection_vars_init () {
 		graphics/pecl-imagick-im7
 		www/mod_php82
 		www/apache24
+		www/mod_qos
 		www/nginx
 		net/haproxy
 		security/snort3
@@ -245,6 +247,7 @@ collection_vars_init () {
 		accessibility/wlsunset
 		sysutils/seatd
 		sysutils/touchegg
+		security/pam_howdy
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
