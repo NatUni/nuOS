@@ -523,6 +523,17 @@ nuos_init () {
 	fi
 }
 
+set_pool_root_mnt_vars () {
+	POOL_MNT=`zpool get -H -o value altroot $1`
+	[ -n "$POOL_MNT" ]
+	if [ x- = "x$POOL_MNT" ]; then
+		require_tmp -d ALT_MNT
+		POOL_MNT="$ALT_MNT"
+	else
+		ALT_MNT=
+	fi
+}
+
 nuos_ssl_init () {
 	if [ -x /usr/local/bin/openssl ]; then
 		SSL_CMD=/usr/local/bin/openssl

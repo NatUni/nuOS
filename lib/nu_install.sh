@@ -97,17 +97,6 @@ require_base_src () {
 	fi
 }
 
-discover_install_mnt () {
-	POOL_MNT=`zpool get -H -o value altroot $1`
-	[ -n "$POOL_MNT" ]
-	if [ x- = "x$POOL_MNT" ]; then
-		require_tmp -d ALT_MNT
-		POOL_MNT="$ALT_MNT"
-	else
-		ALT_MNT=
-	fi
-}
-
 dismounter () {
 	local ds= mp= src= cm= ro= root= lcl= set_mp= opt_remount= opt_sys= tmp_mp= remount_script=
 	while getopts rs OPT; do case $OPT in

@@ -56,7 +56,7 @@ admin_init
 maybe_pause
 maybe_yell
 
-discover_install_mnt $POOL_NAME
+set_pool_root_mnt_vars $POOL_NAME
 
 sys_ds=$POOL_NAME/sys
 factories_ds=$sys_ds/factory

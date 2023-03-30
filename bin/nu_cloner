@@ -37,16 +37,7 @@ to=$2
 from_ds=${from%@*}
 from_snap=${from#*@}
 
-: ${POOL_NAME:=$POOL_BOOT_NAME}
-
-POOL_MNT=`zpool get -H -o value altroot $POOL_NAME`
-[ -n "$POOL_MNT" ]
-if [ x- = "x$POOL_MNT" ]; then
-	require_tmp -d ALT_MNT
-	POOL_MNT="$ALT_MNT"
-else
-	ALT_MNT=
-fi
+set_pool_root_mnt_vars ${POOL_NAME:=$POOL_BOOT_NAME}
 
 zfs list -H -r -o name $POOL_NAME/$from_ds | while read -r ds; do
 	zfs get -H -o source,value mountpoint,canmount,setuid,exec,atime,readonly $ds | while IFS='	' read -r mp_src mp; do
