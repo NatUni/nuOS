@@ -83,8 +83,13 @@ else
 	zfs mount $fbsd_sysroot_ds
 	zfs create $fbsd_sysroot_ds/etc
 	zfs create -o "mountpoint=$alt_mnt/usr/local/etc" $fbsd_sysroot_ds/etc/local
-	zfs create $fbsd_sysroot_ds/var
-	zfs create $fbsd_sysroot_ds/var/db
+	zfs create -o setuid=off $fbsd_sysroot_ds/var
+	zfs create -o exec=off $fbsd_sysroot_ds/var/db
+	zfs create -o exec=off $fbsd_sysroot_ds/var/audit
+	zfs create -o exec=off $fbsd_sysroot_ds/var/crash
+	zfs create -o exec=off $fbsd_sysroot_ds/var/log
+	zfs create -o exec=off -o atime=on $fbsd_sysroot_ds/var/mail
+	zfs create $fbsd_sysroot_ds/var/tmp
 	
 	if [ -n "${OPT_NOMAKE-}" ]; then
 		mkdir $pool_mnt/boot $pool_mnt/boot/zfs $pool_mnt/etc/ssh $pool_mnt/etc/rc.d
@@ -101,15 +106,15 @@ else
 	srsly ${new_build-} || obj_trgt=$TRGT
 	srsly ${old_build-} || obj_trgt=$TRGT_CODE
 		
-	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src
+	zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $fbsd_proj_ds/src
 	zfs create -o mountpoint=/usr/src $fbsd_proj_ds/src/$BASEOS_VER && zfs unmount $fbsd_proj_ds/src/$BASEOS_VER || true
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj/$obj_trgt
 	zfs create -o mountpoint=/usr/obj $fbsd_proj_ds/src/obj/$obj_trgt/$BASEOS_VER && zfs unmount $fbsd_proj_ds/src/obj/$obj_trgt/$BASEOS_VER || true
-	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/ports
-	zfs create -o mountpoint=/var/db/portsnap $fbsd_proj_ds/ports/snap-db && zfs unmount $fbsd_proj_ds/ports/snap-db || true
+	zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $fbsd_proj_ds/ports
+	zfs create -o exec=off -o mountpoint=/var/db/portsnap $fbsd_proj_ds/ports/snap-db && zfs unmount $fbsd_proj_ds/ports/snap-db || true
 	zfs create -o mountpoint=/usr/ports $fbsd_proj_ds/ports/src && zfs unmount $fbsd_proj_ds/ports/src || true
-	zfs create -o mountpoint=/usr/ports/distfiles $fbsd_proj_ds/ports/distfiles && zfs unmount $fbsd_proj_ds/ports/distfiles || true
+	zfs create -o exec=off -o mountpoint=/usr/ports/distfiles $fbsd_proj_ds/ports/distfiles && zfs unmount $fbsd_proj_ds/ports/distfiles || true
 
 	cat > $pool_mnt/boot/loader.conf <<'EOF'
 zfs_load="YES"
@@ -124,7 +129,8 @@ EOF
 	
 	cat >> $pool_mnt/etc/fstab <<EOF
 # Device		Mountpoint	FStype	Options		Dump	Pass#
-tmp /tmp tmpfs rw,nosuid 0 0
+tmp /tmp tmpfs size=32m,rw,nosuid 0 0
+#tmp /var/run tmpfs size=4m,rw,nosuid 0 0
 EOF
 	
 	zfs snapshot -r $fbsd_sysroot_ds@tmpfs_enabled
@@ -397,7 +403,7 @@ done
 case $sw_spc in
 	-) ;;
 	eli:*) eli= ;&
-	*) zfs create -p ${eli--o org.freebsd:swap=on} -b 4K -V ${sw_spc#eli:} $pool/swap/sw0
+	*) zfs create -p ${eli--o org.freebsd:swap=on} -o volmode=dev -b 4K -V ${sw_spc#eli:} $pool/swap/sw0
 esac
 zfs mount $root_ds/etc
 EOF
@@ -549,14 +555,14 @@ EOF
 		umount $pool_mnt/tmp
 	fi
 	
-	zfs create -o mountpoint=/usr/ports/packages $nuos_bin_ds/pkg && zfs unmount $nuos_bin_ds/pkg || true
+	zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $nuos_bin_ds/pkg && zfs unmount $nuos_bin_ds/pkg || true
 	
 	dismounter $nuos_sysroot_ds
 	
 fi
 
 if ! srsly ${OPT_SKIP_FACTORY-}; then
-	zfs create -o mountpoint=none -o canmount=off -o primarycache=metadata $POOL_NAME/swap || zfs set mountpoint=none canmount=off primarycache=metadata $POOL_NAME/swap
+	zfs create -o mountpoint=none -o canmount=off -o volmode=dev -o primarycache=metadata $POOL_NAME/swap || zfs set mountpoint=none canmount=off primarycache=metadata $POOL_NAME/swap
 
 	sys_ds=$POOL_NAME/sys
 	factories_ds=$sys_ds/factory

@@ -42,6 +42,8 @@ while getopts a:b:c:Deh:kK:l:p:qs:u:vx OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
+SWAP_SIZE=`humanize $(dehumanize "${SWAP_SIZE:-0}") | tr -d ' B'`
+
 load_lib nu_admin nu_make nu_ports nu_collection nu_install
 
 baseos_init
@@ -53,7 +55,6 @@ admin_init
 
 maybe_pause
 maybe_yell
-
 
 discover_install_mnt $POOL_NAME
 
@@ -90,17 +91,47 @@ done
 
 cloner $use_factory_ds@pool_registered $new_host_ds
 
-cat >> $pool_mnt/etc/fstab <<EOF
+require_tmp new_fstab
+
+if [ 0 != "$SWAP_SIZE" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" ]; then
+	swap_bytes=`dehumanize $SWAP_SIZE`
+	: ${TMP_SIZE:=`humanize $(($swap_bytes / 2)) | tr -d ' B' | tr [[:upper:]] [[:lower:]]`}
+	: ${RUN_SIZE:=`humanize $(($swap_bytes / 8)) | tr -d ' B' | tr [[:upper:]] [[:lower:]]`}
+	
+	awk "
+		\$3 == \"tmpfs\" {
+			if (\$2 ~ /\/tmp\$/) {
+				s=\"$TMP_SIZE\"
+			} else if (\$2 ~ /\/run\$/) {
+				s=\"$RUN_SIZE\"
+			} else {
+				s=\"\"
+			}
+			if (s) {
+				sub(/(^|,)size=[^,]+/, \"size=\"s, \$4)
+			}
+		}
+		{print \$0}
+	"
+else
+	cat
+fi < $pool_mnt/etc/fstab >| "$new_fstab"
+
+cat >> "$new_fstab" <<EOF
 /dev/gpt/esp0-$POOL_NAME /boot/efi msdosfs ro,failok 2 0
 EOF
-if [ -n "$SWAP_SIZE" -a "$SWAP_SIZE" != 0 ]; then
+
+if [ 0 != "$SWAP_SIZE" ]; then
 	if [ -n "${OPT_ELI_SWAP-}" ]; then
-		cat >> $pool_mnt/etc/fstab <<EOF
+		cat >> "$new_fstab" <<EOF
 /dev/zvol/$POOL_NAME/swap/sw0.eli none swap sw,ealgo=AES-XTS,keylen=256,sectorsize=4096 0 0
 EOF
 	fi
 	zfs set org.nuos:swap_space=${OPT_ELI_SWAP:+eli:}$SWAP_SIZE $new_host_ds
 fi
+
+cat "$new_fstab" >| $pool_mnt/etc/fstab
+retire_tmp new_fstab
 
 cat >> $pool_mnt/etc/rc.conf.local <<EOF
 hostname="$NEW_HOST"
@@ -151,7 +182,7 @@ sister nu_jail ${OPT_VERBOSE:+-v} -C $pool_mnt -p $POOL_NAME -t clone -w -j $l_j
 [ -n "$alt_mnt" ] || eval `stat -f "mode=%OMp%03OLp uid=%Du gid=%Dg flags=%Of" $pool_mnt/var/db/entropy`
 chflags schg $pool_mnt/var/db/entropy
 if [ -z "$alt_mnt" ]; then
-	while ! zfs create -o mountpoint=/var/db/entropy -o logbias=throughput -o sync=disabled $POOL_NAME/entropy 2> /dev/null; do
+	while ! zfs create -o setuid=off -o exec=off -o mountpoint=/var/db/entropy -o logbias=throughput -o sync=disabled $POOL_NAME/entropy 2> /dev/null; do
 		zfs destroy $POOL_NAME/entropy
 	done
 	chown $uid:$gid $pool_mnt/var/db/entropy
