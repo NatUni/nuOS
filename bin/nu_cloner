@@ -1,0 +1,118 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.99a0 - bin/nu_cloner
+#
+# Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.99a0
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+while getopts p:v OPT; do case $OPT in
+	p) POOL_NAME=$OPTARG;;
+	v) OPT_VERBOSE=y;;
+esac; done; shift $(($OPTIND-1))
+[ $# -eq 2 ]
+
+nuos_init -q
+
+maybe_yell
+
+
+from=$1
+to=$2
+
+[ @ = "`eko "$from" | tr -dc @`" ]
+
+from_ds=${from%@*}
+from_snap=${from#*@}
+
+: ${POOL_NAME:=$POOL_BOOT_NAME}
+
+POOL_MNT=`zpool get -H -o value altroot $POOL_NAME`
+[ -n "$POOL_MNT" ]
+if [ x- = "x$POOL_MNT" ]; then
+	require_tmp -d ALT_MNT
+	POOL_MNT="$ALT_MNT"
+else
+	ALT_MNT=
+fi
+
+zfs list -H -r -o name $POOL_NAME/$from_ds | while read -r ds; do
+	zfs get -H -o source,value mountpoint,canmount,setuid,exec,atime,readonly $ds | while IFS='	' read -r mp_src mp; do
+		IFS='	' read -r cm_src cm
+		IFS='	' read -r su_src su
+		IFS='	' read -r ex_src ex
+		IFS='	' read -r at_src at
+		IFS='	' read -r ro_src ro
+		if [ local = "$mp_src" -o received = "$mp_src" ]; then
+			mp_lcl=y
+		else
+			mp_lcl=
+		fi
+		if [ local = "$cm_src" -o received = "$cm_src" ]; then
+			cm_lcl=y
+		else
+			cm_lcl=
+		fi
+		if [ local = "$su_src" -o received = "$su_src" ]; then
+			su_lcl=y
+		else
+			su_lcl=
+		fi
+		if [ local = "$ex_src" -o received = "$ex_src" ]; then
+			ex_lcl=y
+		else
+			ex_lcl=
+		fi
+		if [ local = "$at_src" -o received = "$at_src" ]; then
+			at_lcl=y
+		else
+			at_lcl=
+		fi
+		if [ local = "$ro_src" -o received = "$ro_src" ]; then
+			ro_lcl=y
+		else
+			ro_lcl=
+		fi
+		if srsly $mp_lcl; then
+			mp="${mp#$POOL_MNT}"
+			mp="${mp%/}"
+			mp="$ALT_MNT$mp"
+			: ${mp:=/}
+		fi
+	zfs clone ${mp_lcl:+-o "mountpoint=$mp"} \
+		${cm_lcl:+-o "canmount=$cm"} \
+		${su_lcl:+-o "setuid=$su"} \
+		${ex_lcl:+-o "exec=$ex"} \
+		${at_lcl:+-o "atime=$at"} \
+		${ro_lcl:+-o "readonly=$ro"} \
+		$ds@$from_snap $POOL_NAME/$to${ds#$POOL_NAME/$from_ds}
+	done
+done
+
+exit
+# NOTES:
+
+zfs list -H -r -o name $from_ds | xargs -n 1 zfs get -H -o name,value,source mountpoint | while read -r ds mp src; do
+	if [ local = "$src" -o received = "$src" ]; then
+		mp="${mp#$POOL_MNT}"
+		mp="${mp%/}"
+		mp="$ALT_MNT$mp"
+		: ${mp:=/}
+	else
+		mp=
+	fi
+	zfs clone ${mp:+-o "mountpoint=$mp"} $ds@$from_snap $to${ds#$from_ds}
+done
+[ -z "$ALT_MNT" ] || dismounter -r $to

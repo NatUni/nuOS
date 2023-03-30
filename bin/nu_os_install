@@ -46,8 +46,8 @@ if canhas ${OUTPUT-}; then
 	echo 'output file     -o OUTPUT         ' $OUTPUT
 else
 	echo 'target pool     -p POOL_NAME      ' $POOL_NAME
-	pool_mnt=`zpool get -H -o value altroot $POOL_NAME`
-	[ -n "$pool_mnt" -a x- != "x$pool_mnt" ]
+	POOL_MNT=`zpool get -H -o value altroot $POOL_NAME`
+	[ -n "$POOL_MNT" -a x- != "x$POOL_MNT" ]
 fi
 
 maybe_pause
