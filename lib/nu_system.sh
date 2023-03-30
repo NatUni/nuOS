@@ -636,10 +636,9 @@ strip_csv_header () {
 }
 
 lower_case () {
-	local proc='tr [[:upper:]] [[:lower:]]'
 	case $# in
-		0) $proc;;
-		1) eko "$1" | $proc;;
+		0) tr '[[:upper:]]' '[[:lower:]]';;
+		1) eko "$1" | lower_case;;
 		*)
 			for v in $@; do
 				[ "x$v" != x-s ] || continue

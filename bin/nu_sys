@@ -95,8 +95,8 @@ require_tmp new_fstab
 
 if [ 0 != "$SWAP_SIZE" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" ]; then
 	swap_bytes=`dehumanize $SWAP_SIZE`
-	: ${TMP_SIZE:=`humanize $(($swap_bytes / 2)) | tr -d ' B' | tr [[:upper:]] [[:lower:]]`}
-	: ${RUN_SIZE:=`humanize $(($swap_bytes / 8)) | tr -d ' B' | tr [[:upper:]] [[:lower:]]`}
+	: ${TMP_SIZE:=`humanize $(($swap_bytes / 2)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
+	: ${RUN_SIZE:=`humanize $(($swap_bytes / 8)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
 	
 	awk "
 		\$3 == \"tmpfs\" {
