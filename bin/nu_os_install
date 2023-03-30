@@ -110,21 +110,21 @@ zfs set canmount=off \
 	$POOL_NAME/$nuos_bin_ds_name \
 	$POOL_NAME/$nuos_bin_ds_name/$src_rev
 
-zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src
+zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src
 zfs create -o mountpoint=/usr/src $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER && \
 	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER || true
 zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src/obj
 zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE
 zfs create -o mountpoint=/usr/obj $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE/$BASEOS_VER && \
 	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE/$BASEOS_VER || true
-zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/ports
-zfs create -o mountpoint=/var/db/portsnap $POOL_NAME/$fbsd_proj_ds_name/ports/snap-db && \
+zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/ports
+zfs create -o exec=off -o mountpoint=/var/db/portsnap $POOL_NAME/$fbsd_proj_ds_name/ports/snap-db && \
 	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/ports/snap-db || true
 zfs create -o mountpoint=/usr/ports $POOL_NAME/$fbsd_proj_ds_name/ports/src && \
 	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/ports/src || true
-zfs create -o mountpoint=/usr/ports/distfiles $POOL_NAME/$fbsd_proj_ds_name/ports/distfiles && \
+zfs create -o exec=off -o mountpoint=/usr/ports/distfiles $POOL_NAME/$fbsd_proj_ds_name/ports/distfiles && \
 	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/ports/distfiles || true
-zfs create -o mountpoint=/usr/ports/packages $POOL_NAME/$nuos_bin_ds_name/pkg && \
+zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $POOL_NAME/$nuos_bin_ds_name/pkg && \
 	zfs unmount $POOL_NAME/$nuos_bin_ds_name/pkg || true
 
 sister nu_build -FN -p $POOL_NAME -c $PKG_COLLECTION -q

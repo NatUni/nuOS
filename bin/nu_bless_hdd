@@ -1,0 +1,86 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.99a0 - bin/nu_bless_hdd
+#
+# Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.99a0
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+while getopts abc:flop:qsv OPT; do case $OPT in
+	a) OPT_ACTIVE=y;;
+	b) OPT_BOOT=y;;
+	c) PKG_COLLECTION=$OPTARG;;
+	f) OPT_FACTORY=y;;
+	l) OPT_LIST=y;;
+	o) OPT_OPSYS=y;;
+	p) POOL_NAME=$OPTARG;;
+	q) OPT_QUICK=y;;
+	s) OPT_SYS=y;;
+	v) OPT_VERBOSE=y;;
+esac; done; shift $(($OPTIND-1))
+[ $# -le 1 ]
+
+load_lib nu_make
+
+baseos_init -q
+nuos_init -q
+make_vars_init
+
+maybe_pause
+maybe_yell
+
+: ${POOL_NAME:=$POOL_BOOT_NAME}
+
+if srsly ${OPT_LIST-}; then
+	if srsly ${OPT_ACTIVE-}; then
+	elif srsly ${OPT_BOOT-}; then
+	elif srsly ${OPT_FACTORY-}; then
+	elif srsly ${OPT_OPSYS-}; then
+	elif srsly ${OPT_SYS-}; then
+	fi
+fi
+
+
+
+
+exit 0
+### WIP:
+
+if [ "x$POOL_NAME" = "x${POOL_BOOT_NAME-}" ]; then
+	protect_boot=y
+	boot_ds=`mount -p | awk '$2 == "/" {print $1}' | head -n1`
+else
+	boot_ds=`zpool get -Hovalue bootfs $POOL_NAME`
+fi
+
+require_tmp boot_ds_lineage
+sister list_zfs_ancestors "$boot_ds" >| "$boot_ds_lineage"
+
+require_tmp active_ds_lineage
+rev "$boot_ds_lineage" | cut -d/ -f 2- | rev | xargs -n1 zfs get -Honame,value org.nuos:active_revision >| "$active_ds_lineage"
+
+#echo
+#spill -e POOL_NAME POOL_BOOT_NAME
+
+echo
+cat "$active_ds_lineage"
+
+if srsly ${protect_boot-}; then
+	echo
+	cat "$boot_ds_lineage"
+	retire_tmp boot_ds_lineage
+fi
+retire_tmp active_ds_lineage
+
