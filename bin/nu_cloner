@@ -18,7 +18,8 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts p:v OPT; do case $OPT in
+while getopts mp:v OPT; do case $OPT in
+	m) OPT_MOUNT=y;;
 	p) POOL_NAME=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 esac; done; shift $(($OPTIND-1))
@@ -78,8 +79,7 @@ zfs list -H -r -o name $POOL_NAME/$from_ds | while read -r ds; do
 		fi
 		if srsly $mp_lcl; then
 			mp="${mp#$POOL_MNT}"
-			mp="${mp%/}"
-			mp="$ALT_MNT$mp"
+			mp="$ALT_MNT${mp%/}"
 			: ${mp:=/}
 		fi
 	zfs clone ${mp_lcl:+-o "mountpoint=$mp"} \
@@ -87,10 +87,18 @@ zfs list -H -r -o name $POOL_NAME/$from_ds | while read -r ds; do
 		${su_lcl:+-o "setuid=$su"} \
 		${ex_lcl:+-o "exec=$ex"} \
 		${at_lcl:+-o "atime=$at"} \
-		${ro_lcl:+-o "readonly=$ro"} \
+		${ro_lcl:+-o "org.nuos:origin_readonly=$ro"} \
 		$ds@$from_snap $POOL_NAME/$to${ds#$POOL_NAME/$from_ds}
 	done
 done
+
+if srsly ${OPT_MOUNT-}; then
+	zfs get -H -r -o value,name mountpoint $POOL_NAME/$to | sort | while IFS='	' read -r mp ds; do
+		mp="${mp#$POOL_MNT}"
+		mp="$ALT_MNT${mp%/}"
+		mount -t zfs $ds "$POOL_MNT/$mp"
+	done
+fi
 
 exit
 # NOTES:
