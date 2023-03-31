@@ -103,6 +103,9 @@ dismounter () {
 		r) opt_remount=y;;
 		s) opt_sys=y;;
 	esac; done; shift $(($OPTIND-1))
+# 	eko BEFORE:
+# 	sister get_zfs_mp_info $1
+# 	eko
 	if [ -n "$opt_remount" ]; then
 		[ -z "$ALT_MNT" -a -z "$opt_sys" ] || require_tmp remount_script
 	fi
@@ -136,9 +139,15 @@ dismounter () {
 		fi
 	done
 	if [ -n "$opt_remount" -a -n "$ALT_MNT" ]; then
+# 		eko REMOUNTER:
+# 		cat "$remount_script" | tail -r
+# 		eko
 		cat "$remount_script" | tail -r | sh
 		retire_tmp remount_script
 	fi
+# 	eko AFTER:
+# 	sister get_zfs_mp_info $1
+# 	eko
 }
 
 cloner () {
