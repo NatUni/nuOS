@@ -139,8 +139,21 @@ EOF
 	
 	zfs snapshot -r $fbsd_sysroot_ds@pkg_ready
 	zfs set org.nuos:active_revision=v$fbsd_bld_rev $fbsd_bin_ds
-
-	dismounter $fbsd_sysroot_ds
+	
+	sister get_zfs_mp_info $fbsd_sysroot_ds
+	eko
+	spill -e POOL_NAME POOL_MNT ALT_MNT fbsd_sysroot_ds
+	eko
+	eko 'dismounter $fbsd_sysroot_ds'
+	eko ' - or -'
+	eko dismounter $fbsd_sysroot_ds
+	eko
+	eko WAITING for manual intervention:
+	eko
+	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
+		eko ERROR, restarting nush
+	done
+# 	dismounter $fbsd_sysroot_ds
 	
 fi
 
@@ -164,7 +177,25 @@ else
 		nuos_bld_rev=$(($nuos_bld_rev + 1))
 	done
 	
-	cloner $fbsd_sysroot_ds@pkg_ready $nuos_sysroot_ds
+	sister get_zfs_mp_info $fbsd_sysroot_ds
+	eko
+	spill -e POOL_NAME POOL_MNT ALT_MNT fbsd_sysroot_ds nuos_sysroot_ds
+	eko
+	eko 'sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}'
+	eko ' - or -'
+	eko sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
+	eko ' - or -'
+	eko 'cloner $fbsd_sysroot_ds@pkg_ready $nuos_sysroot_ds'
+	eko ' - or -'
+	eko cloner $fbsd_sysroot_ds@pkg_ready $nuos_sysroot_ds
+	eko
+	eko WAITING for manual intervention:
+	eko
+	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
+		eko ERROR, restarting nush
+	done
+# 	cloner $fbsd_sysroot_ds@pkg_ready $nuos_sysroot_ds
+# 	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
 	
 	cat > $POOL_MNT/usr/local/etc/beadm.conf <<'EOF'
 echo beadm is incompatible with nuOS >&2
@@ -483,7 +514,7 @@ Edit /etc/motd${new_motd:+.template and run \`service motd restart\`} to change 
 EOF
 		
 		mkdir $POOL_MNT/usr/nuos
-		tar -cf - -C "$(dirname "$(realpath "$0")")/.." --exclude .DS_Store --exclude .directory --exclude node_modules --exclude ^conf --exclude '^.?*' --exclude ^www/dist --exclude '^www/*.log' . | tar -xvf - -C $POOL_MNT/usr/nuos
+		tar -cf - -C "$(dirname "$(realpath "$0")")/.." --exclude .DS_Store --exclude .directory --exclude node_modules --exclude ^conf --exclude '^.?*' --exclude ^www/dist --exclude '^www/*.log' . | tar -x${OPT_VERBOSE:+v}f - -C $POOL_MNT/usr/nuos
 		chown -R root:wheel $POOL_MNT/usr/nuos
 		conf=usr/nuos/conf
 		
@@ -557,7 +588,20 @@ EOF
 	
 	zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $nuos_bin_ds/pkg && zfs unmount $nuos_bin_ds/pkg || true
 	
-	dismounter $nuos_sysroot_ds
+	sister get_zfs_mp_info $nuos_sysroot_ds
+	eko
+	spill -e POOL_NAME POOL_MNT ALT_MNT nuos_sysroot_ds
+	eko
+	eko 'dismounter $nuos_sysroot_ds'
+	eko ' - or -'
+	eko dismounter $nuos_sysroot_ds
+	eko
+	eko WAITING for manual intervention:
+	eko
+	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
+		eko ERROR, restarting nush
+	done
+# 	dismounter $nuos_sysroot_ds
 	
 fi
 
@@ -580,7 +624,25 @@ if ! srsly ${OPT_SKIP_FACTORY-}; then
 		factory_rev=$(($factory_rev + 1))
 	done
 
-	cloner $nuos_sysroot_ds@$PKG_COLLECTION $new_factory_ds
+	sister get_zfs_mp_info $nuos_sysroot_ds
+	eko
+	spill -e POOL_NAME POOL_MNT ALT_MNT nuos_sysroot_ds PKG_COLLECTION new_factory_ds
+	eko
+	eko 'sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}'
+	eko ' - or -'
+	eko sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}
+	eko ' - or -'
+	eko 'cloner $nuos_sysroot_ds@$PKG_COLLECTION $new_factory_ds'
+	eko ' - or -'
+	eko cloner $nuos_sysroot_ds@$PKG_COLLECTION $new_factory_ds
+	eko
+	eko WAITING for manual intervention, a la:
+	eko
+	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
+		eko ERROR, restarting nush
+	done
+# 	cloner $nuos_sysroot_ds@$PKG_COLLECTION $new_factory_ds
+# 	sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}
 
 	mkdir $POOL_MNT/boot/etc
 	mv -n $POOL_MNT/etc/login.conf.db $POOL_MNT/boot/etc/
@@ -615,7 +677,20 @@ EOF
 	zfs snapshot -r $new_factory_ds@pool_registered
 	zfs set org.nuos:active_revision=v$factory_rev $nuos_factory_ds
 
-	dismounter $new_factory_ds
+	sister get_zfs_mp_info $new_factory_ds
+	eko
+	spill -e POOL_NAME POOL_MNT ALT_MNT new_factory_ds
+	eko
+	eko 'dismounter $new_factory_ds'
+	eko ' - or -'
+	eko dismounter $new_factory_ds
+	eko
+	eko WAITING for manual intervention:
+	eko
+	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
+		eko ERROR, restarting nush
+	done
+# 	dismounter $new_factory_ds
 fi
 
 
