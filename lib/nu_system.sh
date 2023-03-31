@@ -22,11 +22,13 @@ nuos_lib_system_loaded=y
 nuos_lib_common_loaded=y
 
 : ${TMPDIR:=/tmp}
+: ${NUOS_CODE:="$(dirname "$(realpath "$0")")/.."}
 
 load_lib () {
 	local lib=
 	for lib in "$@"; do
-		. "${NUOS_CODE:="$(dirname "$(realpath "$0")")/.."}/lib/$lib.sh"
+		. "$NUOS_CODE/lib/$lib.sh"
+		push NUOS_LOADED_LIBS $lib
 	done
 }
 
@@ -331,7 +333,7 @@ sister () {
 		umount "$nuos_src"
 		retire_tmp nuos_src
 	else
-		sh "$(dirname "$(realpath "$0")")/$bin" "$@"
+		sh "$NUOS_CODE/bin/$bin" "$@"
 	fi
 }
 

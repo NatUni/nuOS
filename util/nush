@@ -18,8 +18,18 @@ NUOS_VER=0.0.12.99a0
 NUOS_CODE="$(dirname "$(realpath "$0")")/.."
 
 . "$NUOS_CODE/lib/nu_system.sh"
-baseos_init
-nuos_init
+
+while getopts l:q OPT; do case $OPT in
+	l) push LIBS $OPTARG;;
+	q) OPT_QUIET=y;;
+esac; done; shift $(($OPTIND-1))
+
+baseos_init ${OPT_QUIET:+-q}
+nuos_init ${OPT_QUIET:+-q}
+
+if canhas ${LIBS-}; then
+	load_lib $LIBS
+fi
 
 if [ x-c = "x${1-}" ]; then
 	shift
