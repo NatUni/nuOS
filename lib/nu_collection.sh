@@ -220,6 +220,7 @@ collection_vars_init () {
 	COLL_server='
 		commonserver
 		graphics/optipng
+		archivers/zopfli
 		graphics/gifsicle
 		sysutils/vmdktool
 		graphics/povray-meta
