@@ -64,8 +64,6 @@ nuos_factory_ds=$sys_ds/factory/nuOS-$NUOS_VER-$TRGT
 use_factory_ds=$nuos_factory_ds/`zfs get -H -o value org.nuos:active_revision $nuos_factory_ds`
 
 host_ds=$sys_ds/$NEW_HOST
-curr_host_ver=`zfs get -H -o value org.nuos:active_revision $host_ds || true`
-[ "x$curr_host_ver" != x- ] || curr_host_ver=
 
 if ! zfs create -o mountpoint=none -o canmount=off $host_ds; then
 	host_existed=y
@@ -73,10 +71,8 @@ if ! zfs create -o mountpoint=none -o canmount=off $host_ds; then
 	if [ -z "$ALT_MNT" ] && [ yes = `zfs get -H -o value mounted $existing_host_ds` ]; then
 		existing_host_mp="`zfs get -H -o value mountpoint $existing_host_ds`"
 		if [ "$existing_host_mp" = "$POOL_MNT" ]; then
-			zfs set canmount=noauto $existing_host_ds
-			awk_pattern="$(echo "$POOL_MNT/" | sed -e 's,/,\\/,g;s/\./\\\./g')"
-			mount | awk "\$3 ~ /^$awk_pattern/ {print \$3}" | tail -r | xargs -n1 umount
-			zfs unmount $existing_host_ds
+			awk_re="^$(echo "$POOL_MNT" | sed -e 's,/,\\/,g;s/\./\\\./g')"'(\/|$)'
+			mount -p | awk "\$2 ~ /$awk_re/ {print \$2}" | sort | tail -r | xargs -n1 umount
 		fi
 	fi
 fi
@@ -89,7 +85,7 @@ do
 	new_host_rev=$(($new_host_rev + 1))
 done
 
-cloner $use_factory_ds@pool_registered $new_host_ds
+sister nu_cloner -mp $POOL_NAME ${use_factory_ds#$POOL_NAME/}@pool_registered ${new_host_ds#$POOL_NAME/}
 
 require_tmp new_fstab
 
@@ -144,6 +140,10 @@ sys/$NEW_HOST/(org.nuos:active_revision)/etc
 sys/$NEW_HOST/(org.nuos:active_revision)/var
 EOF
 
+
+zfs inherit org.nuos:origin_readonly $new_host_ds
+freeze -r $new_host_ds
+
 export NEW_HOST
 
 bl_rev=0
@@ -190,10 +190,6 @@ if [ -z "$ALT_MNT" ]; then
 	(umask 77 && dd if=/dev/random of=$POOL_MNT/var/db/entropy/seed count=1 bs=4k)
 	chown $uid:$gid $POOL_MNT/var/db/entropy/seed
 	chflags $flags $POOL_MNT/var/db/entropy
-fi
-
-if [ -n "$curr_host_ver" ]; then
-	dismounter -sr $host_ds/$curr_host_ver
 fi
 
 zfs set org.nuos:active_revision=v$new_host_rev $host_ds

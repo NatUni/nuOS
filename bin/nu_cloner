@@ -93,25 +93,7 @@ zfs list -H -r -o name $POOL_NAME/$from_ds | while read -r ds; do
 done
 
 if srsly ${OPT_MOUNT-}; then
-	zfs get -H -r -o value,name mountpoint $POOL_NAME/$to | sort | while IFS='	' read -r mp ds; do
-		mp="${mp#$POOL_MNT}"
-		mp="$ALT_MNT${mp%/}"
-		mount -t zfs $ds "$POOL_MNT/$mp"
+	zfs list -Hrt filesystem -o mountpoint,name $POOL_NAME/$to | sort | while IFS='	' read -r mp ds; do
+		mount -t zfs $ds "$POOL_MNT/${mp#$POOL_MNT}"
 	done
 fi
-
-exit
-# NOTES:
-
-zfs list -H -r -o name $from_ds | xargs -n 1 zfs get -H -o name,value,source mountpoint | while read -r ds mp src; do
-	if [ local = "$src" -o received = "$src" ]; then
-		mp="${mp#$POOL_MNT}"
-		mp="${mp%/}"
-		mp="$ALT_MNT$mp"
-		: ${mp:=/}
-	else
-		mp=
-	fi
-	zfs clone ${mp:+-o "mountpoint=$mp"} $ds@$from_snap $to${ds#$from_ds}
-done
-[ -z "$ALT_MNT" ] || dismounter -r $to

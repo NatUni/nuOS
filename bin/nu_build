@@ -79,17 +79,38 @@ else
 		fbsd_bld_rev=$(($fbsd_bld_rev + 1))
 	done
 	
-	zfs create -o canmount=noauto -o "mountpoint=${ALT_MNT:-/}" $fbsd_sysroot_ds
-	zfs mount $fbsd_sysroot_ds
-	zfs create $fbsd_sysroot_ds/etc
-	zfs create -o "mountpoint=$ALT_MNT/usr/local/etc" $fbsd_sysroot_ds/etc/local
-	zfs create -o setuid=off $fbsd_sysroot_ds/var
-	zfs create -o exec=off $fbsd_sysroot_ds/var/db
-	zfs create -o exec=off $fbsd_sysroot_ds/var/audit
-	zfs create -o exec=off $fbsd_sysroot_ds/var/crash
-	zfs create -o exec=off $fbsd_sysroot_ds/var/log
-	zfs create -o exec=off -o atime=on $fbsd_sysroot_ds/var/mail
-	zfs create $fbsd_sysroot_ds/var/tmp
+	zgen_cmd="zfs create -o canmount=noauto"
+		
+	$zgen_cmd \
+		-o "mountpoint=${ALT_MNT:-/}"                   $fbsd_sysroot_ds
+	
+		$zgen_cmd                                           $fbsd_sysroot_ds/etc
+	
+			$zgen_cmd \
+				-o "mountpoint=$ALT_MNT/usr/local/etc"          $fbsd_sysroot_ds/etc/local
+	
+		$zgen_cmd \
+			-o setuid=off                                   $fbsd_sysroot_ds/var
+	
+			$zgen_cmd \
+				-o exec=off                                     $fbsd_sysroot_ds/var/db
+	
+			$zgen_cmd \
+				-o exec=off                                     $fbsd_sysroot_ds/var/audit
+	
+			$zgen_cmd \
+				-o exec=off                                     $fbsd_sysroot_ds/var/crash
+	
+			$zgen_cmd \
+				-o exec=off                                     $fbsd_sysroot_ds/var/log
+	
+			$zgen_cmd \
+				-o exec=off \
+				-o atime=on                                     $fbsd_sysroot_ds/var/mail
+	
+			$zgen_cmd                                           $fbsd_sysroot_ds/var/tmp
+	
+	zfs list -Hro mountpoint,name $fbsd_sysroot_ds | sort | cut -wf2 | xargs -n1 zfs mount
 	
 	if [ -n "${OPT_NOMAKE-}" ]; then
 		mkdir $POOL_MNT/boot $POOL_MNT/boot/zfs $POOL_MNT/etc/ssh $POOL_MNT/etc/rc.d
@@ -106,15 +127,14 @@ else
 	srsly ${new_build-} || obj_trgt=$TRGT
 	srsly ${old_build-} || obj_trgt=$TRGT_CODE
 		
-	zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $fbsd_proj_ds/src
-	zfs create -o mountpoint=/usr/src $fbsd_proj_ds/src/$BASEOS_VER && zfs unmount $fbsd_proj_ds/src/$BASEOS_VER || true
-	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj
-	zfs create -p -o mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj/$obj_trgt
-	zfs create -o mountpoint=/usr/obj $fbsd_proj_ds/src/obj/$obj_trgt/$BASEOS_VER && zfs unmount $fbsd_proj_ds/src/obj/$obj_trgt/$BASEOS_VER || true
-	zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $fbsd_proj_ds/ports
-	zfs create -o exec=off -o mountpoint=/var/db/portsnap $fbsd_proj_ds/ports/snap-db && zfs unmount $fbsd_proj_ds/ports/snap-db || true
-	zfs create -o mountpoint=/usr/ports $fbsd_proj_ds/ports/src && zfs unmount $fbsd_proj_ds/ports/src || true
-	zfs create -o exec=off -o mountpoint=/usr/ports/distfiles $fbsd_proj_ds/ports/distfiles && zfs unmount $fbsd_proj_ds/ports/distfiles || true
+	zfs create -po setuid=off -o mountpoint=none -o canmount=off $fbsd_proj_ds/src
+	zfs create -upo mountpoint=/usr/src $fbsd_proj_ds/src/$BASEOS_VER
+	zfs create -po mountpoint=none -o canmount=off $fbsd_proj_ds/src/obj/$obj_trgt
+	zfs create -upo mountpoint=/usr/obj $fbsd_proj_ds/src/obj/$obj_trgt/$BASEOS_VER
+	zfs create -po setuid=off -o mountpoint=none -o canmount=off $fbsd_proj_ds/ports
+	zfs create -upo exec=off -o mountpoint=/var/db/portsnap $fbsd_proj_ds/ports/snap-db
+	zfs create -upo mountpoint=/usr/ports $fbsd_proj_ds/ports/src
+	zfs create -upo exec=off -o mountpoint=/usr/ports/distfiles $fbsd_proj_ds/ports/distfiles
 
 	cat > $POOL_MNT/boot/loader.conf <<'EOF'
 zfs_load="YES"
@@ -140,21 +160,22 @@ EOF
 	zfs snapshot -r $fbsd_sysroot_ds@pkg_ready
 	zfs set org.nuos:active_revision=v$fbsd_bld_rev $fbsd_bin_ds
 	
-	sister get_zfs_mp_info $fbsd_sysroot_ds
-	eko
-	spill -e POOL_NAME POOL_MNT ALT_MNT fbsd_sysroot_ds
-	eko
-	eko 'dismounter $fbsd_sysroot_ds'
-	eko ' - or -'
-	eko dismounter $fbsd_sysroot_ds
-	eko
-	eko WAITING for manual intervention:
-	eko
-	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
-		eko ERROR, restarting nush
-	done
-# 	dismounter $fbsd_sysroot_ds
+# 	eko
+# 	eko BEFORE freeze:
+# 	get_zfs_mp_info $fbsd_sysroot_ds
+# 	eko -------------
+# 	re_pattern -n fbsd_sysroot_ds
+# 	mount | grep -E "^$fbsd_sysroot_ds_re"'($|/)'
+
+	freeze $fbsd_sysroot_ds
+	zfs set readonly=on $fbsd_sysroot_ds
 	
+# 	eko
+# 	eko AFTER freeze:
+# 	get_zfs_mp_info $fbsd_sysroot_ds
+# 	eko -------------
+# 	mount | grep -E "^$fbsd_sysroot_ds_re"'($|/)' || echo NONE MOUNTED '(good)'
+# 	eko
 fi
 
 nuos_proj_ds=$os_software_ds/nuOS
@@ -177,25 +198,7 @@ else
 		nuos_bld_rev=$(($nuos_bld_rev + 1))
 	done
 	
-	sister get_zfs_mp_info $fbsd_sysroot_ds
-	eko
-	spill -e POOL_NAME POOL_MNT ALT_MNT fbsd_sysroot_ds nuos_sysroot_ds
-	eko
-	eko 'sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}'
-	eko ' - or -'
-	eko sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
-	eko ' - or -'
-	eko 'cloner $fbsd_sysroot_ds@pkg_ready $nuos_sysroot_ds'
-	eko ' - or -'
-	eko cloner $fbsd_sysroot_ds@pkg_ready $nuos_sysroot_ds
-	eko
-	eko WAITING for manual intervention:
-	eko
-	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
-		eko ERROR, restarting nush
-	done
-# 	cloner $fbsd_sysroot_ds@pkg_ready $nuos_sysroot_ds
-# 	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
+	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
 	
 	cat > $POOL_MNT/usr/local/etc/beadm.conf <<'EOF'
 echo beadm is incompatible with nuOS >&2
@@ -588,25 +591,26 @@ EOF
 	
 	zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $nuos_bin_ds/pkg && zfs unmount $nuos_bin_ds/pkg || true
 	
-	sister get_zfs_mp_info $nuos_sysroot_ds
-	eko
-	spill -e POOL_NAME POOL_MNT ALT_MNT nuos_sysroot_ds
-	eko
-	eko 'dismounter $nuos_sysroot_ds'
-	eko ' - or -'
-	eko dismounter $nuos_sysroot_ds
-	eko
-	eko WAITING for manual intervention:
-	eko
-	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
-		eko ERROR, restarting nush
-	done
-# 	dismounter $nuos_sysroot_ds
+# 	eko
+# 	eko BEFORE freeze:
+# 	get_zfs_mp_info $nuos_sysroot_ds
+# 	eko -------------
+# 	re_pattern -n nuos_sysroot_ds
+# 	mount | grep -E "^$nuos_sysroot_ds_re"'($|/)'
 	
+	freeze $nuos_sysroot_ds
+	
+# 	eko
+# 	eko AFTER freeze:
+# 	get_zfs_mp_info $nuos_sysroot_ds
+# 	eko -------------
+# 	mount | grep -E "^$nuos_sysroot_ds_re"'($|/)' || echo NONE MOUNTED '(good)'
+# 	eko
 fi
 
 if ! srsly ${OPT_SKIP_FACTORY-}; then
-	zfs create -o mountpoint=none -o canmount=off -o volmode=dev -o primarycache=metadata $POOL_NAME/swap || zfs set mountpoint=none canmount=off primarycache=metadata $POOL_NAME/swap
+	zfs create -o mountpoint=none -o canmount=off -o volmode=dev -o primarycache=metadata $POOL_NAME/swap \
+		|| zfs set mountpoint=none canmount=off volmode=dev primarycache=metadata $POOL_NAME/swap
 
 	sys_ds=$POOL_NAME/sys
 	factories_ds=$sys_ds/factory
@@ -624,25 +628,7 @@ if ! srsly ${OPT_SKIP_FACTORY-}; then
 		factory_rev=$(($factory_rev + 1))
 	done
 
-	sister get_zfs_mp_info $nuos_sysroot_ds
-	eko
-	spill -e POOL_NAME POOL_MNT ALT_MNT nuos_sysroot_ds PKG_COLLECTION new_factory_ds
-	eko
-	eko 'sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}'
-	eko ' - or -'
-	eko sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}
-	eko ' - or -'
-	eko 'cloner $nuos_sysroot_ds@$PKG_COLLECTION $new_factory_ds'
-	eko ' - or -'
-	eko cloner $nuos_sysroot_ds@$PKG_COLLECTION $new_factory_ds
-	eko
-	eko WAITING for manual intervention, a la:
-	eko
-	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
-		eko ERROR, restarting nush
-	done
-# 	cloner $nuos_sysroot_ds@$PKG_COLLECTION $new_factory_ds
-# 	sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}
+	sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}
 
 	mkdir $POOL_MNT/boot/etc
 	mv -n $POOL_MNT/etc/login.conf.db $POOL_MNT/boot/etc/
@@ -651,8 +637,10 @@ if ! srsly ${OPT_SKIP_FACTORY-}; then
 	ln -s ../boot/etc/login.conf.db $POOL_MNT/etc/login.conf.db
 	if [ -n "$ALT_MNT" ]; then
 		mount -t zfs $new_factory_ds/etc "$ALT_MNT/etc"
+		mount -t zfs $new_factory_ds/etc/local "$ALT_MNT/usr/local/etc"
 	else
 		zfs mount $new_factory_ds/etc
+		zfs mount $new_factory_ds/etc/local
 	fi
 
 	zfs snapshot -r $new_factory_ds@prototype
@@ -677,20 +665,21 @@ EOF
 	zfs snapshot -r $new_factory_ds@pool_registered
 	zfs set org.nuos:active_revision=v$factory_rev $nuos_factory_ds
 
-	sister get_zfs_mp_info $new_factory_ds
-	eko
-	spill -e POOL_NAME POOL_MNT ALT_MNT new_factory_ds
-	eko
-	eko 'dismounter $new_factory_ds'
-	eko ' - or -'
-	eko dismounter $new_factory_ds
-	eko
-	eko WAITING for manual intervention:
-	eko
-	while ! sister ../util/nush -q -l "$NUOS_LOADED_LIBS"; do
-		eko ERROR, restarting nush
-	done
-# 	dismounter $new_factory_ds
+# 	eko
+# 	eko BEFORE freeze:
+# 	get_zfs_mp_info $new_factory_ds
+# 	eko -------------
+# 	re_pattern -n new_factory_ds
+# 	mount | grep -E "^$new_factory_ds_re"'($|/)'
+	
+	freeze $new_factory_ds
+	
+# 	eko
+# 	eko AFTER freeze:
+# 	get_zfs_mp_info $new_factory_ds
+# 	eko -------------
+# 	mount | grep -E "^$new_factory_ds_re"'($|/)' || echo NONE MOUNTED '(good)'
+# 	eko
 fi
 
 

@@ -140,13 +140,13 @@ re_pattern () {
 	local var=$1; shift
 	if srsly ${multiple-}; then
 		setvar ${var}_re `{
-			srsly ${whole-} && printf %s ^
+			srsly ${naked-} || printf %s ^
 			while [ $# -gt 0 ]; do
 				printf %s "$1"
 				shift
 				[ $# -gt 0 ] && printf '\0'
 			done | sed -e 's/\./\\\./g' | tr '\0' '|'
-			srsly ${whole-} && printf %s '$'
+			srsly ${naked-} || printf %s '$'
 			eko
 		}`
 	else
@@ -526,13 +526,18 @@ nuos_init () {
 }
 
 set_pool_root_mnt_vars () {
-	POOL_MNT=`zpool get -H -o value altroot $1`
-	[ -n "$POOL_MNT" ]
-	if [ x- = "x$POOL_MNT" ]; then
-		require_tmp -d ALT_MNT
+	if canhas "${ALT_MNT-}"; then
 		POOL_MNT="$ALT_MNT"
 	else
-		ALT_MNT=
+		POOL_MNT=`zpool get -H -o value altroot $1`
+		[ -n "$POOL_MNT" ]
+		if [ x- = "x$POOL_MNT" ]; then
+			require_tmp -d ALT_MNT
+			POOL_MNT="$ALT_MNT"
+			export ALT_MNT 
+		else
+			ALT_MNT=
+		fi
 	fi
 }
 
