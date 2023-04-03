@@ -200,8 +200,13 @@ if ! zfs create -o mountpoint=/home $POOL_NAME/home; then
 	home_existed=y
 	if ! zfs mount $POOL_NAME/home; then
 		if [ -n "$ALT_MNT" ]; then
-			mkdir -p "$ALT_MNT/home"
-			mount -t nullfs /home "$ALT_MNT/home"
+			zfs list -H -d 1 -o mounted,mountpoint $POOL_NAME/home \
+			| grep ^yes | cut -w -f 2 \
+			| grep -E '^/home(/|$)' \
+			| while read -r mp; do
+				mkdir -p "$ALT_MNT$mp"
+				mount -t nullfs "$mp" "$ALT_MNT$mp"
+			done
 		fi
 	fi
 fi

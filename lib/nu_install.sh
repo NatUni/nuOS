@@ -185,6 +185,7 @@ freeze () {
 	done
 	if srsly ${opt_remount-}; then
 		zfs list -H -r -t filesystem -o mountpoint,name $rds | sort | while IFS='	' read -r mp ds; do
+			canhas ${ALT_MNT-} || mp="${mp#$POOL_MNT}"
 			mount -t zfs $ds "$POOL_MNT/${mp%/}"
 		done
 	fi
