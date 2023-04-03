@@ -160,22 +160,8 @@ EOF
 	zfs snapshot -r $fbsd_sysroot_ds@pkg_ready
 	zfs set org.nuos:active_revision=v$fbsd_bld_rev $fbsd_bin_ds
 	
-# 	eko
-# 	eko BEFORE freeze:
-# 	get_zfs_mp_info $fbsd_sysroot_ds
-# 	eko -------------
-# 	re_pattern -n fbsd_sysroot_ds
-# 	mount | grep -E "^$fbsd_sysroot_ds_re"'($|/)'
-
 	freeze $fbsd_sysroot_ds
 	zfs set readonly=on $fbsd_sysroot_ds
-	
-# 	eko
-# 	eko AFTER freeze:
-# 	get_zfs_mp_info $fbsd_sysroot_ds
-# 	eko -------------
-# 	mount | grep -E "^$fbsd_sysroot_ds_re"'($|/)' || echo NONE MOUNTED '(good)'
-# 	eko
 fi
 
 nuos_proj_ds=$os_software_ds/nuOS
@@ -591,21 +577,7 @@ EOF
 	
 	zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $nuos_bin_ds/pkg && zfs unmount $nuos_bin_ds/pkg || true
 	
-# 	eko
-# 	eko BEFORE freeze:
-# 	get_zfs_mp_info $nuos_sysroot_ds
-# 	eko -------------
-# 	re_pattern -n nuos_sysroot_ds
-# 	mount | grep -E "^$nuos_sysroot_ds_re"'($|/)'
-	
 	freeze $nuos_sysroot_ds
-	
-# 	eko
-# 	eko AFTER freeze:
-# 	get_zfs_mp_info $nuos_sysroot_ds
-# 	eko -------------
-# 	mount | grep -E "^$nuos_sysroot_ds_re"'($|/)' || echo NONE MOUNTED '(good)'
-# 	eko
 fi
 
 if ! srsly ${OPT_SKIP_FACTORY-}; then
@@ -664,22 +636,8 @@ EOF
 
 	zfs snapshot -r $new_factory_ds@pool_registered
 	zfs set org.nuos:active_revision=v$factory_rev $nuos_factory_ds
-
-# 	eko
-# 	eko BEFORE freeze:
-# 	get_zfs_mp_info $new_factory_ds
-# 	eko -------------
-# 	re_pattern -n new_factory_ds
-# 	mount | grep -E "^$new_factory_ds_re"'($|/)'
 	
 	freeze $new_factory_ds
-	
-# 	eko
-# 	eko AFTER freeze:
-# 	get_zfs_mp_info $new_factory_ds
-# 	eko -------------
-# 	mount | grep -E "^$new_factory_ds_re"'($|/)' || echo NONE MOUNTED '(good)'
-# 	eko
 fi
 
 
