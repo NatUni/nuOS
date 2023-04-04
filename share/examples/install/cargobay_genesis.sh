@@ -11,13 +11,19 @@ enable_svc jail
 init_jail resolv ns
 service jail start
 
+for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qv $inf
+	[ ! -f /var/jail/ns/var/db/knot/$INFRA_DOMAIN_lc.zone ] || continue
+	for j in `list_ns_jails`; do
+		nu_ns_host -j $j -h $INFRA_DOMAIN_lc
+	done
+	nu_sshfp -j ns -F -h $INFRA_DOMAIN_lc
+done
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
-	for z in $zones_lc; do
+	for z in $client_zones_lc; do
 		[ ! -f /var/jail/ns/var/db/knot/$z.zone ] || continue
 		for j in `list_ns_jails`; do
 			nu_ns_host -j $j -h $z
 		done
-		nu_sshfp -j ns -F -h $z
 	done
 done
 

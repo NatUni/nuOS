@@ -180,11 +180,11 @@ else
 	gnop destroy $nop_devs
 	if [ -n "${OPT_BOOTABLE-}" ]; then
 		require_tmp -d efi_fat
+		mkdir $efi_fat/EFI/BOOT
+		mkdir $efi_fat/EFI/FreeBSD
+		cp /boot/loader_lua.efi $efi_fat/EFI/BOOT/BOOTX64.efi
+		cp /boot/loader_lua.efi $efi_fat/EFI/FreeBSD/loader.efi
 		require_tmp efi_img
-		mkdir $efi_fat/BOOT
-		mkdir $efi_fat/FreeBSD
-		cp /boot/loader.efi $efi_fat/BOOT/BOOTX64.efi
-		cp /boot/loader_lua.efi $efi_fat/FreeBSD/loader.efi
 		makefs -t msdos -Z -s 32m -o fat_type=16,sectors_per_cluster=1,media_descriptor=248,volume_label=EFI $efi_img $efi_fat
 		for i in $phys_idx; do
 			dd bs=4M conv=sparse if=$efi_img of=/dev/gpt/esp$i-$POOL_NAME

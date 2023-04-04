@@ -19,7 +19,8 @@ NUOS_CODE="$(dirname "$(realpath "$0")")/.."
 
 . "$NUOS_CODE/lib/nu_system.sh"
 
-while getopts l:q OPT; do case $OPT in
+while getopts cl:q OPT; do case $OPT in
+	c) OPT_COMMAND=y;;
 	l) push LIBS $OPTARG;;
 	q) OPT_QUIET=y;;
 esac; done; shift $(($OPTIND-1))
@@ -31,8 +32,7 @@ if canhas ${LIBS-}; then
 	load_lib $LIBS
 fi
 
-if [ x-c = "x${1-}" ]; then
-	shift
+if srsly ${OPT_COMMAND-}; then
 	eval "$@"
 else
 	while IFS= read _nush_interactive_line; do
