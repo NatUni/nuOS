@@ -87,7 +87,7 @@ fi
 cp "${CHROOTDIR-}/etc/ssl/certs/$CERT_AUTH.internal.crt" "${CHROOTDIR-}/usr/local/etc/openvpn/${ALTERNATE:+${ALTERNATE}_}ca.crt"
 cp "${CHROOTDIR-}/etc/ssl/certs/$HOST_NAME.internal.crt" "${CHROOTDIR-}/usr/local/etc/openvpn/${ALTERNATE:+${ALTERNATE}_}server.crt"
 cp "${CHROOTDIR-}/etc/ssl/private/$HOST_NAME.key" "${CHROOTDIR-}/usr/local/etc/openvpn/private/${ALTERNATE:+${ALTERNATE}_}server.key"
-openvpn --genkey --secret "${CHROOTDIR-}/usr/local/etc/openvpn/private/${ALTERNATE:+${ALTERNATE}_}hs.key"
+openvpn --genkey secret "${CHROOTDIR-}/usr/local/etc/openvpn/private/${ALTERNATE:+${ALTERNATE}_}hs.key"
 $SSL_CMD dhparam -out "${CHROOTDIR-}/usr/local/etc/openvpn/${ALTERNATE:+${ALTERNATE}_}dh$KEY_BITS.pem" $KEY_BITS
 
 cat > "${CHROOTDIR-}/usr/local/etc/openvpn/openvpn${ALTERNATE:+_$ALTERNATE}.conf" <<EOF
@@ -100,7 +100,6 @@ cert ${ALTERNATE:+${ALTERNATE}_}server.crt
 key private/${ALTERNATE:+${ALTERNATE}_}server.key
 dh ${ALTERNATE:+${ALTERNATE}_}dh$KEY_BITS.pem
 tls-crypt private/${ALTERNATE:+${ALTERNATE}_}hs.key
-ncp-disable
 opt-verify
 cipher $CIPHER
 auth $MSG_AUTH
