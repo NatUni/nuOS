@@ -9,7 +9,7 @@ read_set_ips -v
 enable_svc jail
 
 init_jail resolv ns
-service jail start
+service jail start resolv ns
 
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qv $inf
 	[ ! -f /var/jail/ns/var/db/knot/$INFRA_DOMAIN_lc.zone ] || continue
