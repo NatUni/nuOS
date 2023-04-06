@@ -1,1 +1,1 @@
-[ ! -f files/extra-patch-html5lib_treebuilders_dom.py ] && grep -q '^....VERSION=.1\.0\.1' Makefile
+[ `find * -type f | sort | xargs md5 | md5` = e8cd2c234b624bb996d7a2142b47d756 ]
