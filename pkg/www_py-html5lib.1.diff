@@ -1,15 +1,9 @@
---- ../py-html5lib.orig/Makefile	2023-02-26 02:40:56.012403000 +0000
-+++ ./Makefile	2023-02-28 01:33:24.807406000 +0000
-@@ -18,4 +18,11 @@
- USES=		cpe python
- USE_PYTHON=	autoplist distutils
- 
--.include <bsd.port.mk>
-+.include <bsd.port.pre.mk>
-+
-+.if ${PYTHON_REL} >= 31000
-+EXTRA_PATCHES+=	${PATCHDIR}/extra-patch-html5lib___trie___base.py \
-+		${PATCHDIR}/extra-patch-html5lib_treebuilders_dom.py
-+.endif
-+
-+.include <bsd.port.post.mk>
+--- ../py-html5lib.orig/Makefile	2023-04-06 02:26:47.640960000 +0000
++++ ./Makefile	2023-04-06 02:28:50.920907000 +0000
+@@ -1,5 +1,5 @@
+ PORTNAME=	html5lib
+-PORTVERSION=	1.0.1
++PORTVERSION=	1.1
+ CATEGORIES=	www python
+ MASTER_SITES=	PYPI
+ PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
