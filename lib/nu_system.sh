@@ -190,12 +190,12 @@ dehumanize () {
 
 error () {
 	local ex=$1; shift
-	printf '%s\n' "ERROR: $*" | tr -dc [[:graph:]][[:space:]] 2>&1
+	printf '%s\n' "ERROR: $*" | tr -dc '[[:graph:]][[:space:]]' 2>&1
 	exit $ex
 }
 
 warn () {
-	printf '%s\n' "WARNING: $*" | tr -dc [[:graph:]][[:space:]] 2>&1
+	printf '%s\n' "WARNING: $*" | tr -dc '[[:graph:]][[:space:]]' 2>&1
 }
 
 strlen () {

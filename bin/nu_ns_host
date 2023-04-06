@@ -246,6 +246,7 @@ case $SOFTWARE in
 								sed -E -e "
 									s/\<example\\.in-addr\\.arpa\>/$rz/
 									s/\<example\\.in-addr\\.arpa\>/$HOST_NAME/
+									s/\<example\\.com\>/$HOST_NAME/
 									/\<serial[[:blank:]]*$/s/[[:digit:]]+/$new_serial/" \
 										"${alt_root-}/usr/local/etc/knot/example${ALTERNATE:+_${ALTERNATE}}.in-addr.arpa.zone" \
 											> "${alt_root-}/var/db/knot${ALTERNATE:+_${ALTERNATE}}/$rz.zone"

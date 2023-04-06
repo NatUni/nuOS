@@ -50,7 +50,6 @@ while getopts A:a:b:c:C:d:e:fFh:j:kK:l:Lm:Mn:No:p:stT:Su:vW OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 : ${SSL_HOST:=${HOST:=`hostname`}}
-[ -n "${OPT_EMPTY_SAN_LIST-}" ] && SAN_LIST= || : ${SAN_LIST:=www.%}
 if srsly ${OPT_NEXT_MODE-} && srsly ${OPT_EXPORT_TLSA-}; then
 	: ${NEXT_PUBKEY:=/etc/ssl/csrs.next/$SSL_HOST.csr}
 fi
@@ -63,7 +62,18 @@ check_ns_server () {
 }
 
 san_init () {
-	san=y
+	if srsly ${OPT_EMPTY_SAN_LIST-}; then
+		SAN_LIST=
+	else
+		if ! canhas ${SAN_LIST-}; then
+			SAN_LIST=www.%
+			nsrfs="${NAMESERVER_JAILNAME:+`jls -j ns path`}"
+			if [ -f "$nsrfs/var/db/knot/$SSL_HOST.zone" ]; then
+				re_pattern -n SSL_HOST
+				SAN_LIST="$SAN_LIST $(grep -v '^;;' "$nsrfs/var/db/knot/$SSL_HOST.zone" | awk "\$3 == \"MX\" && \$5 ~ /\.$SSL_HOST_re\.\$/ {print \$5}" | sed -e "s/\.$SSL_HOST_re\.\$/.%/" | xargs)"
+			fi
+		fi
+	fi
 	san_value="DNS.1=$SSL_HOST"
 	i=2
 	SAN_LIST="$(echo $SAN_LIST | sed -e s/%/$SSL_HOST/g)"
@@ -115,13 +125,53 @@ if [ -n "${OPT_EXPORT_TLSA-}" -o -n "${OPT_EXPORT_HPKP-}" ]; then
 		hash=`$SSL_CMD rsa -pubin -in "$key_in" -outform DER 2>/dev/null | sha$KEY_BITS`
 		record_data="$usage $selector $type $hash"
 		if [ 2 -le $OPT_EXPORT_TLSA ]; then
-			port=${STATE-} # XXX repurpose the (-p)rovince option to mean (-p)ort
-			: ${port:=443}
+			: ${PORT=${STATE-}} # XXX repurpose the (-p)rovince option to mean (-p)ort
+			: ${PORT:='www:https mx:smtp @:https,submission'}
+			apex_host_svcs=
+			other_host_svcs=
+			all_host_svcs=
+			for p in $PORT; do
+				lower_case -s p
+				case $p_lc in
+					[a-z0-9]*:?*) eval "match_host_svcs__`eko ${p_lc%%:*} | tr -c '[[:alnum:]]\n' _`=";;
+				esac
+			done
+			for p in $PORT; do
+				lower_case -s p
+				case $p_lc in
+					@:?*) push apex_host_svcs ${p_lc#*:};;
+					'*':?*) push other_host_svcs ${p_lc#*:};;
+					[a-z0-9]*:?*) push match_host_svcs__`eko ${p_lc%%:*} | tr -c '[[:alnum:]]\n' _` ${p_lc#*:};;
+					*) push all_host_svcs ${p_lc#*:};;
+				esac
+			done
 			: ${TLSA_TRANSPORT:=tcp}
 			check_ns_server
 			for h in $SSL_HOST $SAN_LIST; do
-				[ -n "${OPT_ASSUME_FRESH-}" ] || sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -dd -h _$port._$TLSA_TRANSPORT.$h -r tlsa
-				sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h _$port._$TLSA_TRANSPORT.$h -r tlsa -s -i "$record_data"
+				lower_case -s h
+				if [ "x$h" = "x$SSL_HOST" ]; then
+					svcs=$apex_host_svcs
+				else
+					h_match=${h_lc%%.*}
+					while
+						h_trim=${h_match%%[0-9]}
+						[ "$h_trim" != "$h_match" ]
+					do
+						h_match=$h_trim
+					done
+					h_match=`eko $h_match | tr -c '[[:alnum:]]\n' _`
+					eval svcs=\${match_host_svcs__$h_match-\$other_host_svcs}
+				fi
+				for p in `eko $svcs $all_host_svcs | tr ' ,' '\n' | sort -u`; do
+					case $p in
+						*[a-z]*)
+							p=`getent services $p | cut -w -f 2`
+							p=${p%%/*}
+						;;
+					esac
+					[ -n "${OPT_ASSUME_FRESH-}" ] || sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -dd -h _$p._$TLSA_TRANSPORT.$h_lc -r tlsa
+					sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h _$p._$TLSA_TRANSPORT.$h_lc -r tlsa -s -i "$record_data"
+				done
 			done
 		else
 			echo "$record_data"

@@ -36,12 +36,14 @@ done
 
 report_expired_domains
 
-echo
-echo Sleeping five minutes to allow canonical DNS authority to be established
-sleep 300 &
-p=$!
-echo "(kill -STOP $p; kill -CONT $p) to pause and resume"
-wait $p
+if ! srsly ${GENESIS_SKIP_WAIT-}; then
+	echo
+	echo Sleeping five minutes to allow canonical DNS authority to be established
+	sleep 300 &
+	p=$!
+	echo "(kill -STOP $p; kill -CONT $p) to pause and resume"
+	wait $p
+fi
 
 for s in lb vpn ca; do
 	if [ -d /root/nuos_deliverance/$s ]; then
