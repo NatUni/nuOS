@@ -89,6 +89,8 @@ collection_vars_init () {
 	
 	COLL_developer='
 		lite
+		graphics/jp2a
+		devel/py-setuptools_scm
 		devel/subversion
 		devel/git
 		devel/mercurial
@@ -243,12 +245,13 @@ collection_vars_init () {
 		x11/swaylock-effects
 		x11/swayidle
 		x11/wlogout
+		x11/ly
 		x11/kanshi
 		x11/mako
 		accessibility/wlsunset
 		sysutils/seatd
 		sysutils/touchegg
-		security/pam_howdy
+		security/howdy
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
