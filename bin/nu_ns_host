@@ -18,7 +18,7 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts A:c:C:dh:i:j:klM:nr:st:vw OPT; do case $OPT in
+while getopts A:c:C:dh:i:j:klm:M:nr:st:vw OPT; do case $OPT in
 	A) ALTERNATE=$OPTARG;;
 	c) CA_ZONE=$OPTARG;;
 	C) CHROOTDIR=$OPTARG;;
@@ -28,6 +28,7 @@ while getopts A:c:C:dh:i:j:klM:nr:st:vw OPT; do case $OPT in
 	j) NAMESERVER_JAILNAME=$OPTARG;;
 	k) OPT_EXPORT_KEY_FINGERPRINTS=y;;
 	l) OPT_LITE=y;;
+	m) push MX_HOST $OPTARG;;
 	M) MODE=$OPTARG; case $MODE in
 		master|slave) ;; *) exit 22; esac;;
 	n) OPT_EXPORT_NAMECOIN_JSON_VALUE=y;;
@@ -231,8 +232,16 @@ case $SOFTWARE in
 							sed -E -e "
 								s/\<example\\.com\>/$HOST_NAME/g
 								/\<serial[[:blank:]]*$/s/[[:digit:]]+/$new_serial/" \
-									"${alt_root-}/usr/local/etc/knot/example${ALTERNATE:+_${ALTERNATE}}.com.zone" \
-										> "${alt_root-}/var/db/knot${ALTERNATE:+_${ALTERNATE}}/$HOST_NAME.zone"
+									"${alt_root-}/usr/local/etc/knot/example${ALTERNATE:+_${ALTERNATE}}.com.zone" | \
+										if canhas ${MX_HOST-}; then
+											awk -F $'\t' '$2 != "MX" && $1 !~ /^mx($|[0-9])/ {print $0}'
+											for mx in $MX_HOST; do
+												eko "@	MX	${pri:-0} $mx."
+												pri=10
+											done
+										else
+											cat
+										fi > "${alt_root-}/var/db/knot${ALTERNATE:+_${ALTERNATE}}/$HOST_NAME.zone"
 						)
 						chown knot:knot "${alt_root-}/var/db/knot${ALTERNATE:+_${ALTERNATE}}/$HOST_NAME.zone"
 					fi

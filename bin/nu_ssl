@@ -66,14 +66,29 @@ san_init () {
 		SAN_LIST=
 	else
 		if ! canhas ${SAN_LIST-}; then
-			SAN_LIST=www.%
-			nsrfs="${NAMESERVER_JAILNAME:+`jls -j ns path`}"
-			if [ -f "$nsrfs/var/db/knot/$SSL_HOST.zone" ]; then
-				re_pattern -n SSL_HOST
-				SAN_LIST="$SAN_LIST $(grep -v '^;;' "$nsrfs/var/db/knot/$SSL_HOST.zone" | awk "\$3 == \"MX\" && \$5 ~ /\.$SSL_HOST_re\.\$/ {print \$5}" | sed -e "s/\.$SSL_HOST_re\.\$/.%/" | xargs)"
+			if canhas ${NAMESERVER_JAILNAME-}; then
+				NAMESERVER_JAILNAME_=`echo $NAMESERVER_JAILNAME | tr . _`
+				nsrfs="`jls -j $NAMESERVER_JAILNAME_ path`"
+			fi
+			if [ -f "${nsrfs-}/var/db/knot/$SSL_HOST.zone" ]; then
+				zf="${nsrfs-}/var/db/knot/$SSL_HOST.zone"
+			elif [ -f "${CHROOTDIR-}/var/db/knot/$SSL_HOST.zone" ]; then
+				zf="${CHROOTDIR-}/var/db/knot/$SSL_HOST.zone"
+			elif [ -f "${nsrfs-}/usr/local/etc/knot/knot.conf" ]; then
+				zf="${nsrfs-}/usr/local/etc/knot/example.com.zone"
+			elif [ -f "/usr/local/etc/knot/knot.conf" ]; then
+				zf="/usr/local/etc/knot/example.com.zone"
+			else
+				SAN_LIST="www.% mx1.% mx2.%"
+			fi
+			if ! canhas ${SAN_LIST-}; then
+				SAN_LIST=www.%
+				re_pattern -mn hn $SSL_HOST example.com
+				SAN_LIST="$SAN_LIST $(grep -v '^;;' "$zf" | awk "\$3 == \"MX\" && \$5 ~ /\.($hn_re)\.\$/ {print \$5}" | sed -Ee "s/\.($hn_re)\.\$/.%/" | xargs)"
 			fi
 		fi
 	fi
+	spill SAN_LIST
 	san_value="DNS.1=$SSL_HOST"
 	i=2
 	SAN_LIST="$(echo $SAN_LIST | sed -e s/%/$SSL_HOST/g)"
@@ -83,6 +98,7 @@ san_init () {
 			i=$(($i + 1))
 		fi
 	done
+	spill san_value
 }
 
 if [ -n "${OPT_EXPORT_TLSA-}" -o -n "${OPT_EXPORT_HPKP-}" ]; then
@@ -123,7 +139,6 @@ if [ -n "${OPT_EXPORT_TLSA-}" -o -n "${OPT_EXPORT_HPKP-}" ]; then
 		selector=1
 		san_init
 		hash=`$SSL_CMD rsa -pubin -in "$key_in" -outform DER 2>/dev/null | sha$KEY_BITS`
-		record_data="$usage $selector $type $hash"
 		if [ 2 -le $OPT_EXPORT_TLSA ]; then
 			: ${PORT=${STATE-}} # XXX repurpose the (-p)rovince option to mean (-p)ort
 			: ${PORT:='www:https mx:smtp @:https,submission'}
@@ -169,12 +184,17 @@ if [ -n "${OPT_EXPORT_TLSA-}" -o -n "${OPT_EXPORT_HPKP-}" ]; then
 							p=${p%%/*}
 						;;
 					esac
+					if [ 25 -eq $p ]; then
+						use=3
+					else
+						use=$usage
+					fi
 					[ -n "${OPT_ASSUME_FRESH-}" ] || sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -dd -h _$p._$TLSA_TRANSPORT.$h_lc -r tlsa
-					sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h _$p._$TLSA_TRANSPORT.$h_lc -r tlsa -s -i "$record_data"
+					sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h _$p._$TLSA_TRANSPORT.$h_lc -r tlsa -s -i "$use $selector $type $hash"
 				done
 			done
 		else
-			echo "$record_data"
+			echo "$usage $selector $type $hash"
 		fi
 	fi
 	if [ -n "${OPT_EXPORT_HPKP-}" ]; then
@@ -235,7 +255,8 @@ if [ -n "${OPT_LETS_ENCRYPT-}" ]; then
 	done
 	parent_zone=$(ns_master_zone ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} ${CHROOTDIR:+-c} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} $SSL_HOST)
 	sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h $parent_zone -c "$ACME_PROVIDER"
-	sleep 3
+	spill NAMESERVER_JAILNAME KNOT_ALTERNATE ACME_PROVIDER parent_zone dom_args
+	sleep 2
 	require_tmp acme_output
 	acme.sh --signcsr --csr /etc/ssl/csrs/$SSL_HOST.csr --dns $dom_args --server "$ACME_SERVER" --yes-I-know-dns-manual-mode-enough-go-ahead-please ${OPT_FORCE:+--force} >| "$acme_output" 2>&1 || true
 	require_tmp acme_challenge
@@ -247,10 +268,10 @@ if [ -n "${OPT_LETS_ENCRYPT-}" ]; then
 		if [ -n "$txt" ]; then
 			sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -d -r txt -h $h || true
 			sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -r txt -h $h -i $txt
-			sleep 3
+			sleep 2
 		fi
 	done
-	sleep 120
+	sleep 30
 	acme.sh --renew $dom_args --server "$ACME_SERVER" --yes-I-know-dns-manual-mode-enough-go-ahead-please ${OPT_FORCE:+--force} 2>&1 || true
 	sister ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} nu_ns_host ${CHROOTDIR:+-C "$CHROOTDIR"} ${OPT_VERBOSE:+-v} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} -h $parent_zone -c -d
 	CERT_FILE=$HOME/.acme.sh/$SSL_HOST/$SSL_HOST.cer
