@@ -61,9 +61,11 @@ maybe_yell
 diff -q "${alt_root-}/usr/local/etc/postfix/virtual.sample" "${alt_root-}/usr/local/etc/postfix/virtual"
 
 touch "${alt_root-}/usr/local/etc/postfix/virtual" "${alt_root-}/usr/local/etc/postfix/aliases" "${alt_root-}/usr/local/etc/postfix/domains" "${alt_root-}/usr/local/etc/postfix/senders" "${alt_root-}/usr/local/etc/postfix/transport"
+[ -z "${OPT_SSL-}" ] || touch "${alt_root-}/usr/local/etc/postfix/sni"
 
 postmap "${alt_root-}/usr/local/etc/postfix/virtual" "${alt_root-}/usr/local/etc/postfix/domains" "${alt_root-}/usr/local/etc/postfix/senders" "${alt_root-}/usr/local/etc/postfix/transport"
 postalias "${alt_root-}/usr/local/etc/postfix/aliases"
+[ -z "${OPT_SSL-}" ] || postmap -F "${alt_root-}/usr/local/etc/postfix/sni"
 
 sed -ne '/^$/,${/^./,$p;}' "${alt_root-}/usr/local/etc/postfix/bounce.cf.default" > "${alt_root-}/usr/local/etc/postfix/bounce.cf"
 
@@ -116,10 +118,11 @@ smtpd_tls_security_level = may
 smtpd_tls_auth_only = yes
 smtp_tls_session_cache_database = btree:\$data_directory/smtp_scache
 smtpd_tls_session_cache_database = btree:\$data_directory/smtpd_scache
-smtpd_tls_cert_file = \$config_directory/ssl/$HOST_NAME.crt
+tls_server_sni_maps = hash:\$config_directory/sni
 smtpd_tls_key_file = \$config_directory/ssl/private/$HOST_NAME.key
+smtpd_tls_cert_file = \$config_directory/ssl/$HOST_NAME.crt
 EOF
-
+	
 	if cp "${alt_root-}/etc/ssl/certs/$HOST_NAME.ca.crt" "${alt_root-}/usr/local/etc/postfix/ssl/"; then
 		mkdir -p "${alt_root-}/etc/ssl/certs.installed/localhost/$HOST_NAME.ca.crt"
 		ln -s "/usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt" "${alt_root-}/etc/ssl/certs.installed/localhost/$HOST_NAME.ca.crt/postfix"

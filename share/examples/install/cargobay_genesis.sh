@@ -14,7 +14,7 @@ service jail start resolv ns
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -qv $inf
 	[ ! -f /var/jail/ns/var/db/knot/$INFRA_DOMAIN_lc.zone ] || continue
 	for j in `list_ns_jails`; do
-		nu_ns_host -j $j -h $INFRA_DOMAIN_lc
+		nu_ns_host -j $j -h $INFRA_DOMAIN_lc `[ $inf = $INFRA_HOST ] || eko -m mx1.$INFRA_HOST_lc -m mx2.$INFRA_HOST_lc`
 	done
 	nu_sshfp -j ns -F -h $INFRA_DOMAIN_lc
 done
@@ -22,7 +22,7 @@ for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
 	for z in $client_zones_lc; do
 		[ ! -f /var/jail/ns/var/db/knot/$z.zone ] || continue
 		for j in `list_ns_jails`; do
-			nu_ns_host -j $j -h $z
+			nu_ns_host -j $j -h $z -m mx1.$INFRA_HOST_lc -m mx2.$INFRA_HOST_lc
 		done
 	done
 done
@@ -78,7 +78,11 @@ fi
 
 if [ ! -d /var/jail/postmaster ]; then
 	nu_jail -x -q -t vnet -S $my_ip_1:smtp -S $my_ip_2:smtp -S $my_ip_1:submission -S $my_ip_2:submission -j postmaster
-	(cd /etc/ssl && tar -cf - certs/$INFRA_HOST_lc.ca.crt certs/$INFRA_HOST_lc.crt csrs.next/$INFRA_HOST_lc.csr csrs/$INFRA_HOST_lc.csr private/$INFRA_HOST_lc.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/)
+	(cd /etc/ssl
+		for z in $all_zones_lc; do
+			tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/
+		done
+	)
 	mkdir -p /var/jail/postmaster/var/imap/socket
 	sysrc -f /etc/rc.conf.d/jail jail_list+=postmaster
 	service jail start postmaster

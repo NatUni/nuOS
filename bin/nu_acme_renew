@@ -44,7 +44,7 @@ for d in $@; do
 	if [ -n "${OPT_INSTALL_ONLY-}" ] || { ! $SSL_CMD x509 -in $SSL_CERTS/$d.crt -noout -checkend $((60*60*24*7*3)); }; then
 		if [ -z "${OPT_INSTALL_ONLY-}" ]; then
 			echo Running: env SAN_LIST=\""$hosts"\" nu_ssl ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} -L -h $d
-			SAN_LIST="$hosts" sister nu_ssl ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} -L -h $d
+			SAN_LIST="$hosts" sister nu_ssl ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} ${OPT_FORCE:+-f} -L -h $d
 		fi
 		for x in crt ca.crt full.crt; do
 			for l in `ls $SSL_CERTS.installed/localhost/$d.$x/* 2> /dev/null`; do

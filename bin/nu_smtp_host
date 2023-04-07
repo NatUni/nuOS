@@ -16,7 +16,7 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts C:eh:v OPT; do case $OPT in
+while getopts C:eh:sv OPT; do case $OPT in
 	C) CHROOTDIR=$OPTARG;;
 	e) OPT_ELECT=y;;
 	h) HOST_NAME=$OPTARG;;
@@ -48,5 +48,15 @@ cat >> "${CHROOTDIR-}/usr/local/etc/postfix/domains" <<EOF
 $HOST_NAME	OK
 EOF
 postmap "${CHROOTDIR-}/usr/local/etc/postfix/domains"
+
+if [ -d "${CHROOTDIR-}/usr/local/etc/postfix/ssl" ] && cp -n "${CHROOTDIR-}/etc/ssl/private/$HOST_NAME.key" "${CHROOTDIR-}/usr/local/etc/postfix/ssl/private/$HOST_NAME.key" ; then
+	cp -n "${CHROOTDIR-}/etc/ssl/certs/$HOST_NAME.crt" "${CHROOTDIR-}/usr/local/etc/postfix/ssl/$HOST_NAME.crt"
+	cp -n "${CHROOTDIR-}/etc/ssl/certs/$HOST_NAME.ca.crt" "${CHROOTDIR-}/usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt"
+	[ ! -f "${CHROOTDIR-}/usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt" ] || ca_vfy=y
+	cat >> "${CHROOTDIR-}/usr/local/etc/postfix/sni" <<EOF
+$HOST_NAME	/usr/local/etc/postfix/ssl/private/$HOST_NAME.key, /usr/local/etc/postfix/ssl/$HOST_NAME.crt${ca_vfy:+, /usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt}
+EOF
+	${CHROOTDIR:+chroot $CHROOTDIR} postmap -F /usr/local/etc/postfix/sni
+fi
 
 echo "Configured smtp server to accept mail for $HOST_NAME."
