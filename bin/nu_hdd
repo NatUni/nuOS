@@ -180,7 +180,7 @@ else
 	gnop destroy $nop_devs
 	if [ -n "${OPT_BOOTABLE-}" ]; then
 		require_tmp -d efi_fat
-		mkdir $efi_fat/EFI/BOOT
+		mkdir -p $efi_fat/EFI/BOOT
 		mkdir $efi_fat/EFI/FreeBSD
 		cp /boot/loader_lua.efi $efi_fat/EFI/BOOT/BOOTX64.efi
 		cp /boot/loader_lua.efi $efi_fat/EFI/FreeBSD/loader.efi
