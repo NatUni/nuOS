@@ -99,16 +99,16 @@ zfs set org.nuos:active_revision=$fbsd_src_rev $POOL_NAME/$fbsd_bin_ds_name
 
 # /XXX: GARBANZO
 
-zfs set canmount=off \
-	$POOL_NAME/$os_software_ds_name \
-	$POOL_NAME/$fbsd_proj_ds_name \
-	$POOL_NAME/$fbsd_os_ds_name \
-	$POOL_NAME/$fbsd_bin_ds_name \
-	$POOL_NAME/$fbsd_bin_ds_name/$fbsd_src_rev \
-	$POOL_NAME/$nuos_proj_ds_name \
-	$POOL_NAME/$nuos_os_ds_name \
-	$POOL_NAME/$nuos_bin_ds_name \
-	$POOL_NAME/$nuos_bin_ds_name/$src_rev
+# zfs get canmount \
+# 	$POOL_NAME/$os_software_ds_name \
+# 	$POOL_NAME/$fbsd_proj_ds_name \
+# 	$POOL_NAME/$fbsd_os_ds_name \
+# 	$POOL_NAME/$fbsd_bin_ds_name \
+# 	$POOL_NAME/$fbsd_bin_ds_name/$fbsd_src_rev \
+# 	$POOL_NAME/$nuos_proj_ds_name \
+# 	$POOL_NAME/$nuos_os_ds_name \
+# 	$POOL_NAME/$nuos_bin_ds_name \
+# 	$POOL_NAME/$nuos_bin_ds_name/$src_rev
 
 zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src
 zfs create -o mountpoint=/usr/src $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER && \
