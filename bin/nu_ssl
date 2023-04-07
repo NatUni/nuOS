@@ -82,9 +82,9 @@ san_init () {
 				SAN_LIST="www.% mx1.% mx2.%"
 			fi
 			if ! canhas ${SAN_LIST-}; then
-				SAN_LIST=www.%
+				push SAN_LIST www.%
 				re_pattern -mn hn $SSL_HOST example.com
-				SAN_LIST="$SAN_LIST $(grep -v '^;;' "$zf" | awk "\$3 == \"MX\" && \$5 ~ /\.($hn_re)\.\$/ {print \$5}" | sed -Ee "s/\.($hn_re)\.\$/.%/" | xargs)"
+				push SAN_LIST $(grep -v '^;;' "$zf" | awk "\$3 == \"MX\" && \$5 ~ /\.($hn_re)\.\$/ {print \$5}" | sed -Ee "s/\.($hn_re)\.\$/.%/" | xargs)
 			fi
 		fi
 	fi

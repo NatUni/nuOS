@@ -57,14 +57,14 @@ for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
 		nu_ssl -h ca.$INFRA_DOMAIN_lc -b 4096 -s -W -d 512 -n $country -p "$province" -l "$locality" -o "$organization" -u "$sec_dept" -S
 	fi
 	if [ ! -f /etc/ssl/private/$INFRA_DOMAIN_lc.key ] || [ ! -f /etc/ssl/csrs/$INFRA_DOMAIN_lc.csr ]; then
-		nu_ssl -h $INFRA_DOMAIN_lc -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$net_dept" -S
+		nu_ssl -j ns -h $INFRA_DOMAIN_lc -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$net_dept" -S
 	fi
 	if [ ! -f /etc/ssl/certs/$INFRA_DOMAIN_lc.internal.crt ]; then
 		nu_ca -h $INFRA_DOMAIN_lc
 	fi
 	
 	if [ ! -f /etc/ssl/csrs.next/$INFRA_DOMAIN_lc.csr ]; then
-		nu_ssl -h $INFRA_DOMAIN_lc -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$net_dept" -S -N
+		nu_ssl -j ns -h $INFRA_DOMAIN_lc -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$net_dept" -S -N
 	fi
 	nu_acme_renew -j ns $INFRA_DOMAIN_lc
 	host -rt tlsa _443._tcp.$INFRA_DOMAIN_lc ns.jail | grep -w 'has TLSA record' || nu_ssl -j ns -F -h $INFRA_DOMAIN_lc -tt
@@ -79,7 +79,7 @@ fi
 if [ ! -d /var/jail/postmaster ]; then
 	nu_jail -x -q -t vnet -S $my_ip_1:smtp -S $my_ip_2:smtp -S $my_ip_1:submission -S $my_ip_2:submission -j postmaster
 	(cd /etc/ssl
-		for z in $all_zones_lc; do
+		for z in $INFRA_HOST_lc $guest_infras_lc; do
 			tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/
 		done
 	)
@@ -118,6 +118,27 @@ fi
 
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
 	for z in $zones_lc; do
+		department=`get_domains | match_names $z | extract_dept`
+		canhas $department || continue
+	
+		if [ ! -f /etc/ssl/private/$z.key ] || [ ! -f /etc/ssl/csrs/$z.csr ]; then
+			nu_ssl -j ns -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S
+		fi
+		if [ ! -f /etc/ssl/csrs.next/$z.csr ]; then
+			nu_ssl -j ns -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S -N
+		fi
+		nu_acme_renew -j ns $z
+		host -rt tlsa _443._tcp.$z ns.jail | grep -w 'has TLSA record' || nu_ssl -j ns -F -h $z -tt
+	done
+done
+
+for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
+	(cd /etc/ssl
+		for z in $client_zones_lc; do
+			tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/
+		done
+	)
+	for z in $zones_lc; do
 		grep -w ^$z /var/jail/postmaster/usr/local/etc/postfix/domains || nu_smtp_host -C /var/jail/postmaster -h $z
 		for b in operator security hostmaster postmaster webmaster whois-data; do
 			grep -w ^$b@$z /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -u $OWNER_ACCT -m $b@$z
@@ -125,22 +146,6 @@ for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
 	done
 	for m in $init_emails; do
 		grep -w ^${m#'*'} /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -u $OWNER_ACCT -m $m
-	done
-done
-
-for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
-	for z in $zones_lc; do
-		department=`get_domains | match_names $z | extract_dept`
-		canhas $department || continue
-	
-		if [ ! -f /etc/ssl/private/$z.key ] || [ ! -f /etc/ssl/csrs/$z.csr ]; then
-			nu_ssl -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S
-		fi
-		if [ ! -f /etc/ssl/csrs.next/$z.csr ]; then
-			nu_ssl -N -h $z -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u "$department" -S
-		fi
-		nu_acme_renew -j ns $z
-		host -rt tlsa _443._tcp.$z ns.jail | grep -w 'has TLSA record' || nu_ssl -j ns -F -h $z -tt
 	done
 done
 
