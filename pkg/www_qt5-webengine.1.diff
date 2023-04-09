@@ -6,6 +6,6 @@
  # .pro files at once.
 -USES=		gl gnome gperf jpeg minizip ninja:build nodejs:build,lts \
 +USES=		gl gnome gperf jpeg minizip ninja:build nodejs:build \
- 		pkgconfig python:2.7,build qmake:norecursive,outsource \
+ 		perl5 pkgconfig python:2.7,build qmake:norecursive,outsource \
  		qt-dist:5,webengine shebangfix xorg
  USE_GL=		gl
