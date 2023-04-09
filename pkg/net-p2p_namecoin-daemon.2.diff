@@ -1,0 +1,37 @@
+--- ../namecoin-daemon.orig/Makefile	2023-04-06 02:14:16.000000000 +0000
++++ ./Makefile	2023-04-08 03:59:21.022296000 +0000
+@@ -1,17 +1,16 @@
+ MASTERDIR=	${.CURDIR}/../namecoin
+ 
+-PORTREVISION=	3
+ PKGNAMESUFFIX=	-daemon
+ 
+ COMMENT=	Decentralized, open DNS and more (Daemon)
+ SLAVE_PORT=	yes
+ 
+-CONFLICTS_INSTALL=	namecoin-stable namecoin-stable-daemon namecoin-stable-utils \
+-		namecoin-beta namecoin-beta-daemon namecoin-beta-utils
+-
+ OPTIONS_DEFINE=		DEBUG HARDENING TESTS UPNP WALLET ZMQ
+ OPTIONS_DEFAULT=	HARDENING UPNP WALLET
+ 
++USERS=          namecoin
++GROUPS=		namecoin
++
+ CONFIGURE_ARGS=	--with-daemon \
+ 		--without-gui \
+ 		--without-libs \
+@@ -19,8 +18,12 @@
+ 		--without-utils \
+ 		--disable-man
+ 
+-PLIST_FILES=	bin/namecoind
++PLIST_FILES=	bin/namecoind \
++		"@sample %%ETCDIR%%.conf.sample"
+ 
+ USE_RC_SUBR=	namecoind
++
++post-install:
++	${INSTALL_DATA} ${FILESDIR}/namecoin.conf ${STAGEDIR}${PREFIX}/etc/namecoin.conf.sample
+ 
+ .include "${MASTERDIR}/Makefile"

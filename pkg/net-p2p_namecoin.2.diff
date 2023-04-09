@@ -1,5 +1,5 @@
---- ../namecoin.orig/distinfo	2022-08-13 22:06:47.412425000 -0400
-+++ ./distinfo	2022-08-13 22:10:19.240905000 -0400
+--- ../namecoin.orig/distinfo	2023-04-08 03:19:09.955690000 +0000
++++ ./distinfo	2023-04-07 18:11:29.000000000 +0000
 @@ -1,5 +1,5 @@
 -TIMESTAMP = 1618840122
 -SHA256 (namecoin-namecoin-core-nc0.21.0.1_GH0.tar.gz) = 56cb87f7c92eba5ba25dd1c5febca75f5d32aef2102382de88b6f0d8c81ba569

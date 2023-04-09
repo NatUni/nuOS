@@ -1,1 +1,1 @@
-grep ^PORTVERSION= Makefile | grep -qw 0.21.0.1
+[ `find * -type f | sort | xargs md5 | md5` = 822704402abe0701f39027d449f37324 ]
