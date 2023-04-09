@@ -1,0 +1,141 @@
+body {
+	background: #ddd;
+	background-image: linear-gradient(to top left, #decba4, #dbd3c3, #9cb5b5, #3e5151);
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-attachment: fixed;
+	font-size: 16pt;
+	font-family: 'LibreFranklin';
+	color: #222;
+	margin: 0;
+	padding: 0;
+}
+@font-face {
+	font-family: 'Comfortaa';
+	src: url('Comfortaa-Bold.ttf') format('truetype');
+	font-weight: bold;
+}
+@font-face {
+	font-family: 'LibreFranklin';
+	src: url('LibreFranklin-Regular.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'LibreFranklin';
+	src: url('LibreFranklin-Italic.ttf') format('truetype');
+	font-style: italic;
+}
+@font-face {
+	font-family: 'LibreFranklin';
+	src: url('LibreFranklin-SemiBold.ttf') format('truetype');
+	font-weight: bold;
+}
+@font-face {
+	font-family: 'LibreFranklin';
+	src: url('LibreFranklin-SemiBoldItalic.ttf') format('truetype');
+	font-style: italic;
+	font-weight: bold;
+}
+a {
+	color: #611903;
+	text-decoration: inherit;
+}
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'Comfortaa';
+	font-weight: bold;
+	color: #283636;
+}
+h1 {
+	line-height: 1.25em;
+	font-size: 2em;
+	padding: 0.5em 0 0.3333333em;
+}
+h2 {
+	line-height: 1.25em;
+	font-size: 1.667em;
+	margin: 0.667em 0 0.5em;
+}
+h3 {
+	line-height: 1.25em;
+	font-size: 1.5em;
+	margin: 0.75em 0 0.6666667em;
+}
+h4 {
+	line-height: 1.5em;
+	font-size: 1.25em;
+	margin: 0.75em 0 0.6666667em;
+}
+h5 {
+	line-height: 1.625em;
+	font-size: 1em;
+	margin: 0.667em 0 0.5em;
+}
+h6 {
+	line-height: 1.5em;
+	font-size: 1em;
+	margin: 0.5em 0 0.3333333em;
+}
+.page {
+	padding: 1em 2em;
+}
+#banner {
+	mix-blend-mode: overlay;
+	opacity: 66.6666667%;
+	background: #000;
+	color: #decba4;
+	height: 1.875em;
+	width: 100%;
+	margin: 0 auto;
+	padding: 0;
+	top: 0;
+	text-align: center;
+	position: fixed;
+	line-height: 0em;
+	font-size: 2.0833333vw;
+	font-family: 'Comfortaa';
+	font-weight: bold;
+}
+#banner span.bull {
+	color: #3e5151;
+}
+#footer {
+
+}
+.center {
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+.center > * {
+	margin-left: 0;
+	margin-right: 0;
+	display: inline-block;
+	text-align: initial;
+}
+img.center {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.logo {
+	padding: 0.5em 0;
+	opacity: 66.6666667%;
+	mix-blend-mode: overlay;
+}
+.logo img {
+	margin-top: 4vw;
+	width: 50vmin;
+	height: 16.4885496vmin;
+}
+
+ul.no-bull > li {
+	font-weight: bold;
+}
+ul.no-bull > ul > li {
+	list-style-type: none;
+}
+
+.foot-text {
+	font-size: 67%;
+	text-align: right;
+}

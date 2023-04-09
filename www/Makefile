@@ -1,8 +1,8 @@
 BIND?=localhost
 
 FRONTENDS=	dashboard
-FRONTENDS+=	org net
-FRONTENDS+=	wall gold cash
+#FRONTENDS+=	org net
+#FRONTENDS+=	wall gold cash
 
 build: ${FRONTENDS:S/^/build-/} build-engine ## Build a production-ready binary or set of files
 	@echo '=====> Target: build'
