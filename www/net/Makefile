@@ -26,13 +26,13 @@ rsync: .rsync .PHONY
 	touch .prep
 	rm -f .rsync
 
-web-imgs: eagle-mask.png eagle.jpg eagle.webp
+web-imgs: eagle-mask.png eagle.webp
 
 eagle-sm.png: eagle.png
-	convert eagle.png -resize 864x -bordercolor transparent -border 80x80 eagle-sm.png
+	convert eagle.png -resize 864x -bordercolor transparent -border 80x80 -strip eagle-sm.png
 
 eagle-mask.png: eagle-sm.png
-	convert eagle-sm.png -alpha extract -morphology Dilate Disk:2.3 -background black -alpha shape eagle-mask.png
+	convert eagle-sm.png -alpha extract -morphology Dilate Disk:2.3 -background black -alpha shape -strip eagle-mask.png
 	# optipng -o5 eagle-mask.png
 
 eagle.jpg: eagle-sm.png index.css
@@ -41,7 +41,7 @@ eagle.jpg: eagle-sm.png index.css
 
 eagle-flat.png: eagle-sm.png index.css
 	convert eagle-sm.png -background "`sed -nEe '/^:root *\{/,/}/s/^.*--banner: *(.+);$$/\1/p' index.css`" \
-		-flatten eagle-flat.png
+		-flatten -strip eagle-flat.png
 
 eagle.webp: eagle-flat.png eagle-mask.png
 	magick eagle-flat.png eagle-mask.png -compose copy_opacity -composite -quality 67 -define webp:alpha-quality=80 eagle.webp
