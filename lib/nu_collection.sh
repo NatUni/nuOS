@@ -278,8 +278,6 @@ collection_vars_init () {
 		x11/kitty
 		net/x11vnc
 		www/firefox
-		www/chromium
-		www/iridium
 		multimedia/mpv
 		java/icedtea-web
 		mail/thunderbird
@@ -310,6 +308,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		www/iridium
 		net-p2p/cardano-node
 		net-p2p/cardano-db-sync
 		net-im/py-matrix-synapse
