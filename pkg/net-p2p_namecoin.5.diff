@@ -1,24 +1,26 @@
---- ../namecoin.orig/files/namecoind.in	2023-04-08 04:54:39.052238000 +0000
-+++ files/namecoind.in	2023-04-08 04:52:19.990994000 +0000
+--- ../namecoin.orig/files/namecoind.in	2023-04-11 02:55:03.360186000 +0000
++++ files/namecoind.in	2023-04-11 02:50:50.247146000 +0000
 @@ -11,7 +11,7 @@
  # namecoind_user (str)		Set to "namecoin" by default.
  # namecoind_group (str)		Set to "namecoin" by default.
  # namecoind_conf (str)		Set to "%%PREFIX%%/etc/namecoind.conf" by default.
 -# namecoind_data (str)		Set to "/var/lib/namecoind" by default.
-+# namecoind_data (str)		Set to "/var/lib/namecoin" by default.
++# namecoind_data_dir (str)	Set to "/var/db/namecoin" by default.
  # namecoindlimits_enable (bool)	Set to "NO" by default.
  #				Set it to "YES" to enable namecoindlimits
  # namecoindlimits_args		Set to "-e -U ${namecoind_user}" by default
-@@ -33,7 +33,7 @@
+@@ -31,9 +31,8 @@
+ stop_cmd="namecoind_stop"
+ stop_postcmd="namecoind_wait"
  command="%%PREFIX%%/bin/namecoind"
- cli_command="%%PREFIX%%/bin/namecoin-cli"
+-cli_command="%%PREFIX%%/bin/namecoin-cli"
  daemon_command="/usr/sbin/daemon"
 -#pidfile="/var/run/${name}.pid"
 +pidfile="/var/run/${name}.pid"
  extra_commands="configtest"
  
  
-@@ -44,13 +44,12 @@
+@@ -44,13 +43,12 @@
  
  : ${namecoind_user:="namecoin"}
  : ${namecoind_group:="namecoin"}
@@ -32,4 +34,26 @@
 -pidfile="${namecoind_data_dir}/namecoind.pid"
  required_files="${namecoind_config_file}"
  
+ 
+@@ -118,10 +116,10 @@
+ {
+   echo "Starting namecoind:"
+   cd "${namecoind_data_dir}" || return 1
+-  ${daemon_command} -u "${namecoind_user}" -p "${pidfile}" \
++  ${daemon_command} -u "${namecoind_user}" -p "${pidfile}" -f \
+     ${command} \
+     -conf="${namecoind_config_file}" \
+-    -datadir="${namecoind_data_dir}" 2> /tmp/namecoind.stderr > /tmp/namecoind.stdout
++    -datadir="${namecoind_data_dir}"
+ }
+ 
+ namecoind_stop()
+@@ -133,7 +131,7 @@
+     echo "Namecoind is not running"
+     return 1
+   else
+-    ${cli_command} -conf="${namecoind_config_file}" -datadir="${namecoind_data_dir}" stop
++    kill ${pid}
+   fi
+ }
  
