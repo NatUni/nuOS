@@ -312,17 +312,6 @@ init_jail () {
 # 				fi
 				if [ ! -d /var/jail/ns ]; then
 					nu_jail -x -q -t vnet -H domain -S $my_ip_1:domain -S $my_ip_2:domain -j ns
-#
-###### TEMPORARY ######
-$NUOS_CODE/util/nush -c mnt_dev /var/jail/ns
-mount -t nullfs /usr/ports/packages /var/jail/ns/usr/ports/packages
-pkg -c /var/jail/ns delete -fy knot3
-pw -V /var/jail/ns/etc userdel -n knot
-pkg -c /var/jail/ns add /usr/ports/packages/All/knot3-3.2.6.pkg
-umount /var/jail/ns/dev
-umount /var/jail/ns/usr/ports/packages
-###### /TEMPORARY ######
-#
 					nu_ns_server -C /var/jail/ns -l all -d -k 4096 -z 2048 -i $my_ip_1 -i $my_ip_2
 					if [ -d /root/nuos_deliverance/ns ]; then
 						tar -cf - -C /root/nuos_deliverance/ns/knotdb keys | tar -xvf - -C /var/jail/ns/var/db/knot
