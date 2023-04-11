@@ -102,6 +102,7 @@ collection_vars_init () {
 		lang/v
 		lang/expect
 		math/convertall
+		lang/opensycl
 	'
 	
 	COLL_user='
@@ -141,6 +142,7 @@ collection_vars_init () {
 		databases/redis
 		databases/mongodb50
 		databases/cassandra4
+		databases/cayley
 		net/kafka
 		devel/zookeeper
 		lang/go
@@ -192,6 +194,7 @@ collection_vars_init () {
 		www/minio
 		multimedia/ffmpeg
 		multimedia/Bento4
+		multimedia/av1an
 		www/youtube_dl
 		www/yt-dlp
 		www/flexget
@@ -199,6 +202,7 @@ collection_vars_init () {
 		www/gallery-dl
 		net-p2p/rtorrent
 		net-p2p/createtorrent
+		net-p2p/mktorrent
 		net-p2p/torrentcheck
 	'
 	
@@ -248,6 +252,9 @@ collection_vars_init () {
 		x11/ly
 		x11/kanshi
 		x11/mako
+		x11-wm/hyprland
+		net/waypipe
+		multimedia/helvum
 		accessibility/wlsunset
 		sysutils/seatd
 		sysutils/touchegg
