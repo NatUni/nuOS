@@ -65,7 +65,6 @@ touch "${alt_root-}/usr/local/etc/postfix/virtual" "${alt_root-}/usr/local/etc/p
 
 postmap "${alt_root-}/usr/local/etc/postfix/virtual" "${alt_root-}/usr/local/etc/postfix/domains" "${alt_root-}/usr/local/etc/postfix/senders" "${alt_root-}/usr/local/etc/postfix/transport"
 postalias "${alt_root-}/usr/local/etc/postfix/aliases"
-[ -z "${OPT_SSL-}" ] || postmap -F "${alt_root-}/usr/local/etc/postfix/sni"
 
 sed -ne '/^$/,${/^./,$p;}' "${alt_root-}/usr/local/etc/postfix/bounce.cf.default" > "${alt_root-}/usr/local/etc/postfix/bounce.cf"
 
@@ -129,7 +128,13 @@ EOF
 		cat >> "${alt_root-}/usr/local/etc/postfix/main.cf" <<EOF
 smtpd_tls_CAfile = \$config_directory/ssl/$HOST_NAME.ca.crt
 EOF
+		ca_vfy=y
 	fi
+	cat >> "${alt_root-}/usr/local/etc/postfix/sni" <<EOF
+$HOST_NAME	/usr/local/etc/postfix/ssl/private/$HOST_NAME.key, /usr/local/etc/postfix/ssl/$HOST_NAME.crt${ca_vfy:+, /usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt}
+.$HOST_NAME	/usr/local/etc/postfix/ssl/private/$HOST_NAME.key, /usr/local/etc/postfix/ssl/$HOST_NAME.crt${ca_vfy:+, /usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt}
+EOF
+	${alt_root:+chroot "$alt_root"} postmap -F /usr/local/etc/postfix/sni
 fi
 
 echo default servername: $default_servername
