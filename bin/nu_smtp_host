@@ -55,8 +55,9 @@ if [ -d "${CHROOTDIR-}/usr/local/etc/postfix/ssl" ] && cp -n "${CHROOTDIR-}/etc/
 	[ ! -f "${CHROOTDIR-}/usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt" ] || ca_vfy=y
 	cat >> "${CHROOTDIR-}/usr/local/etc/postfix/sni" <<EOF
 $HOST_NAME	/usr/local/etc/postfix/ssl/private/$HOST_NAME.key, /usr/local/etc/postfix/ssl/$HOST_NAME.crt${ca_vfy:+, /usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt}
+.$HOST_NAME	/usr/local/etc/postfix/ssl/private/$HOST_NAME.key, /usr/local/etc/postfix/ssl/$HOST_NAME.crt${ca_vfy:+, /usr/local/etc/postfix/ssl/$HOST_NAME.ca.crt}
 EOF
-	${CHROOTDIR:+chroot $CHROOTDIR} postmap -F /usr/local/etc/postfix/sni
+	${CHROOTDIR:+chroot "$CHROOTDIR"} postmap -F /usr/local/etc/postfix/sni
 fi
 
 echo "Configured smtp server to accept mail for $HOST_NAME."
