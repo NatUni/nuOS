@@ -41,9 +41,13 @@ if canhas ${primary_if-}; then
 	set_primary_phys_netif $primary_if "$TRGT"
 fi
 
+sed -i '' -e '/^#/d;/^$/d' "$TRGT/etc/rc.conf.local"
+
 cat >> "$TRGT/etc/rc.conf.local" <<EOF
 ifconfig_net0="inet $my_ip netmask $netmask -rxcsum -rxcsum6 -txcsum -txcsum6 -lro -tso -vlanhwtso"
 defaultrouter="$defaultrouter"
+gateway_enable="YES"
+firewall_nat_enable="YES"
 EOF
 
 sed -i '' -E -e '/^#VersionAddendum\>/a\

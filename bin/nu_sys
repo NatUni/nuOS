@@ -213,27 +213,30 @@ fi
 
 admin_install -z $POOL_MNT
 
-export BASEOS_TYPE
-export BASEOS_VER
-export HOSTOS_TYPE
-export HOSTOS_VER
-export TRGT_TYPE=$TRGT
-export POOL=$POOL_NAME
-export TRGT=$POOL_MNT
-export NAME=${NEW_HOST%%.*}
-export NUOS="$(realpath "$(dirname "$(realpath "$0")")/..")"
-while eval [ -n \"\${LOCAL_SCRIPT_${i:=0}-}\" ]; do
-	eval LOCAL_SCRIPT=\${LOCAL_SCRIPT_$i}
-	if [ -d "${LOCAL_SCRIPT-}" ]; then
-		script_files=`rcorder "$LOCAL_SCRIPT"/*.sh`
-		for script_file in "$script_files"; do
-			. "$script_file"
-		done
-	elif [ -f "${LOCAL_SCRIPT-}" ]; then
-		. "$LOCAL_SCRIPT"
-	fi
-	i=$(($i+1))
-done
+if canhas "${LOCAL_SCRIPT_0-}"; then
+	zfs snapshot -r $new_host_ds@sys_conception
+	export BASEOS_TYPE
+	export BASEOS_VER
+	export HOSTOS_TYPE
+	export HOSTOS_VER
+	export TRGT_TYPE=$TRGT
+	export POOL=$POOL_NAME
+	export TRGT=$POOL_MNT
+	export NAME=${NEW_HOST%%.*}
+	export NUOS="$(realpath "$(dirname "$(realpath "$0")")/..")"
+	while eval [ -n \"\${LOCAL_SCRIPT_${i:=0}-}\" ]; do
+		eval LOCAL_SCRIPT=\${LOCAL_SCRIPT_$i}
+		if [ -d "${LOCAL_SCRIPT-}" ]; then
+			script_files=`rcorder "$LOCAL_SCRIPT"/*.sh`
+			for script_file in "$script_files"; do
+				. "$script_file"
+			done
+		elif [ -f "${LOCAL_SCRIPT-}" ]; then
+			. "$LOCAL_SCRIPT"
+		fi
+		i=$(($i+1))
+	done
+fi
 
 zfs snapshot -r $new_host_ds@sys_birth
 if [ -z "${home_existed-}" ]; then
