@@ -18,7 +18,7 @@ prep: .prep .PHONY
 rsync: .rsync .PHONY
 
 .rsync:
-	rsync -avP --delete ${PWD}/ ${RSYNC}/
+	rsync -avP --delete --exclude='*.dd.xz' ${PWD}/ ${RSYNC}/
 	touch .rsync
 
 .prep: ${.SUFFIXES:S/^/*/}
