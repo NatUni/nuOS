@@ -101,14 +101,35 @@ freeze () {
 	while getopts r OPT; do case $OPT in
 		r) opt_remount=y;;
 	esac; done; shift $(($OPTIND-1))
-	local rds=$1 ds= mp=
+	local rds=$1 ds= mp= dmp= src= mode= uid= gid= flags=
 
 	zfs list -H -r -t filesystem -o mountpoint,name $rds | sort | tail -r | while IFS=$'\t' read -r mp ds; do
+		if canhas "${ALT_MNT-}"; then
+			eval `stat -f "mode=%OMp%03OLp uid=%Du gid=%Dg flags=%Of" "$mp"`
+		fi
 		umount "$mp"
 		ro=`zfs get -H -o value -s local,received org.nuos:origin_readonly $ds`
-		mp="${mp#$POOL_MNT}"
-		: ${mp:=/}
-		zfs set canmount=noauto ${ro:+readonly=$ro} ${ALT_MNT:+mountpoint=$mp} $ds
+		if canhas "${ALT_MNT-}"; then
+			src=`zfs get -H -o source mountpoint $ds`
+			if [ local = "$src" -o received = "$src" ]; then
+				dmp="${mp#$POOL_MNT}"
+				: ${dmp:=/}
+			else
+				dmp=
+			fi
+		else
+			dmp=
+		fi
+		zfs set canmount=noauto ${ro:+readonly=$ro} ${dmp:+mountpoint=$dmp} $ds
+		if [ -n "${ALT_MNT-}" -a -z "$dmp" ]; then
+			zfs inherit mountpoint $ds
+			if [ ! -d "$mp" ]; then
+				mkdir -p "$mp"
+				chown $uid:$gid "$mp"
+				chmod $mode "$mp"
+				chflags $flags "$mp"
+			fi
+		fi
 		if canhas $ro; then
 			zfs inherit org.nuos:origin_readonly $ds
 		fi
