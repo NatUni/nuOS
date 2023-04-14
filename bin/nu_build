@@ -423,7 +423,7 @@ done
 case $sw_spc in
 	-) ;;
 	eli:*) eli= ;&
-	*) zfs create -p ${eli--o org.freebsd:swap=on} -o volmode=dev -b 4K -V ${sw_spc#eli:} $pool/swap/sw0
+	*) zfs create -p ${eli--o org.freebsd:swap=on} -b 32K -V ${sw_spc#eli:} $pool/swap/sw0
 esac
 zfs mount $root_ds/etc
 EOF
@@ -581,8 +581,8 @@ EOF
 fi
 
 if ! srsly ${OPT_SKIP_FACTORY-}; then
-	zfs create -o mountpoint=none -o canmount=off -o volmode=dev -o primarycache=metadata $POOL_NAME/swap \
-		|| zfs set mountpoint=none canmount=off volmode=dev primarycache=metadata $POOL_NAME/swap
+	zfs create -o mountpoint=none -o canmount=off -o volmode=geom -o primarycache=metadata $POOL_NAME/swap \
+		|| zfs set mountpoint=none canmount=off volmode=geom primarycache=metadata $POOL_NAME/swap
 
 	sys_ds=$POOL_NAME/sys
 	factories_ds=$sys_ds/factory
