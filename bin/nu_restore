@@ -64,7 +64,7 @@ trap 'clean_exit 2> /dev/null' HUP INT QUIT TERM EXIT
 		s/^(found) (clone origin) (.*)$/nu_restore.zfs_snap_\1	\2	\3/
 		s/^(would receive|receiving) (full|incremental) stream of (.*) into (.*)$/nu_restore.zfs_snap_start	\1	\2	\3	\4/
 		s/^(received) (.*) stream in (.*) \((.*)\)$/nu_restore.zfs_snap_end	\1	\2	\3	\4/
-	' | while IFS='	' read event f1 f2 f3 f4; do
+	' | while IFS=$'\t' read event f1 f2 f3 f4; do
 		echo "$event	$f1	$f2	$f3	$f4" >> "$restore_log"
 		case $event in
 			nu_restore.zfs_snap_found)
