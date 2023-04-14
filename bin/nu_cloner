@@ -41,12 +41,12 @@ from_snap=${from#*@}
 set_pool_root_mnt_vars ${POOL_NAME:=$POOL_BOOT_NAME}
 
 zfs list -H -r -o name $POOL_NAME/$from_ds | while read -r ds; do
-	zfs get -H -o source,value mountpoint,canmount,setuid,exec,atime,readonly $ds | while IFS='	' read -r mp_src mp; do
-		IFS='	' read -r cm_src cm
-		IFS='	' read -r su_src su
-		IFS='	' read -r ex_src ex
-		IFS='	' read -r at_src at
-		IFS='	' read -r ro_src ro
+	zfs get -H -o source,value mountpoint,canmount,setuid,exec,atime,readonly $ds | while IFS=$'\t' read -r mp_src mp; do
+		IFS=$'\t' read -r cm_src cm
+		IFS=$'\t' read -r su_src su
+		IFS=$'\t' read -r ex_src ex
+		IFS=$'\t' read -r at_src at
+		IFS=$'\t' read -r ro_src ro
 		if [ local = "$mp_src" -o received = "$mp_src" ]; then
 			mp_lcl=y
 		else
@@ -93,7 +93,7 @@ zfs list -H -r -o name $POOL_NAME/$from_ds | while read -r ds; do
 done
 
 if srsly ${OPT_MOUNT-}; then
-	zfs list -Hrt filesystem -o mountpoint,name $POOL_NAME/$to | sort | while IFS='	' read -r mp ds; do
+	zfs list -Hrt filesystem -o mountpoint,name $POOL_NAME/$to | sort | while IFS=$'\t' read -r mp ds; do
 		mount -t zfs $ds "$POOL_MNT/${mp#$POOL_MNT}"
 	done
 fi

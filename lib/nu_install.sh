@@ -103,7 +103,7 @@ freeze () {
 	esac; done; shift $(($OPTIND-1))
 	local rds=$1 ds= mp=
 
-	zfs list -H -r -t filesystem -o mountpoint,name $rds | sort | tail -r | while IFS='	' read -r mp ds; do
+	zfs list -H -r -t filesystem -o mountpoint,name $rds | sort | tail -r | while IFS=$'\t' read -r mp ds; do
 		umount "$mp"
 		ro=`zfs get -H -o value -s local,received org.nuos:origin_readonly $ds`
 		mp="${mp#$POOL_MNT}"
@@ -114,7 +114,7 @@ freeze () {
 		fi
 	done
 	if srsly ${opt_remount-}; then
-		zfs list -H -r -t filesystem -o mountpoint,name $rds | sort | while IFS='	' read -r mp ds; do
+		zfs list -H -r -t filesystem -o mountpoint,name $rds | sort | while IFS=$'\t' read -r mp ds; do
 			canhas ${ALT_MNT-} || mp="${mp#$POOL_MNT}"
 			mount -t zfs $ds "$POOL_MNT/${mp%/}"
 		done
