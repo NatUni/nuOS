@@ -150,7 +150,6 @@ EOF
 	cat >> $POOL_MNT/etc/fstab <<EOF
 # Device		Mountpoint	FStype	Options		Dump	Pass#
 tmp /tmp tmpfs size=32m,rw,nosuid 0 0
-#tmp /var/run tmpfs size=4m,rw,nosuid 0 0
 EOF
 	
 	zfs snapshot -r $fbsd_sysroot_ds@tmpfs_enabled
@@ -192,6 +191,7 @@ exit 79
 EOF
 	
 	cat >> $POOL_MNT/etc/fstab <<'EOF'
+tmp /var/run tmpfs size=4m,rw,nosuid 0 0
 fdesc /dev/fd fdescfs rw 0 0
 proc /proc procfs rw 0 0
 EOF
@@ -216,6 +216,8 @@ EOF
 linux_enable="YES"
 kld_list="aesni geom_eli ipfw ng_ether ng_bridge nmdm vmm sem cuse accf_data accf_dns accf_http cc_cdg"
 entropy_file="/var/db/entropy/seed"
+var_run_enable="YES"
+var_run_autosave="NO"
 keyrate="fast"
 firewall_enable="YES"
 firewall_type="open"
@@ -425,8 +427,10 @@ case $sw_spc in
 	eli:*) eli= ;&
 	*) zfs create -p ${eli--o org.freebsd:swap=on} -b 32K -V ${sw_spc#eli:} $pool/swap/sw0
 esac
-zfs mount $root_ds/etc
 EOF
+	zfs list -H -r -o mountpoint,name $nuos_sysroot_ds | tail -n +2 | sort | while IFS=$'\t' read -r mp ds; do
+		eko zfs mount '$root_ds'/${ds#$nuos_sysroot_ds/}
+	done >> $POOL_MNT/boot/init.sh
 	
 	cat > $POOL_MNT/etc/rc.d/nuos_firstboot <<'EOF'
 #!/bin/sh
