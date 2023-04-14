@@ -92,7 +92,7 @@ require_tmp new_fstab
 if [ 0 != "$SWAP_SIZE" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" ]; then
 	swap_bytes=`dehumanize $SWAP_SIZE`
 	: ${TMP_SIZE:=`humanize $(($swap_bytes / 2)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
-	: ${RUN_SIZE:=`humanize $(($swap_bytes / 8)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
+	: ${RUN_SIZE:=`humanize $(($swap_bytes / 16)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
 	
 	awk "
 		\$3 == \"tmpfs\" {
@@ -239,6 +239,8 @@ if canhas "${LOCAL_SCRIPT_0-}"; then
 		done
 	)
 fi
+
+mtree -dcbj -p $POOL_MNT/var/run > $POOL_MNT/var/db/mtree/BSD.var-run.mtree
 
 zfs snapshot -r $new_host_ds@sys_birth
 if [ -z "${home_existed-}" ]; then
