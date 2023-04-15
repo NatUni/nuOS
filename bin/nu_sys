@@ -89,10 +89,11 @@ sister nu_cloner -mp $POOL_NAME ${use_factory_ds#$POOL_NAME/}@pool_registered ${
 
 require_tmp new_fstab
 
-if [ 0 != "$SWAP_SIZE" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" ]; then
+if [ 0 != "$SWAP_SIZE" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" -o -n "${LINSHM_SIZE-}" ]; then
 	swap_bytes=`dehumanize $SWAP_SIZE`
 	: ${TMP_SIZE:=`humanize $(($swap_bytes / 2)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
 	: ${RUN_SIZE:=`humanize $(($swap_bytes / 16)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
+	: ${LINSHM_SIZE:=`humanize $(($swap_bytes / 4)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
 	
 	awk "
 		\$3 == \"tmpfs\" {
@@ -100,11 +101,14 @@ if [ 0 != "$SWAP_SIZE" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" ]; then
 				s=\"$TMP_SIZE\"
 			} else if (\$2 ~ /\/run\$/) {
 				s=\"$RUN_SIZE\"
+			} else if (\$2 ~ /\/shm\$/) {
+				s=\"$LINSHM_SIZE\"
 			} else {
 				s=\"\"
 			}
 			if (s) {
-				sub(/(^|,)size=[^,]+/, \"size=\"s, \$4)
+				sub(/^size=[^,]+/, \"size=\"s, \$4)
+				sub(/,size=[^,]+/, \",size=\"s, \$4)
 			}
 		}
 		{print \$0}

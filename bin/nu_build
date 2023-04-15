@@ -149,12 +149,12 @@ EOF
 	
 	cat >> $POOL_MNT/etc/fstab <<EOF
 # Device		Mountpoint	FStype	Options		Dump	Pass#
-tmp /tmp tmpfs size=32m,rw,nosuid 0 0
+tmp /tmp tmpfs rw,nosuid,size=32m 0 0
 EOF
 	
 	zfs snapshot -r $fbsd_sysroot_ds@tmpfs_enabled
 	
-	(cd $POOL_MNT && mkdir -p compat/linux/proc compat/linux/sys usr/ports/packages)
+	(cd $POOL_MNT && mkdir -p compat/linux/dev compat/linux/proc compat/linux/sys usr/ports/packages)
 	
 	zfs snapshot -r $fbsd_sysroot_ds@pkg_ready
 	zfs set org.nuos:active_revision=v$fbsd_bld_rev $fbsd_bin_ds
@@ -191,9 +191,10 @@ exit 79
 EOF
 	
 	cat >> $POOL_MNT/etc/fstab <<'EOF'
-tmp /var/run tmpfs size=4m,rw,nosuid 0 0
+tmp /var/run tmpfs rw,nosuid,size=4m 0 0
 fdesc /dev/fd fdescfs rw 0 0
 proc /proc procfs rw 0 0
+tmp /compat/linux/dev/shm tmpfs nu,xx,update,nosuid,mode=1777,size=16m 0 0
 EOF
 	if [ $baseos_major_ver -le 12 ]; then
 		cat >> $POOL_MNT/etc/fstab <<'EOF'
@@ -432,6 +433,69 @@ EOF
 		eko zfs mount '$root_ds'/${ds#$nuos_sysroot_ds/}
 	done >> $POOL_MNT/boot/init.sh
 	
+	cat > $POOL_MNT/etc/rc.d/nuos_linshm <<'EOF'
+#!/bin/sh
+
+# PROVIDE: nuos_linshm
+# REQUIRE: linux
+# BEFORE: localpkg
+
+. /etc/rc.subr
+
+name="nuos_linshm"
+desc="Modify /compat/linux/dev/shm according to /etc/fstab"
+start_cmd="${name}_start"
+stop_cmd=":"
+rcvar="${name}_enable"
+: ${nuos_linshm_enable:=YES}
+
+nuos_linshm_start ()
+{
+	awk '$3 == "tmpfs" && $4 ~ /(^|,)nu,xx($|,)/ {
+			gsub(/,/, " ", $4); print $2, $4
+		}' /etc/fstab \
+	| while read -r mp opts; do
+		x= u= opt= pre= args= m= mode= uid= gid= flags=
+		for o in $opts; do
+			case $o in
+				nu) x=y;;
+				xx) :;;
+				late) continue 2;;
+				update|remount) u=y;;
+				rw) opt=-w;;
+				ro) opt=-r;;
+				mode=*) m=${o#mode=} ;&
+				*) args="${args:+$args }-o $o";;
+			esac
+		done
+		if [ x$x = xy ]; then
+			if [ x$u = xy ]; then
+				eval `stat -f "mode=%OMp%03OLp uid=%Du gid=%Dg flags=%Of" "$mp"`
+				for o in $(mount -pt tmpfs | awk "\$2 == \"$mp\" {gsub(/,/, \" \", \$4); print \$4}"); do
+					case $o in
+						rw) pre=-w;;
+						ro) pre=-r;;
+						*) args="-o $o${args:+ $args}";
+					esac
+				done
+				umount -f "$mp" || continue 2
+			fi
+			mount ${opt:-$pre} $args -t tmpfs tmp "$mp"
+			if [ x$u = xy ]; then
+				chown $uid:$gid "$mp"
+				chmod $mode "$mp"
+				chmod $m "$mp"
+				chflags $flags "$mp"
+			fi
+		fi
+	done
+}
+
+load_rc_config $name
+run_rc_command "$1"
+EOF
+	chmod a-w+rx $POOL_MNT/etc/rc.d/nuos_linshm
+	
 	cat > $POOL_MNT/etc/rc.d/nuos_firstboot <<'EOF'
 #!/bin/sh
 
@@ -443,10 +507,10 @@ EOF
 
 name="nuos_firstboot"
 desc="Kick off nuOS system site/local/user custom genesis procedure"
-start_cmd="nuos_firstboot_start"
+start_cmd="${name}_start"
 stop_cmd=":"
-rcvar="nuos_firstboot_enable"
-: ${nuos_firstboot_log:=/var/log/nuos_firstboot.log}
+rcvar="${name}_enable"
+: ${nuos_firstboot_log:=/var/log/${name}.log}
 
 nuos_firstboot_start ()
 {
