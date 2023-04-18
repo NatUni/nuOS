@@ -211,6 +211,7 @@ kern.ipc.semmnu="3000"
 kern.ipc.semmns="7500"
 kern.ipc.semmni="1000"
 kern.racct.enable="1"
+hw.vmm.amdvi.enable="1"
 EOF
 	
 	cat >> $POOL_MNT/etc/rc.conf <<'EOF'

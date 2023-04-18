@@ -242,6 +242,8 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
+		net/wifibox
+		net/wpa_supplicant_gui
 		x11-wm/wayfire
 		x11/wf-shell
 		x11/wcm
