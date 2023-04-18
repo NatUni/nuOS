@@ -204,7 +204,7 @@ EOF
 	fi
 	
 	cat >> $POOL_MNT/boot/loader.conf <<'EOF'
-autoboot_delay="3"
+autoboot_delay="5"
 kern.ipc.shmseg="1024"
 kern.ipc.shmmni="1536"
 kern.ipc.semmnu="3000"
@@ -547,19 +547,30 @@ EOF
 		sed -i '' -Ee 's/^(The compilation of software known as )FreeBSD /\1nuOS /;/^Copyright\>.*\<The FreeBSD Project\>/a\
 Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.' $POOL_MNT/COPYRIGHT
 		
-		baseos_type_lc=`echo "$BASEOS_TYPE" | tr '[:upper:]' '[:lower:]'`
-		baseos_info_url="https://$baseos_type_lc.org"
+		make -C $NUOS_CODE/share/boot
+		cp $NUOS_CODE/share/boot/nuos-brand.png $NUOS_CODE/share/boot/nuos-mascot.png \
+			$POOL_MNT/boot/images/
+		cp $NUOS_CODE/share/boot/gfx-nuos.lua $POOL_MNT/boot/lua/
+		chmod 444 $POOL_MNT/boot/lua/gfx-nuos.lua
 		
-		mv -n $POOL_MNT/etc/motd${new_motd:+.template} $POOL_MNT/etc/motd${new_motd:+.template}.$baseos_type_lc
+		cat >> $POOL_MNT/boot/loader.conf <<'EOF'
+loader_brand="nuos"
+loader_logo="nuos"
+EOF
+		
+		baseos_info_url="https://$BASEOS_TYPE.org"
+		
+		lower_case -s BASEOS_TYPE
+		mv -n $POOL_MNT/etc/motd${new_motd:+.template} $POOL_MNT/etc/motd${new_motd:+.template}.$BASEOS_TYPE_lc
 		if ! srsly ${new_motd-}; then
-			head -n 1 $POOL_MNT/etc/motd.$baseos_type_lc > $POOL_MNT/etc/motd
+			head -n 1 $POOL_MNT/etc/motd.$BASEOS_TYPE_lc > $POOL_MNT/etc/motd
 		fi
 		cat >> $POOL_MNT/etc/motd${new_motd:+.template} <<EOF
 nuOS $NUOS_VER
 
 Welcome! Thank you for choosing nuOS.
 
-Official updates and community support available at https://nuos.org .
+Official updates and community support available at https://nuOS.org .
 
 This is the $BASEOS_TYPE edition of nuOS, extending $BASEOS_TYPE $BASEOS_VER. More
 information about $BASEOS_TYPE is available at $baseos_info_url .
