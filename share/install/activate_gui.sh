@@ -1,4 +1,4 @@
-sister enable_svc -C "$TRGT" seatd dbus hald
+sister enable_svc -C "$TRGT" seatd dbus hald webcamd
 if canhas $ADMIN_ACCT; then
 	pw -R "$TRGT" groupmod video -m $ADMIN_ACCT
 fi
