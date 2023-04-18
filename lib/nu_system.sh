@@ -23,6 +23,7 @@ nuos_lib_common_loaded=y
 
 : ${TMPDIR:=/tmp}
 : ${NUOS_CODE:="$(dirname "$(realpath "$0")")/.."}
+export NUOS_CODE
 
 load_lib () {
 	local lib=
