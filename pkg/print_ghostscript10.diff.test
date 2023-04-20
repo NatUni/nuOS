@@ -1,0 +1,1 @@
+! ( grep _GS_VERSION= ../../Mk/Uses/ghostscript.mk | grep -qw 10 )
