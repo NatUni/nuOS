@@ -244,6 +244,7 @@ collection_vars_init () {
 		graphics/gpu-firmware-kmod
 		net/wifibox
 		net/wpa_supplicant_gui
+		net-mgmt/kismet
 		x11-wm/wayfire
 		x11/wf-shell
 		x11/wcm
@@ -270,6 +271,8 @@ collection_vars_init () {
 		deskutils/calibre
 		print/fontforge
 		x11/xorg
+		x11/xeyes
+		x11/wshowkeys
 		x11/gnome
 		x11/kde5
 		x11/sddm
@@ -300,8 +303,8 @@ collection_vars_init () {
 		games/sgt-puzzles
 		games/sdlpop
 		games/openarena
-		games/warzone2100
 		games/openrct2
+		astro/stellarium
 		devel/gwenhywfar
 		devel/p5-Module-Build-Tiny
 		finance/gnucash

@@ -1,0 +1,14 @@
+--- ../kitty.orig/files/patch-kittens_choose_unix__compat.c	2023-04-20 04:00:48.866934000 +0000
++++ ./files/patch-kittens_choose_unix__compat.c	1970-01-01 00:00:00.000000000 +0000
+@@ -1,11 +0,0 @@
+---- kittens/choose/unix_compat.c.orig	2022-11-07 10:06:42 UTC
+-+++ kittens/choose/unix_compat.c
+-@@ -19,7 +19,7 @@
+- #endif
+- 
+- int
+--cpu_count() {
+-+cpu_count(void) {
+-     return sysconf(_SC_NPROCESSORS_ONLN);
+- }
+- 
