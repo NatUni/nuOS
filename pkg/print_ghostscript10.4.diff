@@ -1,0 +1,25 @@
+--- ../ghostscript10.orig/pkg-plist
++++ pkg-plist
+@@ -1,6 +1,7 @@
+ bin/dvipdf
+ bin/eps2eps
+ bin/gs
++bin/gsx
+ bin/gsbj
+ bin/gsdj
+ bin/gsdj500
+@@ -22,6 +23,14 @@ bin/ps2pdf14
+ bin/ps2pdfwr
+ bin/ps2ps
+ bin/ps2ps2
++include/ghostscript/gdevdsp.h
++include/ghostscript/gserrors.h
++include/ghostscript/iapi.h
++include/ghostscript/ierrors.h
++lib/ghostscript/%%PORTVERSION%%/X11.so
++lib/libgs.so
++lib/libgs.so.10
++lib/libgs.so.%%GS_VERSION%%
+ man/man1/dvipdf.1.gz
+ man/man1/eps2eps.1.gz
+ man/man1/gs.1.gz

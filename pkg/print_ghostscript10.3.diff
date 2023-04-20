@@ -1,0 +1,50 @@
+--- ../ghostscript10.orig/Makefile
++++ Makefile
+@@ -23,7 +23,8 @@ LIB_DEPENDS=	libfontconfig.so:x11-fonts/fontconfig \
+ RUN_DEPENDS=	poppler-data>=0.4.9:graphics/poppler-data \
+ 		urw-base35-fonts>=20200910:x11-fonts/urw-base35-fonts
+ 
+-USES=		cpe gmake iconv jpeg localbase pkgconfig tar:xz
++USES=		cpe gmake iconv jpeg localbase pkgconfig tar:xz xorg
++USE_XORG=	ice sm x11 xext xt
+ CPE_VENDOR=	artifex
+ 
+ CONFLICTS_INSTALL=	ghostscript[789]-base \
+@@ -48,7 +49,8 @@ GNU_CONFIGURE=	yes
+ CONFIGURE_ARGS=	--disable-compile-inits \
+ 		--disable-dbus \
+ 		--disable-gtk \
+-		--disable-dynamic \
++		--disable-hidden-visibility \
++		--enable-dynamic \
+ 		--enable-contrib \
+ 		--enable-fontconfig \
+ 		--enable-freetype \
+@@ -59,7 +61,14 @@ CONFIGURE_ARGS=	--disable-compile-inits \
+ 		--with-libidn \
+ 		--with-libpaper \
+ 		--with-system-libtiff \
+-		--without-x
++		--with-x
++
++ALL_TARGET=	all so ./obj/X11.so
++INSTALL_TARGET=	soinstall install-shared install
++
++GS_VERSION=	${DISTVERSION:S/./ /g:tw:[1..2]:tW:S/ /./}
++PLIST_SUB=	GS_VERSION=${GS_VERSION} \
++		PORTVERSION=${PORTVERSION}
+ 
+ OPTIONS_DEFINE=	CUPS IJS TESSERACT
+ OPTIONS_DEFAULT=CUPS
+@@ -83,7 +92,10 @@ post-patch:
+ 		${PATCH_WRKSRC}/man/gs.1
+ 
+ post-install:
+-	${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/gs
++	${MV} ${STAGEDIR}${PREFIX}/bin/gsc ${STAGEDIR}${PREFIX}/bin/gs
++	${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/gs \
++		${STAGEDIR}${PREFIX}/lib/libgs.so.${GS_VERSION} \
++		${STAGEDIR}${PREFIX}/lib/ghostscript/${DISTVERSION}/X11.so
+ 	${RM} ${STAGEDIR}${PREFIX}/bin/lprsetup.sh
+ 	${RM} ${STAGEDIR}${PREFIX}/bin/unix-lpr.sh
+ 	${MKDIR} ${STAGEDIR}${PREFIX}/share/color/icc
