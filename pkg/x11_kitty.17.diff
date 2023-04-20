@@ -1,0 +1,14 @@
+--- ../kitty.orig/files/patch-kitty_state.c	2023-04-20 04:00:48.876999000 +0000
++++ ./files/patch-kitty_state.c	1970-01-01 00:00:00.000000000 +0000
+@@ -1,11 +0,0 @@
+---- kitty/state.c.orig	2022-11-07 10:06:42 UTC
+-+++ kitty/state.c
+-@@ -187,7 +187,7 @@ free_bgimage(BackgroundImage **bgimage, bool release_t
+- }
+- 
+- OSWindow*
+--add_os_window() {
+-+add_os_window(void) {
+-     WITH_OS_WINDOW_REFS
+-     ensure_space_for(&global_state, os_windows, OSWindow, global_state.num_os_windows + 1, capacity, 1, true);
+-     OSWindow *ans = global_state.os_windows + global_state.num_os_windows++;

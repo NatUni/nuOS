@@ -1,0 +1,14 @@
+--- ../kitty.orig/files/patch-kitty_line.c	2023-04-20 04:00:48.874577000 +0000
++++ ./files/patch-kitty_line.c	1970-01-01 00:00:00.000000000 +0000
+@@ -1,11 +0,0 @@
+---- kitty/line.c.orig	2022-11-07 10:06:42 UTC
+-+++ kitty/line.c
+-@@ -944,7 +944,7 @@ PyTypeObject Line_Type = {
+-     .tp_new = new
+- };
+- 
+--Line *alloc_line() {
+-+Line *alloc_line(void) {
+-     Line *ans = (Line*)PyType_GenericAlloc(&Line_Type, 0);
+-     ans->needs_free = 0;
+-     return ans;

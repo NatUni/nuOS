@@ -46,14 +46,15 @@ if canhas ${OUTPUT-}; then
 	echo 'output file     -o OUTPUT         ' $OUTPUT
 else
 	echo 'target pool     -p POOL_NAME      ' $POOL_NAME
-	POOL_MNT=`zpool get -H -o value altroot $POOL_NAME`
-	[ -n "$POOL_MNT" -a x- != "x$POOL_MNT" ]
+# 	POOL_MNT=`zpool get -H -o value altroot $POOL_NAME`
+# 	[ -n "$POOL_MNT" -a x- != "x$POOL_MNT" ]
 fi
 
 maybe_pause
 maybe_yell
 
 [ -z "${INPUT-}" -o -z "${OUTPUT-}" ]
+[ "${SOURCE_POOL-}" != "${POOL_NAME-}" ]
 
 os_software_ds_name=os
 
