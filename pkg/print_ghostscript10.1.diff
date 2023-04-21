@@ -1,6 +1,6 @@
 --- ../../Mk/Uses/ghostscript.mk.orig
 +++ ../../Mk/Uses/ghostscript.mk
-@@ -30,7 +30,7 @@ _INCLUDE_USES_GHOSTSCRIPT_MK=	yes
+@@ -30,15 +30,15 @@ _INCLUDE_USES_GHOSTSCRIPT_MK=	yes
  # allowed versions
  # When adding a version, please keep the comment in
  # Mk/bsd.default-versions.mk in sync.
@@ -9,7 +9,8 @@
  
  _GS_ARGS=		${ghostscript_ARGS}
  
-@@ -38,7 +38,7 @@ _GS_ARGS=		${ghostscript_ARGS}
+-.  if ${_GS_ARGS:N[789]:Nagpl:Nx11:Nbuild:Nrun:Ntest}
++.  if ${_GS_ARGS:N[789]:Nagpl:N10:Nx11:Nbuild:Nrun:Ntest}
  IGNORE?=	Unknown ghostscript argument ${_GS_ARGS}
  .  endif
  
@@ -29,29 +30,32 @@
  _GS_SELECTED?=		9
  .    elif ${_V:Magpl}
  _GS_SELECTED?=		9-agpl
-@@ -79,7 +81,9 @@ _GS_SELECTED?=		7
+@@ -79,7 +81,10 @@ _GS_SELECTED?=		7
  .  endfor
  
  # Resolve minor version number for X11.so library.
 -.  if !empty(_GS_SELECTED:M9-agpl)
 +.  if !empty(_GS_SELECTED:M10)
++_GS_PORT_SUFFIX=
 +_GS_VERSION_MINOR=	10.01.1_1
 +.  elif !empty(_GS_SELECTED:M9-agpl)
  _GS_VERSION_MINOR=	9.16_2
  .  elif !empty(_GS_SELECTED:M9)
  _GS_VERSION_MINOR=	9.06_11
-@@ -95,9 +99,13 @@ _GS_X11_PORT=	ghostscript${_GS_SELECTED}-x11
+@@ -90,13 +95,13 @@ _GS_VERSION_MINOR=	7.07_32
+ .  endif
+ 
+ # dependencies
+-_GS_PORT=	ghostscript${_GS_SELECTED}-base
+-_GS_X11_PORT=	ghostscript${_GS_SELECTED}-x11
++_GS_PORT=	ghostscript${_GS_SELECTED}${_GS_PORT_SUFFIX:U-base}
++_GS_X11_PORT=	ghostscript${_GS_SELECTED}${_GS_PORT_SUFFIX:U-x11}
  
  .  for type in BUILD RUN TEST
  .    if defined(_GS_${type}_DEP)
-+.      if !empty(_GS_SELECTED:M10)
-+${type}_DEPENDS+=	ghostscript10>=${_GS_VERSION_MINOR}:print/ghostscript10
-+.      else
  ${type}_DEPENDS+=	${_GS_PORT}>=${_GS_VERSION_MINOR}:print/${_GS_PORT}
 -.      if ${_GS_ARGS:Mx11}
-+.        if ${_GS_ARGS:Mx11}
++.      if ${_GS_PORT_SUFFIX:U${_GS_ARGS:Mx11}}
  ${type}_DEPENDS+=	${_GS_X11_PORT}>=${_GS_VERSION_MINOR}:print/${_GS_X11_PORT}
-+.        endif
  .      endif
  .    endif
- .  endfor
