@@ -27,8 +27,8 @@
 -		--without-x
 +		--with-x
 +
-+ALL_TARGET=	all so ./obj/X11.so
-+INSTALL_TARGET=	soinstall install-shared install
++ALL_TARGET=	so ./obj/X11.so
++INSTALL_TARGET=	soinstall install-shared
 +
 +GS_VERSION=	${DISTVERSION:S/./ /g:tw:[1..2]:tW:S/ /./}
 +PLIST_SUB=	GS_VERSION=${GS_VERSION} \
