@@ -1,50 +1,91 @@
 --- ../ghostscript10.orig/Makefile
 +++ Makefile
-@@ -23,7 +23,8 @@ LIB_DEPENDS=	libfontconfig.so:x11-fonts/fontconfig \
- RUN_DEPENDS=	poppler-data>=0.4.9:graphics/poppler-data \
- 		urw-base35-fonts>=20200910:x11-fonts/urw-base35-fonts
+@@ -3,6 +3,7 @@ DISTVERSION=	10.01.1
+ PORTREVISION=	1
+ CATEGORIES=	print
+ MASTER_SITES=	https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs${DISTVERSION:S/.//g}/
++PKGNAMESUFFIX=  ${PORTVERSION:C/\..*//}-${FLAVOR}
  
--USES=		cpe gmake iconv jpeg localbase pkgconfig tar:xz
-+USES=		cpe gmake iconv jpeg localbase pkgconfig tar:xz xorg
-+USE_XORG=	ice sm x11 xext xt
- CPE_VENDOR=	artifex
+ MAINTAINER=	michael.osipov@siemens.com
+ COMMENT=	PostScript and PDF interpreter
+@@ -11,6 +12,9 @@ WWW=		https://ghostscript.com/
+ LICENSE=	AGPLv3
+ LICENSE_FILE=	${WRKSRC}/LICENSE
  
- CONFLICTS_INSTALL=	ghostscript[789]-base \
-@@ -48,7 +49,8 @@ GNU_CONFIGURE=	yes
++FLAVORS=	base x11
++FLAVOR?=	${FLAVORS:[1]}
++
+ LIB_DEPENDS=	libfontconfig.so:x11-fonts/fontconfig \
+ 		libfreetype.so:print/freetype2 \
+ 		libidn.so:dns/libidn \
+@@ -48,7 +52,6 @@ GNU_CONFIGURE=	yes
  CONFIGURE_ARGS=	--disable-compile-inits \
  		--disable-dbus \
  		--disable-gtk \
 -		--disable-dynamic \
-+		--disable-hidden-visibility \
-+		--enable-dynamic \
  		--enable-contrib \
  		--enable-fontconfig \
  		--enable-freetype \
-@@ -59,7 +61,14 @@ CONFIGURE_ARGS=	--disable-compile-inits \
+@@ -58,8 +61,11 @@ CONFIGURE_ARGS=	--disable-compile-inits \
+ 		--with-libiconv=maybe \
  		--with-libidn \
  		--with-libpaper \
- 		--with-system-libtiff \
+-		--with-system-libtiff \
 -		--without-x
-+		--with-x
++		--with-system-libtiff
 +
-+ALL_TARGET=	so ./obj/X11.so
-+INSTALL_TARGET=	soinstall install-shared
 +
 +GS_VERSION=	${DISTVERSION:S/./ /g:tw:[1..2]:tW:S/ /./}
-+PLIST_SUB=	GS_VERSION=${GS_VERSION} \
-+		PORTVERSION=${PORTVERSION}
++PLIST_SUB=	GS_VERSION=${GS_VERSION}
  
  OPTIONS_DEFINE=	CUPS IJS TESSERACT
  OPTIONS_DEFAULT=CUPS
-@@ -83,7 +92,10 @@ post-patch:
+@@ -78,12 +84,37 @@ TESSERACT_CONFIGURE_WITH=	tesseract
+ # No TESSERACT_LIB_DEPENDS=	libtesseract.so:graphics/tesseract
+ # See https://bugs.ghostscript.com/show_bug.cgi?id=706490
+ 
+-post-patch:
++.if !empty(FLAVOR:Mx11)
++USES+=		xorg
++USE_XORG=	ice sm x11 xext xt
++CONFIGURE_ARGS+=	--with-x \
++                --disable-hidden-visibility \
++		--enable-dynamic
++ALL_TARGET=	./obj/X11.so
++PLIST_FILES=	lib/ghostscript/${DISTVERSION}/X11.so
++PLIST=
++INSTALL_TARGET=	install-shared
++.elif !empty(FLAVOR:Mbase)
++CONFIGURE_ARGS+=	--without-x \
++		--disable-dynamic
++ALL_TARGET=	so
++INSTALL_TARGET=	soinstall
++.endif
++
++post-patch: post-patch-${FLAVOR}
++post-install: post-install-${FLAVOR}
++
++post-patch-base:
+ 	@${REINPLACE_CMD} -e 's|%%LOCALBASE%%|${LOCALBASE}|g' \
  		${PATCH_WRKSRC}/man/gs.1
  
- post-install:
+-post-install:
 -	${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/gs
++post-patch-x11:
++	@:
++
++post-install-base:
 +	${MV} ${STAGEDIR}${PREFIX}/bin/gsc ${STAGEDIR}${PREFIX}/bin/gs
-+	${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/gs \
-+		${STAGEDIR}${PREFIX}/lib/libgs.so.${GS_VERSION} \
-+		${STAGEDIR}${PREFIX}/lib/ghostscript/${DISTVERSION}/X11.so
++	${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/gs ${STAGEDIR}${PREFIX}/bin/gsx \
++		${STAGEDIR}${PREFIX}/lib/libgs.so.${GS_VERSION}
  	${RM} ${STAGEDIR}${PREFIX}/bin/lprsetup.sh
  	${RM} ${STAGEDIR}${PREFIX}/bin/unix-lpr.sh
  	${MKDIR} ${STAGEDIR}${PREFIX}/share/color/icc
+@@ -99,4 +130,7 @@ post-install:
+ 	${RLN} ${STAGEDIR}${PREFIX}/share/cmap \
+ 		${STAGEDIR}${DATADIR}/Resource/CMap
+ 
++post-install-x11:
++	${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/ghostscript/${DISTVERSION}/X11.so
++
+ .include <bsd.port.mk>
