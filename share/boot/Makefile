@@ -1,3 +1,5 @@
+WWW_GFX=${.CURDIR}/../../www/org
+
 all: nuos-mascot.png nuos-brand.png .PHONY
 
 nuos-mascot.png: grumpy_owl-geometry.png badges.png
@@ -5,7 +7,7 @@ nuos-mascot.png: grumpy_owl-geometry.png badges.png
 		-type TrueColorAlpha -define png:color-type=6 -define png:bit-depth=8 -strip nuos-mascot.png
 
 nuos-brand.png:
-	convert ${NUOS_CODE}/www/org/nuos.svg -resize '375x100>' -background white -gravity center -extent 375x100 \
+	convert ${WWW_GFX}/nuos.svg -resize '375x100>' -background white -gravity center -extent 375x100 \
 		\( -fill '#404040' -font Cantarell-Bold -pointsize 11 -gravity southeast 'label:v12.99' \) \
 		-composite -negate -alpha off -strip brand-alpha.png
 	convert -size 375x100 xc:white brand-alpha.png -alpha off -compose Copy_Opacity -composite \
