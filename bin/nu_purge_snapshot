@@ -59,10 +59,8 @@ retire_tmp backlist
 
 grep -v @ "$output_backlist" \
 	| xargs -n1 zfs list -H -r -t snap -o name \
-	| grep "@${SNAP_LABEL:+${SNAP_LABEL}-}t[0-9]" \
+	| grep "@${SNAP_LABEL:+${SNAP_LABEL}-}t[1-9]" \
 	| tail -r \
 	| xargs -n 1 zfs destroy ${OPT_DRY_RUN:+-n} -p
 
 retire_tmp output_backlist
-
-#retire_tmp backup_log
