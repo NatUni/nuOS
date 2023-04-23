@@ -23,7 +23,9 @@ nuos_lib_common_loaded=y
 
 : ${TMPDIR:=/tmp}
 : ${NUOS_CODE:="$(dirname "$(realpath "$0")")/.."}
+: ${POOL_BOOT_NAME:=`mount -p | awk '$2 == "/" {print substr($1, 0, index($1, "/") - 1)}'`}
 export NUOS_CODE
+export POOL_BOOT_NAME
 
 load_lib () {
 	local lib=

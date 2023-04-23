@@ -40,7 +40,7 @@ build_vars_init () {
 install_vars_init () {
 	: ${HOST:=`hostname`}
 	canhas ${1-} || echo 'pool name       -p POOL_NAME      ' ${POOL_NAME:=$POOL_BOOT_NAME}
-	echo 'swap size       -s SWAP_SIZE      ' ${SWAP_SIZE:=2G}
+	echo -n 'swap size       -s SWAP_SIZE       ' && [ -z "${OPT_BASE_OS-}" ] && echo ${SWAP_SIZE:=2G} || echo n/a
 	echo 'new host name   -h NEW_HOST       ' ${NEW_HOST:=$POOL_NAME.${HOST#*.}}
 	canhas ${1-} || echo 'target arch        TRGT_ARCH      ' $TRGT_ARCH
 	canhas ${1-} || echo 'target proc        TRGT_PROC      ' $TRGT_PROC
