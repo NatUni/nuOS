@@ -17,7 +17,7 @@ set -e; set -u; set -C
 NUOS_VER=0.0.12.99a0
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts Bc:FMNp:qSv OPT; do case $OPT in
+while getopts Bc:FMNp:qr:Sv OPT; do case $OPT in
 	B) OPT_NOBRAND=y;;
 	c) PKG_COLLECTION=$OPTARG;;
 	F) OPT_SKIP_FBSD=y;;
@@ -25,6 +25,7 @@ while getopts Bc:FMNp:qSv OPT; do case $OPT in
 	N) OPT_SKIP_NUOS=y;;
 	p) POOL_NAME=$OPTARG;;
 	q) OPT_QUICK=y;;
+	r) RELEASE_ID=$OPTARG;;
 	S) OPT_SKIP_FACTORY=y;;
 	v) OPT_VERBOSE=y;;
 esac; done; shift $(($OPTIND-1))
@@ -50,6 +51,7 @@ fbsd_proj_ds=$os_software_ds/$BASEOS_TYPE
 fbsd_os_ds=$fbsd_proj_ds/$BASEOS_VER
 fbsd_bin_ds=$fbsd_os_ds/$TRGT
 
+
 baseos_minor_ver=${BASEOS_VER%%-*}
 baseos_major_ver=${baseos_minor_ver%%.*}
 case $BASEOS_TYPE in
@@ -65,6 +67,7 @@ if [ -n "${OPT_SKIP_FBSD-}" -o -n "${OPT_SKIP_NUOS-}" ]; then
 fi
 if [ -z "${OPT_SKIP_FBSD-}" ]; then
 	
+	! canhas ${RELEASE_ID-} || (! zfs list $fbsd_bin_ds/$RELEASE_ID)
 	require_base_src
 	
 	zfs create -p -o mountpoint=none -o canmount=off $os_software_ds
@@ -72,13 +75,9 @@ if [ -z "${OPT_SKIP_FBSD-}" ]; then
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_os_ds
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_bin_ds
 	
-	fbsd_bld_rev=0
-	while
-		fbsd_sysroot_ds=$fbsd_bin_ds/v$fbsd_bld_rev
-		zfs list $fbsd_sysroot_ds
-	do
-		fbsd_bld_rev=$(($fbsd_bld_rev + 1))
-	done
+	
+	fbsd_sysroot_ds=`find_next_monotonic $fbsd_bin_ds ${RELEASE_ID-}`
+	fbsd_bld_id=${fbsd_sysroot_ds##*/}
 	
 	zgen_cmd="zfs create -o canmount=noauto"
 		
@@ -170,7 +169,7 @@ EOF
 	(cd $POOL_MNT && mkdir -p compat/linux/dev compat/linux/proc compat/linux/sys usr/ports/packages)
 	
 	zfs snapshot -r $fbsd_sysroot_ds@pkg_ready
-	zfs set org.nuos:active_revision=v$fbsd_bld_rev $fbsd_bin_ds
+	zfs set org.nuos:active_revision=$fbsd_bld_id $fbsd_bin_ds
 	
 	freeze $fbsd_sysroot_ds
 	zfs set readonly=on $fbsd_sysroot_ds
@@ -184,17 +183,14 @@ if [ -n "${OPT_SKIP_NUOS-}" ]; then
 	nuos_sysroot_ds=$nuos_bin_ds/`zfs get -H -o value org.nuos:active_revision $nuos_bin_ds`
 else
 	
+	! canhas ${RELEASE_ID-} || (! zfs list $nuos_bin_ds/$RELEASE_ID)
+
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_proj_ds
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_os_ds
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_bin_ds
 	
-	nuos_bld_rev=0
-	while
-		nuos_sysroot_ds=$nuos_bin_ds/v$nuos_bld_rev
-		zfs list $nuos_sysroot_ds
-	do
-		nuos_bld_rev=$(($nuos_bld_rev + 1))
-	done
+	nuos_sysroot_ds=`find_next_monotonic $nuos_bin_ds ${RELEASE_ID-}`
+	nuos_bld_id=${nuos_sysroot_ds##*/}
 	
 	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
 	
@@ -626,7 +622,7 @@ HOSTOS_CHIP=$TRGT_CHIP
 HOSTOS_OPTZ=$TRGT_OPTZ
 EOF
 	
-	zfs set org.nuos:active_revision=v$nuos_bld_rev $nuos_bin_ds
+	zfs set org.nuos:active_revision=$nuos_bld_id $nuos_bin_ds
 	
 	if [ -n "${OPT_NOMAKE-}" ]; then
 		PKG_COLLECTION=blank

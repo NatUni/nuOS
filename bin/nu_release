@@ -18,7 +18,7 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts c:l:h:ko:p:qs:vw:z: OPT; do case $OPT in
+while getopts c:l:h:ko:p:qr:s:vw:z: OPT; do case $OPT in
 	c) PKG_COLLECTION=$OPTARG;;
 	h) NEW_HOST=$OPTARG;;
 	k) incr KEEP_ONLINE 1;;
@@ -26,6 +26,7 @@ while getopts c:l:h:ko:p:qs:vw:z: OPT; do case $OPT in
 	o) OUTPUT_POOL_NAME=$OPTARG;;
 	p) POOL_NAME=$OPTARG;;
 	q) OPT_QUICK=y;;
+	r) RELEASE_ID=$OPTARG;;
 	s) SWAP_SIZE=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 	w) WORK_POOL_NAME=$OPTARG;;
@@ -61,7 +62,7 @@ if ! zpool list $WORK_POOL_NAME; then
 fi
 
 if ! zfs list $WORK_POOL_NAME/os/nuOS; then
-	sister nu_build -p $WORK_POOL_NAME -c $PKG_COLLECTION -q
+	sister nu_build -p $WORK_POOL_NAME -r ${RELEASE_ID:-r0} -c $PKG_COLLECTION -q
 	zpool trim $WORK_POOL_NAME || true
 fi
 

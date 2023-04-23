@@ -141,3 +141,18 @@ freeze () {
 		done
 	fi
 }
+
+find_next_monotonic () {
+	local ds=$1 id=${2-} rev=0
+	if canhas $id; then
+		eko $ds/$id
+	else
+		while
+			ret=$ds/v$rev
+			zfs list $ret
+		do
+			rev=$(($rev + 1))
+		done
+		eko $ret
+	fi
+}
