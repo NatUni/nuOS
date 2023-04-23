@@ -62,8 +62,9 @@ esac
 
 if [ -n "${OPT_SKIP_FBSD-}" -o -n "${OPT_SKIP_NUOS-}" ]; then
 	fbsd_sysroot_ds=$fbsd_bin_ds/`zfs get -H -o value org.nuos:active_revision $fbsd_bin_ds`
-else
-
+fi
+if [ -z "${OPT_SKIP_FBSD-}" ]; then
+	
 	require_base_src
 	
 	zfs create -p -o mountpoint=none -o canmount=off $os_software_ds
@@ -122,6 +123,18 @@ else
 	fi
 	:> $POOL_MNT/etc/fstab
 	
+	cat > $POOL_MNT/boot/loader.conf <<'EOF'
+init_script="/boot/init.sh"
+EOF
+	
+	cat > $POOL_MNT/boot/init.sh <<'EOF'
+#!/bin/sh
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+mountfrom=`kenv vfs.root.mountfrom`
+root_ds=${mountfrom#zfs:}
+zfs mount $root_ds/etc
+EOF
+	
 	zfs snapshot -r $fbsd_sysroot_ds@freebsd_dist
 
 	srsly ${new_build-} || obj_trgt=$TRGT
@@ -136,7 +149,7 @@ else
 	zfs create -upo mountpoint=/usr/ports $fbsd_proj_ds/ports/src
 	zfs create -upo exec=off -o mountpoint=/usr/ports/distfiles $fbsd_proj_ds/ports/distfiles
 
-	cat > $POOL_MNT/boot/loader.conf <<'EOF'
+	cat >> $POOL_MNT/boot/loader.conf <<'EOF'
 zfs_load="YES"
 EOF
 	
@@ -410,15 +423,13 @@ EOF
 	cat "$src_conf" > $POOL_MNT/etc/src.conf
 	$retire_src_conf_cmd src_conf
 	
-	cat >> $POOL_MNT/boot/loader.conf <<'EOF'
-init_script="/boot/init.sh"
-EOF
+	zfs list -H -r -o mountpoint,name $nuos_sysroot_ds | tail -n +2 | sort | while IFS=$'\t' read -r mp ds; do
+		dsp=${ds#$nuos_sysroot_ds/}
+		[ etc != "$dsp" ] || continue
+		eko zfs mount '$root_ds'/$dsp
+	done >> $POOL_MNT/boot/init.sh
 	
-	cat > $POOL_MNT/boot/init.sh <<'EOF'
-#!/bin/sh
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-mountfrom=`kenv vfs.root.mountfrom`
-root_ds=${mountfrom#zfs:}
+	cat >> $POOL_MNT/boot/init.sh <<'EOF'
 pool=${root_ds%%/*}
 sw_spc=`zfs get -H -o value org.nuos:swap_space $root_ds`
 for v in `zfs list -H -r -o name -t volume $pool/swap`; do
@@ -430,9 +441,6 @@ case $sw_spc in
 	*) zfs create -p ${eli--o org.freebsd:swap=on} -b 32K -V ${sw_spc#eli:} $pool/swap/sw0
 esac
 EOF
-	zfs list -H -r -o mountpoint,name $nuos_sysroot_ds | tail -n +2 | sort | while IFS=$'\t' read -r mp ds; do
-		eko zfs mount '$root_ds'/${ds#$nuos_sysroot_ds/}
-	done >> $POOL_MNT/boot/init.sh
 	
 	cat > $POOL_MNT/etc/rc.d/nuos_linshm <<'EOF'
 #!/bin/sh
@@ -667,57 +675,64 @@ if ! srsly ${OPT_SKIP_FACTORY-}; then
 	sys_ds=$POOL_NAME/sys
 	factories_ds=$sys_ds/factory
 	nuos_factory_ds=$sys_ds/factory/nuOS-$NUOS_VER-$TRGT
+	fbsd_factory_ds=$sys_ds/factory/$BASEOS_TYPE-$BASEOS_VER-$TRGT
 
 	zfs create -p -o mountpoint=none -o canmount=off $sys_ds
 	zfs create -p -o mountpoint=none -o canmount=off $factories_ds
-	zfs create -p -o mountpoint=none -o canmount=off $nuos_factory_ds
 
-	factory_rev=0
-	while
-		new_factory_ds=$nuos_factory_ds/v$factory_rev
-		zfs list $new_factory_ds
+	for factory_spec in \
+		$nuos_factory_ds:$nuos_sysroot_ds@$PKG_COLLECTION \
+		$fbsd_factory_ds:$fbsd_sysroot_ds@pkg_ready
 	do
-		factory_rev=$(($factory_rev + 1))
-	done
+		factory_ds=${factory_spec%:*}
+		sysroot_snap=${factory_spec#*:}
+		
+		zfs create -p -o mountpoint=none -o canmount=off $factory_ds
 
-	sister nu_cloner -mp $POOL_NAME ${nuos_sysroot_ds#$POOL_NAME/}@$PKG_COLLECTION ${new_factory_ds#$POOL_NAME/}
+		factory_rev=0
+		while
+			new_factory_ds=$factory_ds/v$factory_rev
+			zfs list $new_factory_ds
+		do
+			factory_rev=$(($factory_rev + 1))
+		done
 
-	mkdir $POOL_MNT/boot/etc
-	mv -n $POOL_MNT/etc/login.conf.db $POOL_MNT/boot/etc/
-	ln -s ../boot/etc/login.conf.db $POOL_MNT/etc/login.conf.db
-	zfs unmount $new_factory_ds/etc
-	ln -s ../boot/etc/login.conf.db $POOL_MNT/etc/login.conf.db
-	if [ -n "$ALT_MNT" ]; then
-		mount -t zfs $new_factory_ds/etc "$ALT_MNT/etc"
-		mount -t zfs $new_factory_ds/etc/local "$ALT_MNT/usr/local/etc"
-	else
-		zfs mount $new_factory_ds/etc
-		zfs mount $new_factory_ds/etc/local
-	fi
+		sister nu_cloner -mp $POOL_NAME ${sysroot_snap#$POOL_NAME/} ${new_factory_ds#$POOL_NAME/}
 
-	zfs snapshot -r $new_factory_ds@prototype
-
-	cat >> $POOL_MNT/etc/nuos/conf <<EOF
-POOL_BOOT_NAME=$POOL_NAME
-EOF
-
-	if [ -n "$ALT_MNT" ]; then
-		zpool_cache=/boot/zfs/zpool.cache
-	else
-		zpool_cache="`zpool get -H -o value cachefile $POOL_NAME`"
-		if [ "$zpool_cache" = none -o "x$zpool_cache" = x- ]; then
-			unset zpool_cache
-			require_tmp zpool_cache
-			zpool set "cachefile=$zpool_cache" $POOL_NAME
+		mkdir $POOL_MNT/boot/etc
+		mv -n $POOL_MNT/etc/login.conf.db $POOL_MNT/boot/etc/
+		ln -s ../boot/etc/login.conf.db $POOL_MNT/etc/login.conf.db
+		zfs unmount $new_factory_ds/etc
+		ln -s ../boot/etc/login.conf.db $POOL_MNT/etc/login.conf.db
+		if [ -n "$ALT_MNT" ]; then
+			mount -t zfs $new_factory_ds/etc "$ALT_MNT/etc"
+			mount -t zfs $new_factory_ds/etc/local "$ALT_MNT/usr/local/etc"
+		else
+			zfs mount $new_factory_ds/etc
+			zfs mount $new_factory_ds/etc/local
 		fi
-	fi
 
-	cp $zpool_cache $POOL_MNT/boot/zfs/zpool.cache
+		zfs snapshot -r $new_factory_ds@prototype
 
-	zfs snapshot -r $new_factory_ds@pool_registered
-	zfs set org.nuos:active_revision=v$factory_rev $nuos_factory_ds
+		if [ -n "$ALT_MNT" ]; then
+			zpool_cache=/boot/zfs/zpool.cache
+		else
+			zpool_cache="`zpool get -H -o value cachefile $POOL_NAME`"
+			if [ "$zpool_cache" = none -o "x$zpool_cache" = x- ]; then
+				unset zpool_cache
+				require_tmp zpool_cache
+				zpool set "cachefile=$zpool_cache" $POOL_NAME
+			fi
+		fi
+
+		cp $zpool_cache $POOL_MNT/boot/zfs/zpool.cache
+
+		zfs snapshot -r $new_factory_ds@pool_registered
+		zfs set org.nuos:active_revision=v$factory_rev $factory_ds
 	
-	freeze $new_factory_ds
+		freeze $new_factory_ds
+		
+	done
 fi
 
 
