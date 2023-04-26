@@ -1,1 +1,1 @@
-[ `find * -type f | sort | xargs md5 | md5` = 8cede106f91deb34e461f073d22799ec ]
+grep -qw ImageMagick6 Makefile

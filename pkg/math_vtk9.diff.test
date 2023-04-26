@@ -1,0 +1,1 @@
+! grep -qw ^OMPI_CMAKE_ON= Makefile

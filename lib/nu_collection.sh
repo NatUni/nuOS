@@ -53,7 +53,6 @@ collection_vars_init () {
 		net/realtek-re-kmod
 		sysutils/pefs-kmod
 		security/openssh-portable
-		security/wpa_supplicant
 		net/hostapd
 		net/dhcpcd
 		dns/unbound
@@ -77,6 +76,7 @@ collection_vars_init () {
 		sysutils/ipmitool
 		sysutils/freeipmi
 		sysutils/openipmi
+		security/wpa_supplicant
 		net/rsync
 		security/sudo
 		sysutils/lsof
@@ -85,6 +85,12 @@ collection_vars_init () {
 		sysutils/ztop
 		sysutils/bhyve-firmware
 		sysutils/grub2-bhyve
+		net/wifi-firmware-ath10k-kmod
+		net/wifi-firmware-ath11k-kmod
+		net/wifi-firmware-mt76-kmod
+		net/wifi-firmware-rtw88-kmod
+		net/wifi-firmware-rtw89-kmod
+		net/wifibox
 	'
 	
 	COLL_developer='
@@ -242,7 +248,6 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
-		net/wifibox
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
 		x11-wm/wayfire
@@ -262,6 +267,7 @@ collection_vars_init () {
 		sysutils/seatd
 		sysutils/touchegg
 		security/howdy
+		devel/tortoisehg
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
@@ -314,6 +320,7 @@ collection_vars_init () {
 	COLL_nice='
 		server
 		www/iridium
+		games/veloren-weekly
 		net-p2p/cardano-node
 		net-p2p/cardano-db-sync
 		net-im/py-matrix-synapse

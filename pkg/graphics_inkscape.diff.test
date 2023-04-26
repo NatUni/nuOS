@@ -1,1 +1,1 @@
-[ `find * -type f | sort | xargs md5 | md5` = cfa47bcf60e0b6f8411ba5f51951f198 ]
+grep -qw ghostscript9-agpl-base Makefile
