@@ -1,0 +1,1 @@
+grep -qw issues/76526 Makefile

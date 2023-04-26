@@ -18,8 +18,10 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts c:l:h:ko:p:qr:s:vw:z: OPT; do case $OPT in
+while getopts c:d:fh:kl:o:p:qr:s:vw:xz: OPT; do case $OPT in
 	c) PKG_COLLECTION=$OPTARG;;
+	d) DD_IMG=$OPTARG;;
+	f) OPT_FINGERPRINT_DD=y;;
 	h) NEW_HOST=$OPTARG;;
 	k) incr KEEP_ONLINE 1;;
 	l) LOCAL_SCRIPT=$OPTARG;;
@@ -30,6 +32,7 @@ while getopts c:l:h:ko:p:qr:s:vw:z: OPT; do case $OPT in
 	s) SWAP_SIZE=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 	w) WORK_POOL_NAME=$OPTARG;;
+	x) OPT_COMPRESS_DD=y;;
 	z) ZVOL_SIZE=$OPTARG;;
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
@@ -52,6 +55,25 @@ echo 'local init script    -l LOCAL_SCRIPT     ' ${LOCAL_SCRIPT:-<none>}
 maybe_pause
 maybe_yell
 
+if [ @ = "${DD_IMG-}" ]; then
+	ver=$NUOS_VER
+	while [ $ver != ${ver#0.} ]; do
+		ver=${ver#0.}
+		incr dev_track 1
+	done
+	case ${dev_track-0} in
+		0) t=r;; # release
+		1) t=b;; # beta
+		2) t=v;; # variant
+		*) t=x;; # xyz/bleeding 
+	esac
+	DD_IMG=nuOS-$t$ver-$TRGT_MACH.dd
+fi
+
+[ ${KEEP_ONLINE-0} -eq 0 ] || ! canhas ${DD_IMG-}
+! canhas ${DD_IMG-} || [ ! -e "$DD_IMG" ]
+! srsly ${OPT_COMPRESS_DD-} || [ ! -e "$DD_IMG.xz" ]
+! srsly ${OPT_FINGERPRINT_DD-} || [ ! -e "$DD_IMG.sum" ]
 
 sister nu_img -p $POOL_NAME -C -z $ZVOL_SIZE $OUTPUT_POOL_NAME
 
@@ -77,5 +99,33 @@ sister nu_sys -s $SWAP_SIZE -p $OUTPUT_POOL_NAME -u '' -b '' -h $NEW_HOST -c $PK
 [ ${KEEP_ONLINE-0} -ge 1 ] || sister nu_img -d $OUTPUT_POOL_NAME
 
 [ ${KEEP_ONLINE-0} -ge 1 ] || zfs snapshot $POOL_NAME/img/$OUTPUT_POOL_NAME@birth
+
+if canhas "${DD_IMG-}"; then
+	[ -f "$DD_IMG" ] || dd if=/dev/zvol/$POOL_NAME/img/$OUTPUT_POOL_NAME of="$DD_IMG" bs=2M conv=sync,sparse status=progress
+	chmod -w "$DD_IMG"
+	if srsly ${OPT_COMPRESS_DD-}; then
+		[ -f "$DD_IMG.xz" ] || xz -v -k -T0 "$DD_IMG"
+	fi
+	if srsly ${OPT_FINGERPRINT_DD-}; then
+		eko "TIMESTAMP = `date +%s`" >| "$DD_IMG.sum"
+		for h in sha256 rmd320 sha512; do
+			if ! which $h; then
+				h=$NUOS_CODE/util/$h/target/release/$h
+				if ! [ -f $h -a -x $h ]; then
+					make -C $NUOS_CODE/util/${h##*/} release
+					user=`stat -f %Sg "$NUOS_CODE/util/${h##*/}"`
+					chown -R $user "$NUOS_CODE/util/${h##*/}/target"
+				eko $h
+			fi
+			for sufx in '' ${OPT_COMPRESS_DD:+.xz}; do
+				$h "$DD_IMG$sufx" | tee -a "$DD_IMG.sum"
+			done
+		done
+		for sufx in '' ${OPT_COMPRESS_DD:+.xz}; do
+			stat -f 'SIZE (%N) = %z' "$DD_IMG$sufx" | tee -a "$DD_IMG.sum"
+		done
+		chmod -w "$DD_IMG.sum"
+	fi
+fi
 
 echo "Created a work image at $POOL_NAME/img/$WORK_POOL_NAME and a release image at $POOL_NAME/img/$OUTPUT_POOL_NAME."

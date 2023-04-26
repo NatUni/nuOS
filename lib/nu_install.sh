@@ -143,7 +143,7 @@ freeze () {
 }
 
 find_next_monotonic () {
-	local ds=$1 id=${2-} rev=0
+	local ds=$2 id=${3-} rev=0
 	if canhas $id; then
 		eko $ds/$id
 	else
@@ -153,6 +153,6 @@ find_next_monotonic () {
 		do
 			rev=$(($rev + 1))
 		done
-		eko $ret
+		setvar $1 $ret
 	fi
 }

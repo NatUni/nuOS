@@ -76,7 +76,7 @@ if [ -z "${OPT_SKIP_FBSD-}" ]; then
 	zfs create -p -o mountpoint=none -o canmount=off $fbsd_bin_ds
 	
 	
-	fbsd_sysroot_ds=`find_next_monotonic $fbsd_bin_ds ${RELEASE_ID-}`
+	find_next_monotonic fbsd_sysroot_ds $fbsd_bin_ds ${RELEASE_ID-}
 	fbsd_bld_id=${fbsd_sysroot_ds##*/}
 	
 	zgen_cmd="zfs create -o canmount=noauto"
@@ -189,7 +189,7 @@ else
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_os_ds
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_bin_ds
 	
-	nuos_sysroot_ds=`find_next_monotonic $nuos_bin_ds ${RELEASE_ID-}`
+	find_next_monotonic nuos_sysroot_ds $nuos_bin_ds ${RELEASE_ID-}
 	nuos_bld_id=${nuos_sysroot_ds##*/}
 	
 	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
@@ -641,12 +641,15 @@ EOF
 		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -i $POOL_MNT/$PKG_DBDIR $PKG_COLLECTION | tee "$pkg_tree"
 		umount $POOL_MNT/var/db/portsnap
 		umount $POOL_MNT/usr/ports
-		for tree_node in `cat "$pkg_tree"`; do
+		while read tree_node; do
 			case $tree_node in
 				[^/]*/*)
-					sister nu_install_pkg -C $POOL_MNT -R -d $PKG_DBDIR $tree_node
+					push do $tree_node
 				;;
 				[^/]*)
+					if canhas ${do-}; then
+						sister nu_install_pkg -C $POOL_MNT -R -d $PKG_DBDIR $do && unset do
+					fi
 					if [ -f $POOL_MNT/etc/nuos/conf ]; then
 						sed -i '' -e /^HOSTOS_PKG_COLLECTION=/d $POOL_MNT/etc/nuos/conf
 					fi
@@ -654,7 +657,7 @@ EOF
 					zfs snapshot -r $nuos_sysroot_ds@$tree_node
 				;;
 			esac
-		done
+		done < "$pkg_tree"
 		retire_tmp pkg_tree
 		umount $POOL_MNT/tmp
 	fi
