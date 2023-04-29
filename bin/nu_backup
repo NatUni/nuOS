@@ -139,9 +139,8 @@ while read ds; do
 		*) ds=$POOL_NAME/$ds;;
 	esac
 	while printf %s "$ds" | grep -q '('; do
-		tdds=`printf %s "$ds" | sed -E -e 's/^([^(]*)\(([^)]*)\)(.*)$/\1	\2	\3/'`
 		IFS=$'\t' read left var right <<EOF
-$tdds
+`printf %s "$ds" | sed -E -e 's/^([^(]*)\(([^)]*)\)(.*)$/\1	\2	\3/'`
 EOF
 		val=`zfs get -H -p -o value $var ${left%/}`
 		[ -n "$val" -a "$val" != - ]
@@ -168,11 +167,28 @@ if [ -z "${OPT_ONLY_SNAP-}" ]; then
 			all_origins | all_descendant_snaps | all_prior_snaps | elim_dup_snaps
 		fi
 	done < "$output_list" | while read -r args; do
-# 		if ! srsly ${header_printed-}; then
-# 			echo nu_backup.zstream_bundle${OPT_BACKUP_NULL:+_report} v0
-# 			header_printed=y
-# 		fi
-# 		srsly ${OPT_BACKUP_NULL-} || echo nu_backup.zstream v0
+		if ! srsly ${header_printed-}; then
+			eko nu_backup.zstream_bundle${OPT_BACKUP_NULL:+_report} v0
+			header_printed=y
+		fi
+		require_tmp custom_props
+		ds=${args##* }
+		ds=${ds%@*}
+		while [ $POOL_NAME != $ds ]; do
+			push dsps $ds
+			ds=${ds%/*}
+		done
+		for ds in `eko $dsps | xargs -n1 | tail -r`; do
+			zfs get -Ho name,property,value -slocal,received all $ds | awk -F $'\t' '$2 ~ /:/' | sed -e "s,^$POOL_NAME/,," >> "$custom_props"
+		done
+		unset dsps
+		if ! srsly ${OPT_BACKUP_NULL-}; then
+			eko nu_backup.zstream v0
+			eko nu_backup.num_custom_props `wc -l "$custom_props" | xargs | cut -wf1`
+			cat "$custom_props"
+			eko nu_backup.zstream_begin v0
+		fi
+		retire_tmp custom_props
 		if canhas ${TOKEN-}; then
 			if [ $token_ds = ${args##* } ]; then
 				${OPT_BACKUP_NULL:+echo} zfs send -e -t $TOKEN
