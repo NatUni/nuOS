@@ -18,8 +18,9 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts c:i:o:p:P:qv OPT; do case $OPT in
+while getopts c:di:o:p:P:qv OPT; do case $OPT in
 	c) PKG_COLLECTION=$OPTARG;;
+	d) OPT_DEVELOPER=y;;
 	i) INPUT=$OPTARG;;
 	o) OUTPUT=$OPTARG;;
 	p) POOL_NAME=$OPTARG;;
@@ -28,6 +29,7 @@ while getopts c:i:o:p:P:qv OPT; do case $OPT in
 	v) OPT_VERBOSE=y;;
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
+[ -z "${INPUT-}" -o -z "${OUTPUT-}" ] || error 11 'innappropriate to specify input file with output file'
 
 load_lib nu_admin nu_make nu_ports nu_collection nu_install
 
@@ -46,70 +48,60 @@ if canhas ${OUTPUT-}; then
 	echo 'output file     -o OUTPUT         ' $OUTPUT
 else
 	echo 'target pool     -p POOL_NAME      ' $POOL_NAME
-# 	POOL_MNT=`zpool get -H -o value altroot $POOL_NAME`
-# 	[ -n "$POOL_MNT" -a x- != "x$POOL_MNT" ]
 fi
+
+[ "${SOURCE_POOL-}" != "${POOL_NAME-}" ] || error 11 'source and destination cannot be the same'
 
 maybe_pause
 maybe_yell
 
-[ -z "${INPUT-}" -o -z "${OUTPUT-}" ]
-[ "${SOURCE_POOL-}" != "${POOL_NAME-}" ]
-
 os_software_ds_name=os
 
-fbsd_proj_ds_name=$os_software_ds_name/$BASEOS_TYPE
-fbsd_os_ds_name=$fbsd_proj_ds_name/$BASEOS_VER
-fbsd_bin_ds_name=$fbsd_os_ds_name/$TRGT
+set_dss () {
+	fbsd_proj_ds_name=$os_software_ds_name/$BASEOS_TYPE
+	fbsd_os_ds_name=$fbsd_proj_ds_name/$BASEOS_VER
+	fbsd_bin_ds_name=$fbsd_os_ds_name/$TRGT
+	nuos_proj_ds_name=$os_software_ds_name/nuOS
+	nuos_os_ds_name=$nuos_proj_ds_name/$NUOS_VER
+	nuos_bin_ds_name=$nuos_os_ds_name/$TRGT
+}
 
-nuos_proj_ds_name=$os_software_ds_name/nuOS
-nuos_os_ds_name=$nuos_proj_ds_name/$NUOS_VER
-nuos_bin_ds_name=$nuos_os_ds_name/$TRGT
+set_dss
 
 if canhas ${INPUT-}; then
 	require_tmp restore_log
 	sister nu_restore -t $POOL_NAME < "$INPUT" | tee -a "$restore_log"
-	src_rev=`grep "^$POOL_NAME/$nuos_bin_ds_name/" "$restore_log" | cut -d / -f 6 | cut -d @ -f 1 | head -n 1`
+	{
+		read -r BASEOS_TYPE
+		read -r BASEOS_VER
+		read -r TRGT
+		read -r NUOS_VER
+		read -r rev
+		rev=${rev%@*}
+	} <<EOF
+$(awk "\$1 ~ /^$POOL_NAME\/$os_software_ds_name\// && \$2 == \"->\" {print \$0; exit}" < "$restore_log" | cut -d / -f 3,4,5,9,11 | tr / '\n')
+EOF
+		set_dss
 else
-	src_rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$nuos_bin_ds_name`
+	rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$nuos_bin_ds_name`
 fi
 
-nuos_sysroot_source_ds=$nuos_bin_ds_name/$src_rev
+nuos_sysroot_source_ds=$nuos_bin_ds_name/$rev
+
+spill BASEOS_TYPE BASEOS_VER TRGT NUOS_VER nuos_sysroot_source_ds
+
+push DATASETS $nuos_sysroot_source_ds@$PKG_COLLECTION \
+	${OPT_DEVELOPER:+$fbsd_proj_ds_name/src} \
+	${OPT_DEVELOPER:+$fbsd_proj_ds_name/ports/src} \
+	${OPT_DEVELOPER:+$nuos_bin_ds_name/pkg}
 
 if canhas ${OUTPUT-}; then
-	sister nu_backup -p $SOURCE_POOL $nuos_sysroot_source_ds@$PKG_COLLECTION > "$OUTPUT"
+	sister nu_backup -p $SOURCE_POOL $DATASETS > "$OUTPUT"
 	echo "Saved installation zstream."
 	exit
 elif ! canhas ${INPUT-}; then
-	sister nu_backup -p $SOURCE_POOL $nuos_sysroot_source_ds@$PKG_COLLECTION | sister nu_restore -t $POOL_NAME
+	sister nu_backup -p $SOURCE_POOL $DATASETS | sister nu_restore -t $POOL_NAME
 fi
-
-
-
-
-# XXX: GARBANZO
-
-# BECAUSE https://github.com/zfsonlinux/zfs/pull/5189 SEEMS to be not included in FBSD 11.2
-zfs set org.nuos:active_revision=$src_rev $POOL_NAME/$nuos_bin_ds_name
-if canhas ${INPUT-}; then
-	fbsd_src_rev=`grep "^$POOL_NAME/$fbsd_bin_ds_name/" "$restore_log" | cut -d / -f 6 | cut -d @ -f 1 | head -n 1`
-else
-	fbsd_src_rev=`basename $(zfs get -H -p -o value origin $SOURCE_POOL/$nuos_sysroot_source_ds) | cut -d @ -f 1`
-fi
-zfs set org.nuos:active_revision=$fbsd_src_rev $POOL_NAME/$fbsd_bin_ds_name
-
-# /XXX: GARBANZO
-
-# zfs get canmount \
-# 	$POOL_NAME/$os_software_ds_name \
-# 	$POOL_NAME/$fbsd_proj_ds_name \
-# 	$POOL_NAME/$fbsd_os_ds_name \
-# 	$POOL_NAME/$fbsd_bin_ds_name \
-# 	$POOL_NAME/$fbsd_bin_ds_name/$fbsd_src_rev \
-# 	$POOL_NAME/$nuos_proj_ds_name \
-# 	$POOL_NAME/$nuos_os_ds_name \
-# 	$POOL_NAME/$nuos_bin_ds_name \
-# 	$POOL_NAME/$nuos_bin_ds_name/$src_rev
 
 zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src
 zfs create -o mountpoint=/usr/src $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER && \
@@ -128,4 +120,5 @@ zfs create -o exec=off -o mountpoint=/usr/ports/distfiles $POOL_NAME/$fbsd_proj_
 zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $POOL_NAME/$nuos_bin_ds_name/pkg && \
 	zfs unmount $POOL_NAME/$nuos_bin_ds_name/pkg || true
 
+export BASEOS_TYPE BASEOS_VER
 sister nu_build -FN -p $POOL_NAME -c $PKG_COLLECTION -q

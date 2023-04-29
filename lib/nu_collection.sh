@@ -23,12 +23,11 @@ nuos_lib_collection_loaded=y
 : ${HOSTOS_PKG_COLLECTION:=desktop}
 
 reset_pkg_collection () {
-	: ${PKG_COLLECTION:=$HOSTOS_PKG_COLLECTION}
-	
 	local host_base_ver="`uname -r`"
-	
 	if [ "${BASEOS_VER%%-*}" != "${host_base_ver%%-*}" ]; then
-		PKG_COLLECTION=blank
+		: ${PKG_COLLECTION:=blank}
+	else
+		: ${PKG_COLLECTION:=$HOSTOS_PKG_COLLECTION}
 	fi
 	if [ -q != "${1-}" ]; then
 		echo 'pkg collection  -c PKG_COLLECTION ' $PKG_COLLECTION
@@ -282,6 +281,16 @@ collection_vars_init () {
 		x11/gnome
 		x11/kde5
 		x11/sddm
+		x11/lightdm
+		x11/lightdm-gtk-greeter
+		x11/lightdm-gtk-greeter-settings
+		devel/libqtxdg
+		deskutils/xdg-desktop-portal
+		sysutils/qtxdg-tools
+		x11/libxdg-basedir
+		x11/xdg-desktop-portal-gtk
+		x11/xdg-desktop-portal-hyprland
+		x11/xdg-desktop-portal-wlr
 		lang/pharo
 		net-p2p/bitcoin
 		net-p2p/litecoin

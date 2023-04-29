@@ -94,17 +94,35 @@ trap 'clean_exit 2> /dev/null' HUP INT QUIT TERM EXIT
 ) &
 
 require_tmp err_report
-# read -r -t 1 magic version
-# [ nu_backup.zstream_bundle = "$magic" ]
-# [ v0 = "$version" ]
+require_tmp custom_props
+read -r magic version || error 92
+[ nu_backup.zstream_bundle = "$magic" ] || error 79
+[ v0 = "$version" ] || error 75
 while {
 	(
 		require_tmp err_out
 		{
-# 			read -r -t 1 magic version
-# 			[ nu_backup.zstream = "$magic" ]
-# 			[ v0 = "$version" ]
-			zfs receive -s -d -u ${OPT_FORCE_OVERWRITE:+-F} -v $TARGET_DS > "$pipes/recv_out" 2>| "$err_out" &
+			if read -r magic version && [ nu_backup.zstream = "$magic" ]; then
+				case $version in
+					v0) :;;
+					*) error 89;;
+				esac
+				while read -r var val; do
+					case $var in
+						nu_backup.zstream_begin) break;;
+						nu_backup.num_custom_props)
+							while [ 1 -le $val ]; do
+								read -r line
+								eko "$line" >> "$custom_props"
+								val=$(($val - 1))
+							done
+						;;
+					esac
+				done
+				zfs receive -s -d -u ${OPT_FORCE_OVERWRITE:+-F} -v $TARGET_DS > "$pipes/recv_out" 2>| "$err_out" &
+			else
+				false >| "$err_out" &
+			fi
 		} < /dev/stdin
 		zfs_pid=$!
 		touch "$child_pids/$zfs_pid"
@@ -126,10 +144,18 @@ while {
 	[ $child_exit = 0 ]
 }; do
 done
+sleep 0.5
+if [ -s "$custom_props" ]; then
+	sort -s -u "$custom_props" | while IFS=$'\t' read -r n p v; do
+		eko set $p="$v" $n
+		zfs set $p="$v" $TARGET_DS/$n
+	done
+fi
 
+retire_tmp custom_props
 retire_tmp pipes
 if [ -f "$err_report" -a ! -s "$err_report" ]; then
-	sleep 1
+	sleep 0.5
 	echo
 	echo "Restoration onto $TARGET_DS completed with no errors."
 else
@@ -137,5 +163,3 @@ else
 	exit $child_exit
 fi
 retire_tmp err_report
-
-#retire_tmp restore_log

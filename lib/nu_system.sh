@@ -42,8 +42,8 @@ baseos_init () {
 		BASEOS_TYPE=$TYPE
 		BASEOS_VER=$REVISION-$BRANCH
 	else
-		BASEOS_TYPE=`uname -s`
-		BASEOS_VER=`uname -r`
+		: ${BASEOS_TYPE:=`uname -s`}
+		: ${BASEOS_VER:=`uname -r`}
 	fi
 	if [ -q != "${1-}" ]; then
 		echo 'base opsys                        ' $BASEOS_TYPE

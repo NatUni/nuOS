@@ -1,4 +1,13 @@
 sister enable_svc -C "$TRGT" seatd dbus hald webcamd
+if canhas ${GPU_VENDOR-}; then
+case $GPU_VENDOR in
+	[Aa][Mm][Dd]) gpu_kmod=amdgpu;;
+	[Ii][Nn][Tt][Ee][Ll]) gpu_kmod=i915kms;;
+esac
+	cat >> "$TRGT/etc/rc.conf.local" <<EOF
+kld_list="\$kld_list $gpu_kmod"
+EOF
+fi
 mkdir -m 1777 "$TRGT/var/run/user"
 cat >> "$TRGT/etc/gettytab" <<'EOF'
 Ly:\
