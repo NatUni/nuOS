@@ -139,13 +139,14 @@ for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
 		done
 	)
 	for z in $zones_lc; do
-		grep -w ^$z /var/jail/postmaster/usr/local/etc/postfix/domains || nu_smtp_host -C /var/jail/postmaster -h $z
+		re_pattern -n z
+		grep -w "^$z_re" /var/jail/postmaster/usr/local/etc/postfix/domains || nu_smtp_host -C /var/jail/postmaster -h $z
 		for b in operator security hostmaster postmaster webmaster whois-data; do
-			grep -w ^$b@$z /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -u $OWNER_ACCT -m $b@$z
+			grep -w "^$b@$z_re" /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -u $OWNER_ACCT -m $b@$z
 		done
 	done
 	for m in $init_emails; do
-		grep -w ^${m#'*'} /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -u $OWNER_ACCT -m $m
+		grep -w "^${m#'*'}" /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -u $OWNER_ACCT -m $m
 	done
 done
 
