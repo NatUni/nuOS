@@ -60,6 +60,7 @@ for role in $roles; do
 					&& tar -cf - \
 						--exclude 'private/ca.*.key' \
 						--exclude 'certs/*.internal.crt' \
+						--exclude 'certs/*.[0-9]' \
 						`find certs -depth 1 -name '*.*.*.internal.crt' \
 							| sed -E -e '
 								s/^.{6}(.*).{13}$/\1/
