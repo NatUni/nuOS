@@ -1,1 +1,1 @@
-[ `find * -type f | sort | xargs md5 | md5` = 6f8db719733a2d3ad6bacc3e6a0e1da3 ]
+[ `find * -type f -not -path 'work*' | sort | xargs md5 | md5` = 6f8db719733a2d3ad6bacc3e6a0e1da3 ]
