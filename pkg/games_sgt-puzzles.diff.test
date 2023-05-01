@@ -1,1 +1,0 @@
-grep -qw ImageMagick6 Makefile

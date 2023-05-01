@@ -1,6 +1,6 @@
 --- ../gnucash.orig/Makefile	2023-03-28 16:02:37.380173000 +0000
 +++ ./Makefile	2023-03-28 16:01:28.966498000 +0000
-@@ -87,8 +87,15 @@
+@@ -86,8 +86,15 @@
  OFX_LIB_DEPENDS=	libofx.so:finance/libofx
  OFX_VARS=		GLIB_SCHEMAS+=org.gnucash.GnuCash.dialogs.import.ofx.gschema.xml
  PYTHON_CMAKE_BOOL=	WITH_PYTHON
@@ -17,7 +17,7 @@
  post-install-PYTHON-on:
  	@(cd ${STAGEDIR}${PREFIX} \
  		&& ${PYTHON_CMD} ${PYTHON_LIBDIR}/compileall.py \
-@@ -98,4 +105,4 @@
+@@ -97,4 +104,4 @@
  		-d ${PYTHONPREFIX_SITELIBDIR} -f ${PYTHONPREFIX_SITELIBDIR:S;${PREFIX}/;;}/${PORTNAME})
  	@${STRIP_CMD} ${STAGEDIR}${PYTHON_SITELIBDIR}/gnucash/_gnucash_core_c.so
  

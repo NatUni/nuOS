@@ -3,7 +3,7 @@
 @@ -1,17 +1,16 @@
  MASTERDIR=	${.CURDIR}/../namecoin
  
--PORTREVISION=	3
+-PORTREVISION=	4
  PKGNAMESUFFIX=	-daemon
  
  COMMENT=	Decentralized, open DNS and more (Daemon)

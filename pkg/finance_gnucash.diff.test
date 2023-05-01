@@ -1,1 +1,1 @@
-[ `find * -type f | sort | xargs md5 | md5` = a2aefc397edd8279515111f5c5d5dc5f ]
+grep -qw python:3\\.6+ Makefile
