@@ -145,7 +145,7 @@ freeze () {
 find_next_monotonic () {
 	local ds=$2 id=${3-} rev=0
 	if canhas $id; then
-		eko $ds/$id
+		setvar $1 $ds/$id
 	else
 		while
 			ret=$ds/v$rev
