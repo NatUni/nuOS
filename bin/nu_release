@@ -115,6 +115,7 @@ if canhas "${DD_IMG-}"; then
 					make -C $NUOS_CODE/util/${h##*/} release
 					user=`stat -f %Sg "$NUOS_CODE/util/${h##*/}"`
 					chown -R $user "$NUOS_CODE/util/${h##*/}/target"
+				fi
 				eko $h
 			fi
 			for sufx in '' ${OPT_COMPRESS_DD:+.xz}; do
