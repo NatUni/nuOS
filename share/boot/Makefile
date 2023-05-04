@@ -2,6 +2,8 @@ WWW_GFX=${.CURDIR}/../../www/org
 
 all: nuos-mascot.png nuos-brand.png .PHONY
 
+encumbered: grumpy_owl-flat.png .PHONY
+
 nuos-mascot.png: grumpy_owl-geometry.png badges.png
 	convert grumpy_owl-geometry.png badges.png -gravity southeast -composite \
 		-type TrueColorAlpha -define png:color-type=6 -define png:bit-depth=8 -strip nuos-mascot.png
@@ -53,7 +55,7 @@ grumpy_owl-stroked.png: grumpy_owl-extended.png grumpy_owl-stroke.png
 		-strip grumpy_owl-stroked.png
 
 grumpy_owl-geometry.png: grumpy_owl-stroked.png
-	convert grumpy_owl-stroked.png -resize '240x256>' -background transparent -gravity west -extent 240x256  \
+	convert grumpy_owl-stroked.png -resize '240x256>' -background transparent -gravity west -extent 240x256 \
 		-strip grumpy_owl-geometry.png
 
 badges.png:

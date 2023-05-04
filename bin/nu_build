@@ -552,11 +552,15 @@ EOF
 		sed -i '' -Ee 's/^(The compilation of software known as )FreeBSD /\1nuOS /;/^Copyright\>.*\<The FreeBSD Project\>/a\
 Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.' $POOL_MNT/COPYRIGHT
 		
-		make -C $NUOS_CODE/share/boot
-		cp $NUOS_CODE/share/boot/nuos-brand.png $NUOS_CODE/share/boot/nuos-mascot.png \
+		if ! [ -f "$NUOS_CODE/share/boot/nuos-mascot.png" -a -f "$NUOS_CODE/share/boot/nuos-brand.png" ]; then
+			user=`stat -f %Su "$NUOS_CODE/share/boot"`
+			make -C "$NUOS_CODE/share/boot"
+			chown -R $user "$NUOS_CODE/share/boot"
+		fi
+		cp "$NUOS_CODE/share/boot/nuos-brand.png" "$NUOS_CODE/share/boot/nuos-mascot.png" \
 			$POOL_MNT/boot/images/
-		cp $NUOS_CODE/share/boot/gfx-nuos.lua $POOL_MNT/boot/lua/
-		chmod 444 $POOL_MNT/boot/lua/gfx-nuos.lua
+		cp "$NUOS_CODE/share/boot/gfx-nuos.lua" $POOL_MNT/boot/lua/
+		chmod 444 $POOL_MNT/boot/lua/gfx-nuos.lua $POOL_MNT/boot/images/nuos-brand.png $POOL_MNT/boot/images/nuos-mascot.png
 		
 		cat >> $POOL_MNT/boot/loader.conf <<'EOF'
 loader_brand="nuos"
@@ -654,6 +658,48 @@ EOF
 						sed -i '' -e /^HOSTOS_PKG_COLLECTION=/d $POOL_MNT/etc/nuos/conf
 					fi
 					echo HOSTOS_PKG_COLLECTION=$tree_node >> $POOL_MNT/etc/nuos/conf
+					case $tree_node in
+						desktop)
+							if ! [ -f "$NUOS_CODE/share/wallpapers/nuOS-default/contents/screenshot.png" ]; then
+								user=`stat -f %Su "$NUOS_CODE/share/wallpapers/nuOS-default"`
+								make -C "$NUOS_CODE/share/wallpapers/nuOS-default"
+								chown -R $user "$NUOS_CODE/share/wallpapers/nuOS-default"
+							fi
+							mkdir -p $POOL_MNT/usr/local/share/wallpapers/nuOS-default
+							cp -r "$NUOS_CODE/share/wallpapers/nuOS-default/contents" \
+								"$NUOS_CODE/share/wallpapers/nuOS-default/metadata.json" \
+								$POOL_MNT/usr/local/share/wallpapers/nuOS-default/
+							mkdir -p $POOL_MNT/usr/share/skel/dot.config/plasma-workspace/env/
+							cp "$NUOS_CODE/share/wallpapers/nuOS-default/set-nuOS-wallpaper.sh" \
+								$POOL_MNT/usr/share/skel/dot.config/plasma-workspace/env/
+							cp "$NUOS_CODE/share/wallpapers/nuOS-default/kscreenlockerrc" \
+								$POOL_MNT/usr/share/skel/dot.config/
+							
+							cat >> $POOL_MNT/usr/local/etc/lightdm/lightdm-gtk-greeter.conf <<'EOF'
+[greeter]
+theme-name = Breeze
+icon-theme-name = breeze
+font-name = Luxi Sans Bold 14
+background = /usr/local/share/wallpapers/nuOS-default/contents/images/3840x2400.png
+position = 20%,center 20%,center
+EOF
+							
+							require_tmp dm_conf
+							sed -ne '/^\[UserList]$/,/^\[/p' $POOL_MNT/usr/local/etc/lightdm/users.conf | grep -v '^#' >| "$dm_conf"
+							hide_shells=`grep -e ^hidden-shells= "$dm_conf" | tail -n1 | cut -d= -f 2-`
+							min_uid=`grep -e ^minimum-uid= "$dm_conf" | tail -n1 | cut -d= -f 2-`
+							retire_tmp dm_conf
+							
+							(umask 77
+								for u in `awk -F: "\$3 > 0 && \$3 < $min_uid && \" $hide_shells \" !~ \" \"\$7\" \" {print \$1}" < $POOL_MNT/etc/passwd`; do
+									cat > $POOL_MNT/var/db/AccountsService/users/$u <<'EOF'
+[User]
+SystemAccount=true
+EOF
+								done
+							)
+						;;
+					esac
 					zfs snapshot -r $nuos_sysroot_ds@$tree_node
 				;;
 			esac
