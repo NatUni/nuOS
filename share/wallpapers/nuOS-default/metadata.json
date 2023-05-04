@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "milios@ccsys.com",
+                "Name": "Chad Jacob Milios"
+            }
+        ],
+        "Id": "nuOS-default",
+        "License": "CC-BY-SA-4.0",
+        "Name": "nuOS Default"
+    }
+}
