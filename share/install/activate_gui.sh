@@ -4,6 +4,7 @@ if canhas ${GPU_VENDOR-}; then
 	case $GPU_VENDOR in
 		[Aa][Mm][Dd]) gpu_kmod=amdgpu;;
 		[Ii][Nn][Tt][Ee][Ll]) gpu_kmod=i915kms;;
+		[Rr][Aa][Dd][Ee][Oo][Nn]) gpu_kmod=radeonkms;;
 	esac
 	cat >> "$TRGT/etc/rc.conf.local" <<EOF
 kld_list="\$kld_list $gpu_kmod"

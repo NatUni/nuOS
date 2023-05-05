@@ -247,9 +247,12 @@ if ! srsly ${OPT_BASE_OS-}; then
 			export POOL=$POOL_NAME
 			export TRGT=$POOL_MNT
 			export NAME=${NEW_HOST%%.*}
-			export NUOS="$(realpath "$(dirname "$(realpath "$0")")/..")"
+			export NUOS="$(realpath "$NUOS_CODE")"
 			while eval [ -n \"\${LOCAL_SCRIPT_${i:=0}-}\" ]; do
 				eval LOCAL_SCRIPT=\${LOCAL_SCRIPT_$i}
+				if [ "$LOCAL_SCRIPT" != "${LOCAL_SCRIPT#@}" ]; then
+					LOCAL_SCRIPT="$NUOS/share/install/${LOCAL_SCRIPT#@}.sh"
+				fi
 				if [ -d "${LOCAL_SCRIPT-}" ]; then
 					script_files=`rcorder "$LOCAL_SCRIPT"/*.sh`
 					for script_file in "$script_files"; do
@@ -257,6 +260,8 @@ if ! srsly ${OPT_BASE_OS-}; then
 					done
 				elif [ -f "${LOCAL_SCRIPT-}" ]; then
 					. "$LOCAL_SCRIPT"
+				else
+					warn "Script not found: $LOCAL_SCRIPT"
 				fi
 				i=$(($i+1))
 			done
