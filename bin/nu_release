@@ -18,11 +18,12 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts c:d:fh:kl:o:p:qr:s:vw:xz: OPT; do case $OPT in
+while getopts c:d:fh:Hkl:o:p:qr:s:vw:xz: OPT; do case $OPT in
 	c) PKG_COLLECTION=$OPTARG;;
 	d) DD_IMG=$OPTARG;;
 	f) OPT_FINGERPRINT_DD=y;;
 	h) NEW_HOST=$OPTARG;;
+	H) OPT_HOST_IS_SOURCE=y;;
 	k) incr KEEP_ONLINE 1;;
 	l) LOCAL_SCRIPT=$OPTARG;;
 	o) OUTPUT_POOL_NAME=$OPTARG;;
@@ -46,6 +47,10 @@ collection_vars_init
 build_vars_init
 require_base_src
 install_vars_init -q
+
+if srsly ${OPT_HOST_IS_SOURCE-}; then
+	WORK_POOL_NAME=$POOL_BOOT_NAME
+fi
 
 echo 'new zvol sizes (2x)  -z ZVOL_SIZE        ' ${ZVOL_SIZE:=30000000K}
 echo 'work pool            -w WORK_POOL_NAME   ' ${WORK_POOL_NAME:=spawn}
@@ -83,9 +88,20 @@ if ! zpool list $WORK_POOL_NAME; then
 	sister nu_hdd -b -u 100 -a 128 -q -p $WORK_POOL_NAME $work_zvdev
 fi
 
-if ! zfs list $WORK_POOL_NAME/os/nuOS; then
-	sister nu_build -p $WORK_POOL_NAME -r ${RELEASE_ID:-r0} -c $PKG_COLLECTION -q
+set_std_ds
+: ${RELEASE_ID:=r0}
+
+if ! zfs list $WORK_POOL_NAME/$nuos_proj_ds; then
+	sister nu_build -p $WORK_POOL_NAME -r $RELEASE_ID -c $PKG_COLLECTION -q
 	zpool trim $WORK_POOL_NAME || true
+else
+	for bin_ds in $fbsd_bin_ds $nuos_bin_ds; do
+		rev=`zfs get -H -p -o value org.nuos:active_revision $WORK_POOL_NAME/$bin_ds`
+		if [ x$rev != x$RELEASE_ID ]; then
+			zfs rename $WORK_POOL_NAME/$bin_ds/$rev $WORK_POOL_NAME/$bin_ds/$RELEASE_ID
+			zfs set org.nuos:active_revision=$RELEASE_ID $WORK_POOL_NAME/$bin_ds
+		fi
+	done
 fi
 
 output_zvdev=`sister nu_img -i $OUTPUT_POOL_NAME`

@@ -691,7 +691,7 @@ EOF
 							retire_tmp dm_conf
 							
 							(umask 77
-								for u in `awk -F: "\$3 > 0 && \$3 < $min_uid && \" $hide_shells \" !~ \" \"\$7\" \" {print \$1}" < $POOL_MNT/etc/passwd`; do
+								for u in $(awk -F: "\$3 > 0 && \$3 < $min_uid && \" $hide_shells \" !~ \" \"\$7\" \" {print \$1}" < $POOL_MNT/etc/passwd); do
 									cat > $POOL_MNT/var/db/AccountsService/users/$u <<'EOF'
 [User]
 SystemAccount=true

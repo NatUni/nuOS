@@ -55,18 +55,7 @@ fi
 maybe_pause
 maybe_yell
 
-os_software_ds_name=os
-
-set_dss () {
-	fbsd_proj_ds_name=$os_software_ds_name/$BASEOS_TYPE
-	fbsd_os_ds_name=$fbsd_proj_ds_name/$BASEOS_VER
-	fbsd_bin_ds_name=$fbsd_os_ds_name/$TRGT
-	nuos_proj_ds_name=$os_software_ds_name/nuOS
-	nuos_os_ds_name=$nuos_proj_ds_name/$NUOS_VER
-	nuos_bin_ds_name=$nuos_os_ds_name/$TRGT
-}
-
-set_dss
+set_std_ds
 
 if canhas ${INPUT-}; then
 	require_tmp restore_log
@@ -79,21 +68,21 @@ if canhas ${INPUT-}; then
 		read -r rev
 		rev=${rev%@*}
 	} <<EOF
-$(awk "\$1 ~ /^$POOL_NAME\/$os_software_ds_name\// && \$2 == \"->\" {print \$0; exit}" < "$restore_log" | cut -d / -f 3,4,5,9,11 | tr / '\n')
+$(awk "\$1 ~ /^$POOL_NAME\/$os_software_ds\// && \$2 == \"->\" {print \$0; exit}" < "$restore_log" | cut -d / -f 3,4,5,9,11 | tr / '\n')
 EOF
-		set_dss
+		set_std_ds
 else
-	rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$nuos_bin_ds_name`
+	rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$nuos_bin_ds`
 fi
 
-nuos_sysroot_source_ds=$nuos_bin_ds_name/$rev
+nuos_sysroot_source_ds=$nuos_bin_ds/$rev
 
 spill BASEOS_TYPE BASEOS_VER TRGT NUOS_VER nuos_sysroot_source_ds
 
 push DATASETS $nuos_sysroot_source_ds@$PKG_COLLECTION \
-	${OPT_DEVELOPER:+$fbsd_proj_ds_name/src} \
-	${OPT_DEVELOPER:+$fbsd_proj_ds_name/ports/src} \
-	${OPT_DEVELOPER:+$nuos_bin_ds_name/pkg}
+	${OPT_DEVELOPER:+$fbsd_proj_ds/src} \
+	${OPT_DEVELOPER:+$fbsd_proj_ds/ports/src} \
+	${OPT_DEVELOPER:+$nuos_bin_ds/pkg}
 
 if canhas ${OUTPUT-}; then
 	sister nu_backup -p $SOURCE_POOL $DATASETS > "$OUTPUT"
@@ -103,22 +92,22 @@ elif ! canhas ${INPUT-}; then
 	sister nu_backup -p $SOURCE_POOL $DATASETS | sister nu_restore -t $POOL_NAME
 fi
 
-zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src
-zfs create -o mountpoint=/usr/src $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER && \
-	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/src/$BASEOS_VER || true
-zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src/obj
-zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE
-zfs create -o mountpoint=/usr/obj $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE/$BASEOS_VER && \
-	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/src/obj/$TRGT_CODE/$BASEOS_VER || true
-zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds_name/ports
-zfs create -o exec=off -o mountpoint=/var/db/portsnap $POOL_NAME/$fbsd_proj_ds_name/ports/snap-db && \
-	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/ports/snap-db || true
-zfs create -o mountpoint=/usr/ports $POOL_NAME/$fbsd_proj_ds_name/ports/src && \
-	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/ports/src || true
-zfs create -o exec=off -o mountpoint=/usr/ports/distfiles $POOL_NAME/$fbsd_proj_ds_name/ports/distfiles && \
-	zfs unmount $POOL_NAME/$fbsd_proj_ds_name/ports/distfiles || true
-zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $POOL_NAME/$nuos_bin_ds_name/pkg && \
-	zfs unmount $POOL_NAME/$nuos_bin_ds_name/pkg || true
+zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds/src
+zfs create -o mountpoint=/usr/src $POOL_NAME/$fbsd_proj_ds/src/$BASEOS_VER && \
+	zfs unmount $POOL_NAME/$fbsd_proj_ds/src/$BASEOS_VER || true
+zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds/src/obj
+zfs create -p -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds/src/obj/$TRGT_CODE
+zfs create -o mountpoint=/usr/obj $POOL_NAME/$fbsd_proj_ds/src/obj/$TRGT_CODE/$BASEOS_VER && \
+	zfs unmount $POOL_NAME/$fbsd_proj_ds/src/obj/$TRGT_CODE/$BASEOS_VER || true
+zfs create -p -o setuid=off -o mountpoint=none -o canmount=off $POOL_NAME/$fbsd_proj_ds/ports
+zfs create -o exec=off -o mountpoint=/var/db/portsnap $POOL_NAME/$fbsd_proj_ds/ports/snap-db && \
+	zfs unmount $POOL_NAME/$fbsd_proj_ds/ports/snap-db || true
+zfs create -o mountpoint=/usr/ports $POOL_NAME/$fbsd_proj_ds/ports/src && \
+	zfs unmount $POOL_NAME/$fbsd_proj_ds/ports/src || true
+zfs create -o exec=off -o mountpoint=/usr/ports/distfiles $POOL_NAME/$fbsd_proj_ds/ports/distfiles && \
+	zfs unmount $POOL_NAME/$fbsd_proj_ds/ports/distfiles || true
+zfs create -o setuid=off -o exec=off -o mountpoint=/usr/ports/packages $POOL_NAME/$nuos_bin_ds/pkg && \
+	zfs unmount $POOL_NAME/$nuos_bin_ds/pkg || true
 
 export BASEOS_TYPE BASEOS_VER
 sister nu_build -FN -p $POOL_NAME -c $PKG_COLLECTION -q

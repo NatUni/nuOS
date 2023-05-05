@@ -142,6 +142,16 @@ freeze () {
 	fi
 }
 
+set_std_ds () {
+	os_software_ds=os
+	fbsd_proj_ds=$os_software_ds/$BASEOS_TYPE
+	fbsd_os_ds=$fbsd_proj_ds/$BASEOS_VER
+	fbsd_bin_ds=$fbsd_os_ds/$TRGT
+	nuos_proj_ds=$os_software_ds/nuOS
+	nuos_os_ds=$nuos_proj_ds/$NUOS_VER
+	nuos_bin_ds=$nuos_os_ds/$TRGT
+}
+
 find_next_monotonic () {
 	local ds=$2 id=${3-} rev=0
 	if canhas $id; then
