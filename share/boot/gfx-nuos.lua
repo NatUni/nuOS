@@ -36,8 +36,8 @@ return {
 			"         for the people,",
 			"                 by the people",
 			"",
-			"(c) 2023",
-			"    FreeBSD.org, nuOS.org, CCSys.com",
+			"(c) 1979 - 2023",
+			"Berkeley.edu, FreeBSD.org, nuOS.org"
 		},
 		requires_color = true,
 		image = "/boot/images/nuos-mascot.png",

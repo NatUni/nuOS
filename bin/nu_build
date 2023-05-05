@@ -675,6 +675,9 @@ EOF
 							cp "$NUOS_CODE/share/wallpapers/nuOS-default/kscreenlockerrc" \
 								$POOL_MNT/usr/share/skel/dot.config/
 							
+							sed -i '' -e '/^\[Seat:\*]/a\
+user-session=plasma' $POOL_MNT/usr/local/etc/lightdm/lightdm.conf
+							
 							cat >> $POOL_MNT/usr/local/etc/lightdm/lightdm-gtk-greeter.conf <<'EOF'
 [greeter]
 theme-name = Breeze
