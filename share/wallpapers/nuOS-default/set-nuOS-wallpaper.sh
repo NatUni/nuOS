@@ -1,4 +1,3 @@
-#!/bin/sh
 log=/tmp/nuOS-plasma-login.$$.set_wallpaper
 mkdir $log || exit 1
 while ! dbus-send --session --dest=org.kde.plasmashell --type=method_call --print-reply /PlasmaShell org.kde.PlasmaShell.evaluateScript 'string:
