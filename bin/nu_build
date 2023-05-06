@@ -675,11 +675,29 @@ EOF
 							cp "$NUOS_CODE/share/wallpapers/nuOS-default/kscreenlockerrc" \
 								$POOL_MNT/usr/share/skel/dot.config/
 							
+							cat > $POOL_MNT/usr/share/skel/dot.config/plasma-workspace/env/disable-ac-sleep.sh <<'EOF'
+log=/tmp/nuOS-plasma-login.$$.disable_ac_sleep
+mkdir $log || exit 1
+(
+	while [ ! -s .config/powermanagementprofilesrc ]; do sleep 5; done
+	sleep 20
+	kwriteconfig5 --file powermanagementprofilesrc --group AC --group DPMSControl --key idleTime 3600
+	kwriteconfig5 --file powermanagementprofilesrc --group AC --group DimDisplay --key idleTime 600000
+	kwriteconfig5 --file powermanagementprofilesrc --group AC --group SuspendSession --key suspendType 32
+	sleep 5
+	dbus-send --session --dest=org.freedesktop.PowerManagement --type=method_call --print-reply /org/kde/Solid/PowerManagement org.kde.Solid.PowerManagement.reparseConfiguration
+	sleep 2
+	dbus-send --session --dest=org.freedesktop.PowerManagement --type=method_call --print-reply /org/kde/Solid/PowerManagement org.kde.Solid.PowerManagement.refreshStatus
+) 2> $log/err > $log/out &
+[ x$i = x${i%disable-ac-sleep.sh} ] || rm $i
+EOF
+							
 							sed -i '' -e '/^\[Seat:\*]/a\
 user-session=plasma' $POOL_MNT/usr/local/etc/lightdm/lightdm.conf
 							
 							cat >> $POOL_MNT/usr/local/etc/lightdm/lightdm-gtk-greeter.conf <<'EOF'
 [greeter]
+screensaver-timeout=3600
 theme-name = Breeze
 icon-theme-name = breeze
 font-name = Luxi Sans Bold 14
