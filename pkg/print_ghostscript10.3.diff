@@ -1,7 +1,7 @@
 --- ../ghostscript10.orig/Makefile
 +++ Makefile
 @@ -3,6 +3,7 @@ DISTVERSION=	10.01.1
- PORTREVISION=	1
+ PORTREVISION=	2
  CATEGORIES=	print
  MASTER_SITES=	https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs${DISTVERSION:S/.//g}/
 +PKGNAMESUFFIX=  ${PORTVERSION:C/\..*//}-${FLAVOR}
