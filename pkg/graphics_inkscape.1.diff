@@ -1,7 +1,7 @@
 --- ../inkscape.orig/Makefile	2023-04-20 04:47:45.381088000 +0000
 +++ ./Makefile	2023-04-20 11:15:47.827110000 +0000
 @@ -46,7 +46,7 @@
- 		${PYTHON_PKGNAMEPREFIX}CacheControl>0:www/py-cachecontrol@${PY_FLAVOR} \
+ 		${PYTHON_PKGNAMEPREFIX}cachecontrol>0:www/py-cachecontrol@${PY_FLAVOR} \
  		${PYTHON_PKGNAMEPREFIX}cssselect>0:www/py-cssselect@${PY_FLAVOR} \
  		${PYTHON_PKGNAMEPREFIX}requests>0:www/py-requests@${PY_FLAVOR} \
 -		ps2pdf:print/ghostscript9-agpl-base \

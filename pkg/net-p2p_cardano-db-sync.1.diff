@@ -1,8 +1,8 @@
 --- ../cardano-db-sync.orig/Makefile	2022-12-22 11:00:41.666107000 +0000
 +++ ./Makefile	2022-12-22 11:03:11.827848000 +0000
-@@ -15,7 +15,7 @@
- RUN_DEPENDS=	cardano-node:net-p2p/cardano-node \
- 		bash:shells/bash
+@@ -17,7 +17,7 @@ RUN_DEPENDS=	cardano-node:net-p2p/cardano-node \
+ 		bash:shells/bash \
+ 		${LOCALBASE}/share/rc-subr-jail/rc.subr.jail:ports-mgmt/rc-subr-jail
  
 -USES=		autoreconf:build cabal gmake libtool pkgconfig pgsql:14
 +USES=		autoreconf:build cabal gmake libtool pkgconfig pgsql:14+
