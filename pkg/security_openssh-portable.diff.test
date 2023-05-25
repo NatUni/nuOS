@@ -1,1 +1,0 @@
-grep -qw ^DISTVERSION=.9\\.2p1 Makefile
