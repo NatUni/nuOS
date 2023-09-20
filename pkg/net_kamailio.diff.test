@@ -1,1 +1,0 @@
-grep -qw python:3\\.5+ Makefile

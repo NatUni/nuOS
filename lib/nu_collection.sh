@@ -90,6 +90,7 @@ collection_vars_init () {
 		net/wifi-firmware-rtw88-kmod
 		net/wifi-firmware-rtw89-kmod
 		net/wifibox
+		net/ntopng
 	'
 	
 	COLL_developer='
@@ -103,15 +104,23 @@ collection_vars_init () {
 		textproc/gsed
 		devel/gmake
 		sysutils/coreutils
+		math/units
 		textproc/ydiff
 		lang/v
 		lang/expect
 		math/convertall
+		lang/go
 		lang/opensycl
+		lang/seed7
+		textproc/riffdiff
+		lang/chez-scheme
+		devel/wasmer
+		emulators/qemu
 	'
 	
 	COLL_user='
 		lite
+		textproc/moar
 		finance/ledger
 		irc/irssi
 		net-im/tut
@@ -140,17 +149,19 @@ collection_vars_init () {
 		net/mosquitto
 		mail/cyrus-imapd34
 		security/cyrus-sasl2-saslauthd
+		graphics/vips
+		net/vnstat
 		databases/postgresql15-server
 		databases/postgis33
 		databases/pg_activity
 		databases/mysql80-server
 		databases/redis
-		databases/mongodb50
+		databases/mongodb70
 		databases/cassandra4
 		databases/cayley
 		net/kafka
 		devel/zookeeper
-		lang/go
+		misc/openhab-addons
 		lang/squeak
 		lang/gravity
 		lang/crystal
@@ -167,7 +178,6 @@ collection_vars_init () {
 		sysutils/hilite
 		sysutils/py-honcho
 		lang/php82-extensions
-		graphics/pecl-imagick-im7
 		www/mod_php82
 		www/apache24
 		www/mod_qos
@@ -177,6 +187,7 @@ collection_vars_init () {
 		security/zeek
 		security/barnyard2
 		security/suricata
+		security/lego
 		www/matomo
 		www/authelia
 		net/keycloak
@@ -209,6 +220,7 @@ collection_vars_init () {
 		net-p2p/createtorrent
 		net-p2p/mktorrent
 		net-p2p/torrentcheck
+		multimedia/streamlink
 	'
 	
 	COLL_coinserver='
@@ -289,23 +301,25 @@ collection_vars_init () {
 		sysutils/qtxdg-tools
 		x11/libxdg-basedir
 		x11/xdg-desktop-portal-gtk
-		x11/xdg-desktop-portal-hyprland
+		x11/xdg-desktop-portal-hyprland@qt6
 		x11/xdg-desktop-portal-wlr
+		sysutils/qtpass
 		lang/pharo
 		net-p2p/bitcoin
 		net-p2p/litecoin
 		net-p2p/namecoin
 		x11/kitty
+		x11/rio
 		net/x11vnc
 		www/firefox
-		multimedia/mpv
+		multimedia/mpv-mpris
+		multimedia/haruna
 		java/icedtea-web
 		mail/thunderbird
 		net/quiterss
 		multimedia/vlc
 		multimedia/obs-studio
 		multimedia/wlrobs
-		multimedia/obs-qtwebkit
 		multimedia/shotcut
 		audio/qtractor
 		audio/pt2-clone
@@ -315,7 +329,6 @@ collection_vars_init () {
 		audio/zrythm
 		graphics/blender
 		cad/opencascade
-		games/sgt-puzzles
 		games/sdlpop
 		games/openarena
 		games/openrct2

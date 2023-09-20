@@ -1,1 +1,1 @@
-! grep -q ^LIBUNWIND_ Makefile
+! grep -q ^post-stage-DOCS-on: Makefile

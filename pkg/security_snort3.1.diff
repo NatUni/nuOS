@@ -1,31 +1,6 @@
---- ../snort3.orig/Makefile	2022-09-18 18:20:02.390353000 +0000
-+++ ./Makefile	2022-09-18 18:08:21.450726000 +0000
-@@ -32,7 +32,7 @@
- CONFLICTS=	snort-2*
- 
- OPTIONS_DEFINE=		ADDRESSSANITIZER DEBUG DOCS FLATBUFFERS HYPERSCAN \
--			LARGEPCAP PIE STATICDAQ THREADSANITIZER TSC
-+			LARGEPCAP LIBUNWIND PIE STATICDAQ THREADSANITIZER TSC
- OPTIONS_DEFAULT=	STATICDAQ
- OPTIONS_DEFAULT_amd64=	HYPERSCAN
- OPTIONS_SUB=		yes
-@@ -41,6 +41,7 @@
- FLATBUFFERS_DESC=	Enable flatbuffers support
- HYPERSCAN_DESC=		Enable high-performance regular expression lib
- LARGEPCAP_DESC=		Enable support for pcaps larger than 2 GB
-+LIBUNWIND_DESC=		Print stack trace in case of crash
- PIE_DESC=		Enable PIE (Broken)
- STATICDAQ_DESC=		Link static DAQ modules
- THREADSANITIZER_DESC=	Enable thread sanitizer
-@@ -53,12 +54,16 @@
- HYPERSCAN_LIB_DEPENDS=		libhs.so:devel/hyperscan
- HYPERSCAN_PLIST_SUB=		HYPERSCAN=""
- HYPERSCAN_PLIST_SUB_OFF=	HYPERSCAN="@comment "
-+LIBUNWIND_LIB_DEPENDS=		libunwind.so:devel/libunwind
-+LIBUNWIND_CMAKE_BOOL=		ENABLE_LIBUNWIND
- LARGEPCAP_CMAKE_BOOL=		ENABLE_LARGE_PCAP
- PIE_CMAKE_BOOL=			ENABLE_PIE
- STATICDAQ_CMAKE_BOOL=		ENABLE_STATIC_DAQ
+--- ../snort3.orig/Makefile	2023-07-19 12:03:36.000000000 +0000
++++ ./Makefile	2023-07-30 19:00:00.000000000 +0000
+@@ -62,6 +62,8 @@
  THREADSANITIZER_CMAKE_BOOL=	ENABLE_THREAD_SANITIZER
  TSC_CMAKE_BOOL=			ENABLE_TSC_CLOCK
  
@@ -34,7 +9,7 @@
  .include <bsd.port.options.mk>
  
  .if ${OPSYS} == FreeBSD && ${OSVERSION} < 1300000
-@@ -68,5 +73,8 @@
+@@ -71,5 +73,8 @@
  post-patch:
  	${REINPLACE_CMD} -e 's|_LIBDIR}/pkgconfig|_PREFIX}/libdata/pkgconfig|g' \
  		${WRKSRC}/cmake/create_pkg_config.cmake

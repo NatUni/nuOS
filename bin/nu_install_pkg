@@ -123,11 +123,45 @@ for port in `grep / "$deps"`; do
 					new_flavor=`cat "$metainfo_dir/$uni.newflavor"`
 				fi
 				[ -n "${OPT_NOCLEAN_BEFORE-}" ] || make ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} -DNOCLEANDEPENDS clean
-				[ -n "${OPT_NOBUILD-}" ] || env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS package
+				if [ -z "${OPT_NOBUILD-}" ]; then
+					if [ -f "${CHROOTDIR-}$db/$port_/dependencies/extract_to_build" ]; then
+						for x2b in `cat "${CHROOTDIR-}$db/$port_/dependencies/extract_to_build"`; do
+							(
+								flavor=
+								case $x2b in
+									*@*)
+										flavor=${x2b##*@}
+									;;
+								esac
+								cd /usr/ports/${x2b%%@*}
+								make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} -DBATCH -DNO_DEPENDS extract
+							)
+						done
+					fi
+					env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS package
+				fi
 				if canhas ${old_pkg-}; then
 					lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS deinstall
 				fi
-				[ -n "${OPT_NOBUILD-}" ] || lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS ${old_pkg:+re}install
+				if [ -z "${OPT_NOBUILD-}" ]; then
+					lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS ${old_pkg:+re}install
+					if [ -f "${CHROOTDIR-}$db/$port_/dependencies/extract_to_build" ]; then
+						for x2b in `cat "${CHROOTDIR-}$db/$port_/dependencies/extract_to_build"`; do
+							(
+								flavor=
+								case $x2b in
+									*@*)
+										flavor=${x2b##*@}
+									;;
+								esac
+								cd /usr/ports/${x2b%%@*}
+								if [ -z "`find work -type f -name '.*_done.*' | grep -E '^work/\.[[:alnum:]_]+_done\.' | grep -v '^work/\.extract_done\.'`"]; then
+									make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} -DBATCH -DNO_DEPENDS clean
+								fi
+							)
+						done
+					fi
+				fi
 				[ -n "${OPT_NOCLEAN_AFTER-}" ] || make ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} -DNOCLEANDEPENDS clean
 			)
 			[ ports-mgmt/pkg != $port ] || pkg_suffix_init -i

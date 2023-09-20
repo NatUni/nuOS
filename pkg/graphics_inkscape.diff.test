@@ -1,1 +1,0 @@
-grep -qw ghostscript9-agpl-base Makefile
