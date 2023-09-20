@@ -16,9 +16,10 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts Dfi:kNo:OpPRSt:rxv OPT; do case $OPT in
+while getopts DfFi:kNo:OpPRSt:rxv OPT; do case $OPT in
 	D) OPT_DEBUG=y;;
 	f) OPT_FILENAME=y;;
+	F) OPT_NOFLAVORS=y;;
 	i) INPUT=$OPTARG;;
 	k) OPT_KEEP=y;;
 	N) OPT_NORMALIZE=y;;
@@ -180,7 +181,7 @@ main () {
 					*) flavor=
 				esac
 				underscore port
-				makeargs="$metainfo_dir/$port_.makeargs"
+				makeargs="$metainfo_dir/${port_%@*}.makeargs"
 				
 				cd "/usr/ports/${port%@*}"
 
@@ -195,13 +196,14 @@ main () {
 					`cat "$makeargs" 2>/dev/null` \
 					-D BATCH \
 					-v 'PKGNAME:C/^.*://:S/^/n:/' \
-					-v 'LIB_DEPENDS:C/^.*://:C/^./l:&/' \
-					-v 'RUN_DEPENDS:C/^.*://:C/^./r:&/' \
-					-v 'BUILD_DEPENDS:C/^.*://:C/^./b:&/' \
-					-v 'FETCH_DEPENDS:C/^.*://:C/^./f:&/' \
-					-v 'EXTRACT_DEPENDS:C/^.*://:C/^./x:&/' \
-					-v 'PATCH_DEPENDS:C/^.*://:C/^./p:&/' \
+					-v 'LIB_DEPENDS:S/:/%/:C/^.*%//:C/^./l:&/' \
+					-v 'RUN_DEPENDS:S/:/%/:C/^.*%//:C/^./r:&/' \
+					-v 'BUILD_DEPENDS:S/:/%/:C/^.*%//:C/^./b:&/' \
+					-v 'FETCH_DEPENDS:S/:/%/:C/^.*%//:C/^./g:&/' \
+					-v 'EXTRACT_DEPENDS:S/:/%/:C/^.*%//:C/^./x:&/' \
+					-v 'PATCH_DEPENDS:S/:/%/:C/^.*%//:C/^./p:&/' \
 					-v '${SLAVE_PORT:N[nN][oO]:C/.+/${MASTERDIR}/:tA:C+^/usr/ports/+m:+}' \
+					${get_flavors:+-v 'FLAVOR:C/^./F:&/' -v 'FLAVORS:C/^./f:&/'} \
 					${get_options:+-v '${COMPLETE_OPTIONS_LIST:D${COMPLETE_OPTIONS_LIST:C/^./o:&/} ${PORT_OPTIONS:M*:C/^./s:&/}}'} \
 						| xargs -n 1 >| "$scratch_dir/$port_.port_data"
 				
@@ -237,10 +239,16 @@ main () {
 						grep ^s: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.my_opts"
 					fi
 				fi
+				if srsly ${get_flavors-}; then
+					grep ^F: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.flavor"
+					grep ^f: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.flavors"
+					head -n 1 "$scratch_dir/$port_.flavors" >| "$scratch_dir/$port_.default_flavor"
+				fi
 				grep ^l: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.lib_deps"
 				grep ^r: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.run_deps"
-				grep ^b: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.build_deps"
-				grep ^f: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.fetch_deps"
+				grep ^b: "$scratch_dir/$port_.port_data" | grep -v ':extract$' | cut -d : -f 2 >| "$scratch_dir/$port_.build_deps"
+				grep ^b: "$scratch_dir/$port_.port_data" | grep ':extract$' | cut -d : -f 2 >| "$scratch_dir/$port_.extract_to_build_deps"
+				grep ^g: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.fetch_deps"
 				grep ^x: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.extract_deps"
 				grep ^p: "$scratch_dir/$port_.port_data" | cut -d : -f 2 >| "$scratch_dir/$port_.patch_deps"
 				if ! srsly "${OPT_NOSLAVE-}"; then
@@ -257,7 +265,7 @@ main () {
 				sets_sym_diff buildonly_deps "$scratch_dir/$port_.all_deps" "$scratch_dir/$port_.use_deps"
 				mv "$buildonly_deps" "$scratch_dir/$port_.buildonly_deps"
 
-				for action in lib run build fetch extract patch all use buildonly; do
+				for action in lib run build extract_to_build fetch extract patch all use buildonly; do
 					if [ -s "$scratch_dir/$port_.${action}_deps" ]; then
 						cat "$scratch_dir/$port_.${action}_deps" > "$work_dir/$port_/dependencies/$action"
 						for dep in `cat "$scratch_dir/$port_.${action}_deps"`; do
@@ -293,6 +301,19 @@ main () {
 						done
 						eko $port >> "$work_dir/$master_/slaves"
 						srsly ${OPT_SERIAL-} || rmdir "$scratch_dir/$master_.slaves.lock"
+					fi
+				fi
+				if srsly ${get_flavors-}; then
+					if [ -s "$scratch_dir/$port_.flavors" ]; then
+						cp "$scratch_dir/$port_.flavors" "$work_dir/$port_/flavors"
+						cp "$scratch_dir/$port_.default_flavor" "$work_dir/$port_/default_flavor"
+					fi
+					if [ -s "$scratch_dir/$port_.flavor" ]; then
+						if diff -q "$scratch_dir/$port_.flavor" "$scratch_dir/$port_.default_flavor" > /dev/null; then
+							ln -s default_flavor "$work_dir/$port_/flavor"
+						else
+							cp "$scratch_dir/$port_.flavor" "$work_dir/$port_/flavor"
+						fi
 					fi
 				fi
 				if srsly ${get_options-}; then
@@ -367,6 +388,7 @@ prepare_make_conf make_conf retire_make_conf_cmd
 
 srsly ${OPT_SERIAL-} || require_tmp -d coord_dir
 srsly ${OPT_NOOPTIONS-} || get_options=y
+srsly ${OPT_NOFLAVORS-} || get_flavors=y
 require_tmp -d scratch_dir
 ports_tag > "$work_dir/tag"
 
@@ -388,7 +410,7 @@ if [ -n "${out_dir-}" ]; then
 		done
 		cd "$OLDPWD"
 	fi
-	cp -r "$work_dir"/* "$out_dir/"
+	cp -R "$work_dir"/* "$out_dir/"
 fi
 retire_tmp ${OPT_KEEP:+-k} work_dir
 retire_tmp ${OPT_KEEP:+-k} scratch_dir

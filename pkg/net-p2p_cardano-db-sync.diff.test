@@ -1,1 +1,0 @@
-grep -q ':14$' Makefile

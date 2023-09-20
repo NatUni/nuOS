@@ -1,0 +1,14 @@
+--- /dev/null	2023-08-06 22:30:28.848583000 -0400
++++ files/patch-python_wscript	2023-08-06 22:29:18.623160000 -0400
+@@ -0,0 +1,11 @@
++--- python/wscript.orig	2023-08-06 22:27:38.880181000 -0400
+++++ python/wscript	2023-08-06 22:28:17.202153000 -0400
++@@ -17,6 +17,8 @@
++ 
++ def find_third_party_module(conf, module, package, required=True):
++     conf.COMPOUND_START("Checking for system installation of Python module %s" % module)
+++    if module == 'dns':
+++        return True
++     try:
++         __import__(module)
++     except ImportError:
