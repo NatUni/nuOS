@@ -1,0 +1,1 @@
+grep -qw guile:2.2,3.0,conflicts Makefile
