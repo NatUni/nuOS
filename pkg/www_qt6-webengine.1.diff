@@ -8,4 +8,4 @@
 +	nodejs:build pkgconfig python:build qt-dist:6,webengine xorg
  USE_GL=		gl
  USE_GNOME=	glib20 libxml2 libxslt
- USE_QT=		base declarative:run positioning quick3d:build webchannel
+ USE_QT=		base declarative:run positioning quick3d:build tools webchannel
