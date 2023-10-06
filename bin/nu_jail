@@ -170,7 +170,7 @@ for j in `ls "$jail_dir"`; do
 	if [ $j != $JAIL_NAME ]; then
 		get_host_ent ${CHROOTDIR:+-C "$CHROOTDIR"} -f $j.jail >> "$jail_dir/$JAIL_NAME/etc/hosts" \
 			&& add_our_jail_to_hostfile "$jail_dir/$j/etc/hosts" \
-			|| echo "WARNING: skipping jail $j on pool because it is unknown to the host system" >&2
+			|| echo "NOTICE: skipping jail $j on pool because it is unknown to the host system" >&2
 	fi
 done
 
