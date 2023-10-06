@@ -290,3 +290,5 @@ service jail restart www
 
 # nu_pgsql -n -s -h $INFRA_HOST_lc
 # nu_ftp -s -h $INFRA_HOST_lc
+
+eko "Genesis for nuOS user site $INFRA_HOST complete"
