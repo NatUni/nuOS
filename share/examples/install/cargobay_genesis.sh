@@ -132,7 +132,7 @@ for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
 	done
 done
 
-for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
+for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -v $inf
 	(cd /etc/ssl
 		for z in $client_zones_lc; do
 			tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/postmaster/etc/ssl/
@@ -148,14 +148,14 @@ for inf in $INFRA_HOST $guest_infras; do set_infra_metadata $inf
 	for m in $init_emails; do
 		grep -w "^${m#'*'}" /var/jail/postmaster/usr/local/etc/postfix/virtual || nu_user_mail -C /var/jail/postmaster -h $INFRA_DOMAIN_lc -u $OWNER_ACCT -m $m
 	done
-	if [ -f /root/nuos_deliverance/pm/virtual ]; then
-		cat /var/jail/postmaster/usr/local/etc/postfix/virtual /root/nuos_deliverance/pm/virtual | grep -v '^#' | cut -wf1 | sort | uniq -u | grep -Ev '^(operator|security|hostmaster|postmaster|webmaster|whois-data)@' | while read -r m; do
-			re_pattern -n m
-			grep -w "^$m_re" /root/nuos_deliverance/pm/virtual
-		done >> /var/jail/postmaster/usr/local/etc/postfix/virtual
-		postmap /var/jail/postmaster/usr/local/etc/postfix/virtual
-	fi
 done
+if [ -f /root/nuos_deliverance/pm/virtual ]; then
+	cat /var/jail/postmaster/usr/local/etc/postfix/virtual /root/nuos_deliverance/pm/virtual | grep -v '^#' | cut -wf1 | sort | uniq -u | grep -Ev '^(operator|security|hostmaster|postmaster|webmaster|whois-data)@' | while read -r m; do
+		re_pattern -n m
+		grep -w "^$m_re" /root/nuos_deliverance/pm/virtual || true
+	done >> /var/jail/postmaster/usr/local/etc/postfix/virtual
+	postmap /var/jail/postmaster/usr/local/etc/postfix/virtual
+fi
 
 ADMIN_USER=`pw usershow -u 1001 | cut -d : -f 1`
 if [ ! -d /var/jail/www ]; then
