@@ -1,1 +1,0 @@
-! grep -qw array files/patch-src_wcm.hpp 2> /dev/null
