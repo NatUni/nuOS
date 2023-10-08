@@ -104,7 +104,6 @@ opt-verify
 cipher $CIPHER
 auth $MSG_AUTH
 prng $PRNG_ALG $NONCE_LENGTH
-compress lz4
 user nobody
 group nobody
 persist-key
