@@ -117,7 +117,7 @@ sister nu_sys -s $SWAP_SIZE -p $OUTPUT_POOL_NAME -u '' -b '' -h $NEW_HOST -c $PK
 [ ${KEEP_ONLINE-0} -ge 1 ] || zfs snapshot $POOL_NAME/img/$OUTPUT_POOL_NAME@birth
 
 if canhas "${DD_IMG-}"; then
-	[ -f "$DD_IMG" ] || dd if=/dev/zvol/$POOL_NAME/img/$OUTPUT_POOL_NAME of="$DD_IMG" bs=128K conv=sync,sparse status=progress
+	[ -f "$DD_IMG" ] || dd if=/dev/zvol/$POOL_NAME/img/$OUTPUT_POOL_NAME of="$DD_IMG" ibs=128K iflag=fullblock obs=128K conv=sparse,osync status=progress
 	chmod -w "$DD_IMG"
 	if srsly ${OPT_COMPRESS_DD-}; then
 		[ -f "$DD_IMG.xz" ] || xz -v -k -T0 "$DD_IMG"
