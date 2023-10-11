@@ -57,6 +57,8 @@ EOF
 
 sed -i '' -Ee "
 	/^server:/,/^[[:graph:]]/{
+		/^server:/a\\
+	local-zone: \"local.\" always_nxdomain
 		/^[[:blank:]]*#[[:blank:]]*interface:/,/^[[:blank:]]*\$/{
 			/^[[:blank:]]*\$/i\\
 	interface: $LISTEN
