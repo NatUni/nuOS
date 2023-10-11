@@ -248,6 +248,8 @@ collection_vars_init () {
 		sysutils/vmdktool
 		graphics/povray-meta
 		graphics/graphviz
+		www/redmine50
+		www/rubygem-passenger
 		x11-fonts/webfonts
 		net/kamailio
 		net-im/jitsi-videobridge
