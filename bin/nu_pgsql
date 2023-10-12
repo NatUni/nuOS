@@ -16,16 +16,19 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts C:h:nsv OPT; do case $OPT in
+while getopts C:h:j:nsv OPT; do case $OPT in
 	C) CHROOTDIR=$OPTARG;;
 	h) HOST_NAME=$OPTARG;;
+	j) JAIL_NAME=$OPTARG;;
 	n) OPT_NETWORK=y;;
 	s) OPT_SSL=y;;
 	v) OPT_VERBOSE=y;;
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
-[ -z "${CHROOTDIR-}" ] || exit 43 # initdb requires the system up so CHROOTDIR is unsupported, though we want to remedy this some day so most of the code is still written with support
+[ -z "${CHROOTDIR-}" ] || exit 43 # initdb requires the system up so CHROOTDIR is unsupported
+
+[ -z "${JAIL_NAME-}" ] || CHROOTDIR=/var/jail/$JAIL_NAME
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
@@ -38,7 +41,7 @@ echo
 
 maybe_yell
 
-: ${SHORT_VER:=12} # currently supporting PostgreSQL 12.3
+: ${SHORT_VER:=15} # currently supporting PostgreSQL 15.4
 
 pghome=`${CHROOTDIR:+chroot "$CHROOTDIR"} pw usershow postgres | cut -d : -f 9`
 [ -e "${CHROOTDIR-}$pghome" ]
@@ -51,7 +54,9 @@ sister enable_svc ${CHROOTDIR:+-C "$CHROOTDIR"} postgresql
 echo 'postgresql_initdb_flags="-E utf-8 --lc-collate=C -A md5 -W"' >> "${CHROOTDIR-}/etc/rc.conf.d/postgresql"
 
 rand_token=`sister nu_randpw`
-${CHROOTDIR:+chroot "$CHROOTDIR"} expect -n -c '
+
+# will need to refine in order to simultaneously support CHROOTDIR with JAIL_NAME
+${JAIL_NAME:+jexec "$JAIL_NAME"} expect -n -c '
 	set timeout -1
 	expect_user "*\n"
 	set pw $expect_out(0,string)
@@ -69,14 +74,14 @@ EOF
 (umask 77 && cat > "${CHROOTDIR-}$pghome/.pgpass") <<EOF
 localhost:*:*:postgres:$rand_token
 EOF
-chown postgres:postgres "${CHROOTDIR-}$pghome/.pgpass"
+${CHROOTDIR:+chroot "$CHROOTDIR"} chown postgres:postgres "$pghome/.pgpass"
 
 if [ -n "${OPT_NETWORK-}" ]; then
 	cat >> "$pg/postgresql.conf" <<'EOF'
 listen_addresses = '*'
 EOF
 	if [ -n "${OPT_SSL-}" ]; then
-		SSL="${CHROOTDIR-}/etc/ssl"
+		SSL="/etc/ssl" # will need to modify this path in order to support CHROOTDIR
 		mkdir "$pg/ssl"
 		${CHROOTDIR:+chroot "$CHROOTDIR"} chown postgres $pg_/ssl
 		(umask 77 && mkdir "$pg/ssl/private")

@@ -18,7 +18,7 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts a:b:C:dfh:H:i:I:j:mo:p:P:qs:S:t:T:u:vwx OPT; do case $OPT in
+while getopts a:b:C:dfh:H:i:I:j:mMo:p:P:qs:S:t:T:u:vwx OPT; do case $OPT in
 	a) ADMIN_ACCT=$OPTARG;;
 	b) BD_ACCT=$OPTARG;;
 	C) CHROOTDIR=$OPTARG;;
@@ -30,6 +30,7 @@ while getopts a:b:C:dfh:H:i:I:j:mo:p:P:qs:S:t:T:u:vwx OPT; do case $OPT in
 	I) INTERFACE=$OPTARG;;
 	j) JAIL_NAME=$OPTARG;;
 	m) OPT_MOUNT_FSTAB=y;;
+	M) OPT_SYSVIPC=y;;
 	o) JAIL_OS=$OPTARG;;
 	p) POOL_NAME=$OPTARG;;
 	P) PUBLIC_INTERFACE=$OPTARG;;
@@ -189,6 +190,14 @@ if [ -n "${OPT_MOUNT_FSTAB-}" ]; then
 	touch "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_"
 	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
 	mount.fstab = "/etc/fstab.$JAIL_NAME_";
+EOF
+fi
+
+if [ -n "${OPT_SYSVIPC-}" ]; then
+	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
+	sysvmsg = "new";
+	sysvsem = "new";
+	sysvshm = "new";
 EOF
 fi
 

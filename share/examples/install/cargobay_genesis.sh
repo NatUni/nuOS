@@ -157,6 +157,11 @@ if [ -f /root/nuos_deliverance/pm/virtual ]; then
 	postmap /var/jail/postmaster/usr/local/etc/postfix/virtual
 fi
 
+init_jail pgsql-pre
+service jail start pgsql
+init_jail pgsql-post
+service jail restart pgsql
+
 ADMIN_USER=`pw usershow -u 1001 | cut -d : -f 1`
 if [ ! -d /var/jail/www ]; then
 	nu_jail -t vnet -m -S $my_ip_1:http -S $my_ip_2:http -S $my_ip_1:https -S $my_ip_2:https -j www -x ${ADMIN_USER:+-u $ADMIN_USER} -q
@@ -288,7 +293,6 @@ done
 
 service jail restart www
 
-# nu_pgsql -n -s -h $INFRA_HOST_lc
 # nu_ftp -s -h $INFRA_HOST_lc
 
 eko "Genesis for nuOS user site $INFRA_HOST complete"
