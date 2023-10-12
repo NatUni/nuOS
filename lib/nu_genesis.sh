@@ -320,6 +320,17 @@ init_jail () {
 					sysrc -f /etc/rc.conf.d/jail jail_list+=ns
 				fi
 			;;
+			pgsql-pre)
+				if [ ! -d /var/jail/pgsql ]; then
+					nu_jail -q -x -M -t vnet -H postgresql -T =::postgresql -j pgsql
+					sysrc -f /etc/rc.conf.d/jail jail_list+=pgsql
+				fi
+			;;
+			pgsql-post)
+				if [ ! -f /var/jail/pgsql/etc/rc.conf.d/postgresql ]; then
+					nu_pgsql -j pgsql -n -s -h $INFRA_HOST_lc
+				fi
+			;;
 		esac
 	done
 }
