@@ -39,7 +39,7 @@ esac; done; shift $(($OPTIND-1))
 nuos_init
 nuos_ssl_init
 
-: ${PRIVATE_NET:=172.`seq 16 31 | sort -R | head -n 1`.0.0}
+: ${PRIVATE_NET:=172.`seq 17 30 | sort -R | head -n 1`.0.0}
 case $PRIVATE_NET in
 	*/*)
 		mask_bits=${PRIVATE_NET##*/}
