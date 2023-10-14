@@ -57,6 +57,7 @@ echo -n 'immutable dir   -i OPT_IMMUTABLE   ' && [ -n "${OPT_IMMUTABLE-}" ] && e
 echo -n 'cgi execution   -e OPT_CGI_EXEC    ' && [ -n "${OPT_CGI_EXEC-}" ] && echo set || echo null
 if [ -n "${OPT_CGI_EXEC-}" ]; then
 	echo 'cgi dir            CGI_DIR        ' "${CGI_DIR:=cgi-bin}"
+	: ${CGI_LOC:=$CGI_DIR}
 fi
 echo -n 'pubkey pinning  -k OPT_HPKP        ' && [ -n "${OPT_HPKP-}" ] && echo set || echo null
 if [ -n "${OPT_HPKP-}" ]; then
@@ -302,7 +303,7 @@ ${h2:+	Protocols h2${no_ssl:+c} http/1.1
 		Options -Indexes
 		Header onsuccess set Cache-Control "max-age=31536000, immutable"
 	</Location>
-}${OPT_CGI_EXEC:+	ScriptAlias "/cgi-bin/" "$SITE_DIR/$CGI_DIR/"
+}${OPT_CGI_EXEC:+	ScriptAlias "/$CGI_LOC/" "$SITE_DIR/$CGI_DIR/"
 	<Directory "$SITE_DIR/$CGI_DIR">
 		AllowOverride None
 		Options ExecCGI
