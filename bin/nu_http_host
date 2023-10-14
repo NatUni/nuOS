@@ -16,7 +16,7 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts aC:efgGh:Hikp:Pr:su:vW OPT; do case $OPT in
+while getopts aC:efgGh:Hikp:Pr:su:UvW OPT; do case $OPT in
 	a) OPT_APP_HARD=y;;
 	C) CHROOTDIR=$OPTARG;;
 	e) OPT_CGI_EXEC=y;;
@@ -33,6 +33,7 @@ while getopts aC:efgGh:Hikp:Pr:su:vW OPT; do case $OPT in
 	r) REDIRECT_TO=$OPTARG;;
 	s) [ -n "${OPT_SSL-}" ] && { [ -n "${OPT_HSTS-}" ] && { [ -n "${OPT_HSTSSUBDOM-}" ] && OPT_HSTSPRELOAD=y || OPT_HSTSSUBDOM=y; } || OPT_HSTS=y; } || OPT_SSL=y;;
 	u) USER_NAME=$OPTARG;;
+	U) OPT_NO_USER=y;;
 	v) OPT_VERBOSE=y;;
 	W) OPT_NO_WEBSOCKET=y;;
 esac; done; shift $(($OPTIND-1))
@@ -41,6 +42,8 @@ esac; done; shift $(($OPTIND-1))
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
 nuos_init
+
+[ -z "${OPT_NO_USER-}" ] || USER_NAME=nobody
 
 echo 'host name       -h HOST_NAME      ' ${HOST_NAME:=$HOST}
 echo 'user name       -u USER_NAME      ' ${USER_NAME:=$(pw -V "${CHROOTDIR-}/etc" usershow $((`pw -V "${CHROOTDIR-}/etc" usernext | cut -d : -f 1`-1)) | cut -d : -f 1)}
