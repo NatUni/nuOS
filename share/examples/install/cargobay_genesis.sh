@@ -291,6 +291,87 @@ EOF
 	done
 done
 
+if [ ! -d /var/jail/redmine ]; then
+	nu_jail -t vnet -m -x -u rm5 -j redmine -q
+	
+	if srsly ${GENESIS_DROP_REDMINE_DB-}; then
+		# i dont yet know that this works as it should
+		jexec pgsql su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<'EOF'
+DO
+$$BEGIN
+IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'redmine') THEN
+ EXECUTE 'REVOKE ALL ON SCHEMA public FROM redmine';
+END IF;
+END$$;
+DROP DATABASE IF EXISTS redmine;
+DROP ROLE IF EXISTS redmine;
+EOF
+	fi
+	
+	rm_pw=`nu_randpw`
+	jexec pgsql su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<EOF
+CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD '$rm_pw' NOINHERIT VALID UNTIL 'infinity';
+CREATE DATABASE redmine WITH ENCODING='UTF8' OWNER=redmine;
+\c redmine;
+GRANT ALL ON SCHEMA public TO redmine;
+EOF
+
+	sed -e '/^#/!{/\<redmine\>/d;}' /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf | sed -e '${/^$/d;}' > /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new
+	cat >> /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new <<EOF
+
+host	redmine		 redmine		 `getent hosts redmine.jail | head -n 1 | cut -w -f 1`/32		  md5
+EOF
+	mv /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf
+	
+	jexec pgsql su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<'EOF'
+SELECT pg_reload_conf();
+EOF
+	
+	nu_http -C /var/jail/redmine -IIII
+	echo /var/jail/postmaster/var/spool/postfix/maildrop /var/jail/redmine/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.redmine
+	
+	pkg info -Do www/rubygem-passenger | sed -ne '/add these lines:/,/^[[:graph:]]/{/^[[:space:]]/p;}' | sed -e 's/^[[:space:]]*//' > `echo /var/jail/redmine/usr/local/etc/apache*/Includes`/passenger.conf
+	mkdir /var/jail/redmine/home/rm5/redmine.jail
+	cp -a /usr/local/www/redmine /var/jail/redmine/home/rm5/redmine.jail/www
+	
+	:>| /var/jail/redmine/home/rm5/redmine.jail/www/config/database.yml
+	chmod 640 /var/jail/redmine/home/rm5/redmine.jail/www/config/database.yml
+	cat >| /var/jail/redmine/home/rm5/redmine.jail/www/config/database.yml <<EOF
+production:
+  adapter: postgresql
+  database: redmine
+  host: `getent hosts pgsql.jail | head -n 1 | cut -w -f 1`
+  username: redmine
+  password: "$rm_pw"
+EOF
+	
+	:>| /var/jail/redmine/home/rm5/redmine.jail/www/config/secrets.yml
+	chmod 640 /var/jail/redmine/home/rm5/redmine.jail/www/config/secrets.yml
+	# format the value of secret_key_base the same as `rake secret`
+	cat >| /var/jail/redmine/home/rm5/redmine.jail/www/config/secrets.yml <<EOF
+production:
+  secret_key_base: `head -c 64 /dev/random | od -v -h | head -n 4 | cut -w -f 2- | tr -dc [[:alnum:]]`
+EOF
+	
+	# could harden this:
+	chown -R `stat -f %u:%g /var/jail/redmine/home/rm5` /var/jail/redmine/home/rm5/redmine.jail
+	
+	service jail start redmine
+	
+	if jexec redmine su -l rm5 -c 'set -eCu; cd redmine.jail/www; bundle update --local; rake db:migrate RAILS_ENV=production'; then
+		nu_http_host -C /var/jail/redmine -x -d /home/rm5/redmine.jail/www/public -h redmine.jail
+		# maybe soon:
+		# echo PassengerUser www > `echo /var/jail/redmine/usr/local/etc/apache*/Includes`/VirtualHost.custom/redmine.jail.conf
+		
+		# probably want to reset Redmine admin password here; default is: admin/admin
+		
+		sysrc -f /etc/rc.conf.d/jail jail_list+=redmine
+		service jail restart redmine
+	else
+		warn "Redmine could use some help."
+	fi
+fi
+
 service jail restart www
 
 # nu_ftp -s -h $INFRA_HOST_lc
