@@ -16,9 +16,10 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts aC:efgGh:Hikp:Pr:su:UvW OPT; do case $OPT in
+while getopts aC:d:efgGh:Hikp:Pr:sS:u:U:vWx OPT; do case $OPT in
 	a) OPT_APP_HARD=y;;
 	C) CHROOTDIR=$OPTARG;;
+	d) DOC_ROOT=$OPTARG;;
 	e) OPT_CGI_EXEC=y;;
 	f) OPT_HPKP_FORCE=y;;
 	g) OPT_GZIP=y;;
@@ -32,10 +33,12 @@ while getopts aC:efgGh:Hikp:Pr:su:UvW OPT; do case $OPT in
 	P) OPT_PRETTY_HTML=y;;
 	r) REDIRECT_TO=$OPTARG;;
 	s) [ -n "${OPT_SSL-}" ] && { [ -n "${OPT_HSTS-}" ] && { [ -n "${OPT_HSTSSUBDOM-}" ] && OPT_HSTSPRELOAD=y || OPT_HSTSSUBDOM=y; } || OPT_HSTS=y; } || OPT_SSL=y;;
+	S) SITE_DIR=$OPTARG;;
 	u) USER_NAME=$OPTARG;;
-	U) OPT_NO_USER=y;;
+	U) USER_HOME=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 	W) OPT_NO_WEBSOCKET=y;;
+	x) OPT_NO_USER=y;;
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
@@ -199,8 +202,10 @@ mkdir -p "${CHROOTDIR-}/var/log/httpd-vhost"
 [ ! -e "${CHROOTDIR-}/usr/local/etc/$service/Includes/$HOST_NAME.conf" ]
 
 if [ nobody != "$USER_NAME" -a -z "${REDIRECT_TO-}" ]; then
-	user_home=`pw -V "${CHROOTDIR-}/etc" usershow $USER_NAME | cut -d : -f 9`
-	${CHROOTDIR:+chroot "$CHROOTDIR"} su -m $USER_NAME -c "mkdir -p \"$user_home/$HOST_NAME/www/public${OPT_IMMUTABLE:+/$IMMUTABLE_DIR}\"${OPT_CGI_EXEC:+ \"$user_home/$HOST_NAME/www/$CGI_DIR\"}"
+	: ${USER_HOME:=`pw -V "${CHROOTDIR-}/etc" usershow "$USER_NAME" | cut -d : -f 9`}
+	: ${SITE_DIR:="$USER_HOME/$HOST_NAME/www"}
+	: ${DOC_ROOT:="$SITE_DIR/public"}
+	${CHROOTDIR:+chroot "$CHROOTDIR"} su -m "$USER_NAME" -c "mkdir -p \"$DOC_ROOT${OPT_IMMUTABLE:+/$IMMUTABLE_DIR}\"${OPT_CGI_EXEC:+ \"$SITE_DIR/$CGI_DIR\"}"
 fi
 
 if [ -n "${OPT_SSL-}" ]; then
@@ -265,7 +270,7 @@ cat > "${CHROOTDIR-}/usr/local/etc/$service/Includes/$HOST_NAME.conf" <<EOF
 ${self:+<VirtualHost ${OPT_SSL:+_default_:443}${no_ssl:+*:80}>
 	ServerName $HOST_NAME${OPT_SSL:+:443}
 	ServerAdmin webmaster@$HOST_NAME
-${user_home:+	DocumentRoot "$user_home/$HOST_NAME/www/public"
+${DOC_ROOT:+	DocumentRoot "$DOC_ROOT"
 }	${loose_app_security:+#}Header always setifempty Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'"
 	${loose_app_security:+#}Header always setifempty X-Frame-Options SAMEORIGIN
 	${loose_app_security:+#}Header always setifempty X-XSS-Protection "1; mode=block"
@@ -297,8 +302,8 @@ ${h2:+	Protocols h2${no_ssl:+c} http/1.1
 		Options -Indexes
 		Header onsuccess set Cache-Control "max-age=31536000, immutable"
 	</Location>
-}${OPT_CGI_EXEC:+	ScriptAlias "/cgi-bin/" "$user_home/$HOST_NAME/www/$CGI_DIR/"
-	<Directory "$user_home/$HOST_NAME/www/$CGI_DIR">
+}${OPT_CGI_EXEC:+	ScriptAlias "/cgi-bin/" "$SITE_DIR/$CGI_DIR/"
+	<Directory "$SITE_DIR/$CGI_DIR">
 		AllowOverride None
 		Options ExecCGI
 		SetHandler cgi-script
@@ -354,7 +359,7 @@ ${OPT_SSL:+	ServerAlias www.$HOST_NAME
 ${h2:+	Protocols h2c http/1.1
 }	Redirect permanent / ${REDIRECT_TO:+${REDIRECT_TO%/}/}${self:+http${OPT_SSL:+s}://$HOST_NAME/}
 </VirtualHost>${self:+
-${user_home:+<Directory "$user_home/$HOST_NAME/www/public">
+${DOC_ROOT:+<Directory "$DOC_ROOT">
 	Options Indexes FollowSymLinks
 	AllowOverride None
 	Require all granted
