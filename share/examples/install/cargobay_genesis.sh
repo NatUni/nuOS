@@ -173,7 +173,7 @@ for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
 	for z in $zones_lc; do
 		[ -f /var/jail/www/etc/ssl/certs/$z.crt -a ! /etc/ssl/certs/$z.crt -nt /var/jail/www/etc/ssl/certs/$z.crt ] || (cd /etc/ssl && tar -cf - certs/$z.ca.crt certs/$z.crt csrs.next/$z.csr csrs/$z.csr private/$z.key | tar -xvf - -C /var/jail/www/etc/ssl/)
 		http_host_extra_flags=`get_domains | match_names $z | extract_flags`
-		[ -f /var/jail/www/usr/local/etc/apache*/Includes/$z.conf ] || nu_http_host -C /var/jail/www -a -kkf -G -P -i $http_host_extra_flags -u ${ADMIN_USER:-root} -h $z
+		[ -f /var/jail/www/usr/local/etc/apache*/Includes/$z.conf ] || nu_http_host -C /var/jail/www $http_host_extra_flags -u ${ADMIN_USER:-root} -h $z
 		
 		if [ ccsys.com = $z ] && [ ! -f /var/jail/www/home/$ADMIN_USER/$z/www/public/index.html ]; then
 			sed -i '' -e "/\\<Content-Security-Policy\\>/s:object-src 'none':plugin-types application/pdf:" /var/jail/www/usr/local/etc/apache*/Includes/$z.conf
