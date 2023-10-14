@@ -177,6 +177,9 @@ maybe_yell
 [ -n "${OPT_SSL-}" ] || [ -z "${OPT_HPKP-}" ]
 [ -z "${OPT_HPKP-}" ] || [ -f "$HPKP_BACKUP" ]
 [ -n "${OPT_HPKP-}" ] || [ -z "${OPT_HPKPSUBDOM-}" ]
+[ -z "${OPT_IMMUTABLE-}" ] || [ nobody != "$USER_NAME" ]
+[ -z "${OPT_PRETTY_HTML-}" ] || [ nobody != "$USER_NAME" ]
+[ -z "${OPT_STATIC_GZIP-}" ] || [ nobody != "$USER_NAME" ]
 
 service=apache24
 
@@ -184,9 +187,10 @@ mkdir -p "${CHROOTDIR-}/var/log/httpd-vhost"
 
 [ ! -e "${CHROOTDIR-}/usr/local/etc/$service/Includes/$HOST_NAME.conf" ]
 
-user_home=`pw -V "${CHROOTDIR-}/etc" usershow $USER_NAME | cut -d : -f 9`
-
-${CHROOTDIR:+chroot "$CHROOTDIR"} su -m $USER_NAME -c "mkdir -p \"$user_home/$HOST_NAME/www/public${OPT_IMMUTABLE:+/$IMMUTABLE_DIR}\"${OPT_CGI_EXEC:+ \"$user_home/$HOST_NAME/www/$CGI_DIR\"}"
+if [ nobody != "$USER_NAME" -a -z "${REDIRECT_TO-}" ]; then
+	user_home=`pw -V "${CHROOTDIR-}/etc" usershow $USER_NAME | cut -d : -f 9`
+	${CHROOTDIR:+chroot "$CHROOTDIR"} su -m $USER_NAME -c "mkdir -p \"$user_home/$HOST_NAME/www/public${OPT_IMMUTABLE:+/$IMMUTABLE_DIR}\"${OPT_CGI_EXEC:+ \"$user_home/$HOST_NAME/www/$CGI_DIR\"}"
+fi
 
 if [ -n "${OPT_SSL-}" ]; then
 	if ! cp "${CHROOTDIR-}/etc/ssl/certs/$HOST_NAME.crt" "${CHROOTDIR-}/usr/local/etc/$service/ssl/"; then
@@ -250,8 +254,8 @@ cat > "${CHROOTDIR-}/usr/local/etc/$service/Includes/$HOST_NAME.conf" <<EOF
 ${self:+<VirtualHost ${OPT_SSL:+_default_:443}${no_ssl:+*:80}>
 	ServerName $HOST_NAME${OPT_SSL:+:443}
 	ServerAdmin webmaster@$HOST_NAME
-	DocumentRoot "$user_home/$HOST_NAME/www/public"
-	${loose_app_security:+#}Header always setifempty Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'"
+${user_home:+	DocumentRoot "$user_home/$HOST_NAME/www/public"
+}	${loose_app_security:+#}Header always setifempty Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'"
 	${loose_app_security:+#}Header always setifempty X-Frame-Options SAMEORIGIN
 	${loose_app_security:+#}Header always setifempty X-XSS-Protection "1; mode=block"
 	${loose_app_security:+#}Header always set X-Content-Type-Options nosniff
@@ -339,11 +343,11 @@ ${OPT_SSL:+	ServerAlias www.$HOST_NAME
 ${h2:+	Protocols h2c http/1.1
 }	Redirect permanent / ${REDIRECT_TO:+${REDIRECT_TO%/}/}${self:+http${OPT_SSL:+s}://$HOST_NAME/}
 </VirtualHost>${self:+
-<Directory "$user_home/$HOST_NAME/www/public">
+${user_home:+<Directory "$user_home/$HOST_NAME/www/public">
 	Options Indexes FollowSymLinks
 	AllowOverride None
 	Require all granted
-</Directory>}
+</Directory>}}
 EOF
 
 echo "Configured $HOST_NAME for ${OPT_HSTS:+strict }http${OPT_SSL:+s} service."
