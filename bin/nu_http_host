@@ -184,6 +184,14 @@ maybe_yell
 [ -z "${OPT_PRETTY_HTML-}" ] || [ nobody != "$USER_NAME" ]
 [ -z "${OPT_STATIC_GZIP-}" ] || [ nobody != "$USER_NAME" ]
 
+if canhas ${PROXY_TO-}; then
+	if [ "${PROXY_TO#=}" = "$PROXY_TO" ]; then
+		pph=y
+	else
+		PROXY_TO="${PROXY_TO#=}"
+	fi
+fi
+
 service=apache24
 
 mkdir -p "${CHROOTDIR-}/var/log/httpd-vhost"
@@ -269,8 +277,8 @@ ${PROXY_TO:+${ws:+	RewriteEngine On
 }	ProxyPass / $backend_scheme://$PROXY_TO/
 	ProxyPassReverse / http${backend_ssl:+s}://$PROXY_TO/
 	ProxyPassReverseCookieDomain $backend_host $HOST_NAME
-	ProxyPreserveHost On
-${backend_ssl:+	SSLProxyEngine on
+${pph:+	ProxyPreserveHost On
+}${backend_ssl:+	SSLProxyEngine on
 	SSLProxyVerify require
 	SSLProxyVerifyDepth 10
 	SSLProxyCACertificateFile /usr/local/etc/ssl/cert.pem
