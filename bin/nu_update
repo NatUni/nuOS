@@ -18,16 +18,18 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts aAc:dDfj:Ko:qsSuUv OPT; do case $OPT in
+while getopts aAc:dDfF:j:Ko:P:qsSuUv OPT; do case $OPT in
 	a) incr OPT_AUTO 1;;
 	A) incr OPT_DEPRECATED_AUTO_PROCESS 1;;
 	c) PKG_COLLECTION=$OPTARG;;
 	d) OPT_DEPS=y;;
 	D) OPT_DEBUG=y;;
 	f) incr OPT_FREEBSD 1;;
+	F) FBSD_COMMIT_ID=$OPTARG;;
 	j) JAIL_NAME=$OPTARG;;
 	K) OPT_KEEP_FAT_OBJ=y;;
 	o) OUTPUT_FILE=$OPTARG;;
+	P) PORTS_COMMIT_ID=$OPTARG;;
 	q) OPT_QUICK=y;;
 	s) OPT_ONLY_SNAP=y;;
 	S) OPT_NO_SNAP=y;;
@@ -94,6 +96,9 @@ if srsly ${ports_git-}; then
 	git -C /usr/ports reset --hard HEAD
 	git -C /usr/ports clean -fd
 	git -C /usr/ports pull
+	if canhas ${PORTS_COMMIT_ID-}; then
+		git -C /usr/ports reset --hard $PORTS_COMMIT_ID
+	fi
 else
 	portsnap fetch
 	portsnap update
@@ -137,6 +142,9 @@ if canhas ${OPT_FREEBSD-}; then
 	git -C /usr/src pull
 	if [ _"$want_branch" != _"$have_branch" ]; then
 		git -C /usr/src checkout "$want_branch"
+	fi
+	if canhas ${FBSD_COMMIT_ID-}; then
+		git -C /usr/src reset --hard $FBSD_COMMIT_ID
 	fi
 	after_rev=`save_git_info -r /usr/src`
 	before_ver=$BASEOS_VER
