@@ -358,7 +358,7 @@ EOF
 	
 	service jail start redmine
 	
-	if jexec redmine su -l rm5 -c 'set -eCu; cd redmine.jail/www; bundle update --local; rake db:migrate RAILS_ENV=production'; then
+	if jexec redmine su -l rm5 -c 'set -eCu; cd redmine.jail/www; bundle update --local; sleep 10; rake db:migrate RAILS_ENV=production'; then
 		nu_http_host -C /var/jail/redmine -x -d /home/rm5/redmine.jail/www/public -h redmine.jail
 		# maybe soon:
 		# echo PassengerUser www > `echo /var/jail/redmine/usr/local/etc/apache*/Includes`/VirtualHost.custom/redmine.jail.conf
