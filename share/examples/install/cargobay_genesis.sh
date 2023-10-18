@@ -308,9 +308,9 @@ DROP ROLE IF EXISTS redmine;
 EOF
 	fi
 	
-	rm_pw=`nu_randpw`
+	rm_db_pw=`nu_randpw`
 	jexec pgsql su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<EOF
-CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD '$rm_pw' NOINHERIT VALID UNTIL 'infinity';
+CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD '$rm_db_pw' NOINHERIT VALID UNTIL 'infinity';
 CREATE DATABASE redmine WITH ENCODING='UTF8' OWNER=redmine;
 \c redmine;
 GRANT ALL ON SCHEMA public TO redmine;
@@ -342,32 +342,41 @@ production:
   database: redmine
   host: `getent hosts pgsql.jail | head -n 1 | cut -w -f 1`
   username: redmine
-  password: "$rm_pw"
-EOF
-	
-	:>| /var/jail/redmine/home/rm5/redmine.jail/www/config/secrets.yml
-	chmod 640 /var/jail/redmine/home/rm5/redmine.jail/www/config/secrets.yml
-	# format the value of secret_key_base the same as `rake secret`
-	cat >| /var/jail/redmine/home/rm5/redmine.jail/www/config/secrets.yml <<EOF
-production:
-  secret_key_base: `head -c 64 /dev/random | od -v -h | head -n 4 | cut -w -f 2- | tr -dc [[:alnum:]]`
+  password: "$rm_db_pw"
 EOF
 	
 	# could harden this:
 	chown -R `stat -f %u:%g /var/jail/redmine/home/rm5` /var/jail/redmine/home/rm5/redmine.jail
 	
 	service jail start redmine
-	
-	if jexec redmine su -l rm5 -c 'set -eCu; cd redmine.jail/www; bundle update --local; sleep 10; rake db:migrate RAILS_ENV=production'; then
+	rm_adm_pw=`umask 277; nu_randpw | tee /root/.redmine_pw`
+	if jexec redmine su -l rm5 -c "
+		set -eCu
+		cd redmine.jail/www
+		bundle update --local
+		( umask 27
+			rake generate_secret_token
+		)
+		RAILS_ENV=production \\
+		REDMINE_LANG=${LANGUAGE:-en} \\
+			rake db:migrate redmine:load_default_data
+		rails console --environment=production | grep -vw password <<'EOF'
+adm = User.where(login: 'admin').first
+adm.password_confirmation = adm.password = '$rm_adm_pw'; nil
+adm.must_change_passwd = false
+adm.passwd_changed_on = Time.current()
+adm.save!
+exit
+EOF
+	"; then
 		nu_http_host -C /var/jail/redmine -x -d /home/rm5/redmine.jail/www/public -h redmine.jail
 		# maybe soon:
 		# echo PassengerUser www > `echo /var/jail/redmine/usr/local/etc/apache*/Includes`/VirtualHost.custom/redmine.jail.conf
-		
-		# probably want to reset Redmine admin password here; default is: admin/admin
-		
+				
 		sysrc -f /etc/rc.conf.d/jail jail_list+=redmine
 		service jail restart redmine
 	else
+		service jail stop redmine
 		warn "Redmine could use some help."
 	fi
 fi
