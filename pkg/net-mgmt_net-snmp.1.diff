@@ -1,0 +1,16 @@
+--- /dev/null	2023-10-16 02:34:32.460500000 +0000
++++ files/patch-snmplib_snmp_openssl.c	2023-10-16 02:33:43.864186000 +0000
+@@ -0,0 +1,13 @@
++--- snmplib/snmp_openssl.c.orig	2023-10-16 02:30:56.862290000 +0000
+++++ snmplib/snmp_openssl.c	2023-10-16 02:32:31.791566000 +0000
++@@ -899,6 +899,10 @@
++ 
++ 
++ #ifndef NETSNMP_FEATURE_REMOVE_OPENSSL_ERR_LOG
+++#ifndef ERR_GET_FUNC
+++#define ERR_GET_FUNC(e) -1
+++#endif
+++
++ void
++ netsnmp_openssl_err_log(const char *prefix)
++ {

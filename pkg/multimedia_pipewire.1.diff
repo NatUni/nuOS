@@ -1,0 +1,11 @@
+--- ../pipewire/Makefile
++++ Makefile
+@@ -111,7 +111,7 @@ post-install-MEDIASESSION-on:
+ 
+ .include <bsd.port.pre.mk>
+ 
+-.if ${SSL_DEFAULT:C,3[0-9],3,} == openssl3
++.if ${SSL_DEFAULT} == openssl
+ CFLAGS+=	-DOPENSSL_API_COMPAT=0x10100000L
+ .endif
+ 

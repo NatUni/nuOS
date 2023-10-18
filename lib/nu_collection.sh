@@ -251,7 +251,6 @@ collection_vars_init () {
 		www/redmine50
 		www/rubygem-passenger
 		x11-fonts/webfonts
-		net/kamailio
 		net-im/jitsi-videobridge
 		www/jitsi-meet
 		print/gutenprint
@@ -327,9 +326,7 @@ collection_vars_init () {
 		audio/pt2-clone
 		audio/fasttracker2
 		audio/muse-sequencer
-		audio/mixxx
 		audio/zrythm
-		graphics/blender
 		cad/opencascade
 		games/sdlpop
 		games/openarena
@@ -343,6 +340,9 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		graphics/blender
+		audio/mixxx
+		net/kamailio
 		www/iridium
 		games/veloren-weekly
 		net-p2p/cardano-node
