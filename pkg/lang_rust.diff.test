@@ -1,0 +1,1 @@
+! grep -qw LIBSSH2_SYS_USE_PKG_CONFIG Makefile

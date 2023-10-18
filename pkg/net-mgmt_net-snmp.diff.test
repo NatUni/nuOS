@@ -1,0 +1,1 @@
+[ "`grep ^PORTVERSION= Makefile | cut -wf2`" == 5.9.1 -a ! -f files/patch-snmplib_snmp_openssl.c ]

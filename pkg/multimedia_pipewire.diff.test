@@ -1,0 +1,1 @@
+grep -qw openssl3 Makefile
