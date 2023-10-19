@@ -1,0 +1,1 @@
+grep -w ^WALLET_USES Makefile | ! grep -qw sqlite
