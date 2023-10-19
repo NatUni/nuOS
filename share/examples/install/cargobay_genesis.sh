@@ -319,7 +319,7 @@ EOF
 	sed -e '/^#/!{/\<redmine\>/d;}' /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf | sed -e '${/^$/d;}' > /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new
 	cat >> /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new <<EOF
 
-host	redmine		 redmine		 `getent hosts redmine.jail | head -n 1 | cut -w -f 1`/32		  md5
+host	redmine		 redmine		 `getent hosts redmine.jail | head -n 1 | cut -w -f 1`/32		  scram-sha-256
 EOF
 	mv /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf
 	
