@@ -346,7 +346,8 @@ EOF
 production:
   adapter: postgresql
   database: redmine
-  host: `getent hosts pgsql.jail | head -n 1 | cut -w -f 1`
+  host: pgsql.jail
+  sslmode: disable
   username: redmine
   password: "$rm_db_pw"
 EOF
@@ -355,6 +356,8 @@ EOF
 	chown -R `stat -f %u:%g /var/jail/redmine/home/rm5` /var/jail/redmine/home/rm5/redmine.jail
 	
 	service jail start redmine
+	sleep 3
+	try 7 -p 3 jexec redmine su -l rm5 -c 'env PGSSLMODE=disable pg_isready -h pgsql.jail -U redmine -d redmine'
 	
 	rm_adm_pw=`umask 277; nu_randpw | tee /root/.redmine_pw`
 
@@ -391,7 +394,7 @@ Setting.app_title = '$RM_TITLE'
 Setting.host_name = '$RM_SITE_lc'
 Setting.protocol = 'https'
 Setting.mail_from = '$RM_MAIL_FROM'
-Setting.emails_footer = Setting.emails_footer.sub(/\bhttp\b/, 'https').sub(/\bhostname\b/, '$RM_SITE_lc')
+Setting.emails_footer = Setting.emails_footer.gsub(/\bhttp\b/, 'https').gsub(/\bhostname\b/, '$RM_SITE_lc')
 Setting.enabled_scm = ['Subversion', 'Mercurial', 'Git']
 Setting.self_registration = 1
 adm = User.where(login: 'admin').first
