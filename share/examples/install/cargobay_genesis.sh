@@ -292,15 +292,21 @@ EOF
 done
 
 if [ ! -d /var/jail/redmine ]; then
+	
+	: ${RM_SITE:='nuOS.xyz'}
+	: ${RM_TITLE:=$RM_SITE}
+	
+	lower_case -s RM_SITE
+	: ${RM_MAIL_FROM:="\"$RM_SITE Webserver\" <www-noreply@$RM_SITE_lc>"}
+	
 	nu_jail -t vnet -m -x -u rm5 -j redmine -q
 	
 	if srsly ${GENESIS_DROP_REDMINE_DB-}; then
-		# i dont yet know that this works as it should
 		jexec pgsql su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<'EOF'
 DO
 $$BEGIN
 IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'redmine') THEN
- EXECUTE 'REVOKE ALL ON SCHEMA public FROM redmine';
+	EXECUTE 'REVOKE ALL ON SCHEMA public FROM redmine';
 END IF;
 END$$;
 DROP DATABASE IF EXISTS redmine;
@@ -349,25 +355,55 @@ EOF
 	chown -R `stat -f %u:%g /var/jail/redmine/home/rm5` /var/jail/redmine/home/rm5/redmine.jail
 	
 	service jail start redmine
+	
 	rm_adm_pw=`umask 277; nu_randpw | tee /root/.redmine_pw`
+
 	if jexec redmine su -l rm5 -c "
+		
 		set -eCu
 		cd redmine.jail/www
+		
 		bundle update --local
 		( umask 27
 			rake generate_secret_token
 		)
+		
+		sed -Ee \"
+				/^[[:space:]]+email_delivery:/a\\\\
+    delivery_method: :sendmail\\\\
+    sendmail_settings:\\\\
+      location: `which -a sendmail | grep ^/usr/local/`
+				/^[[:space:]]+scm_subversion_command:/s|\\\$| \`which svn\`|
+				/^[[:space:]]+scm_mercurial_command:/s|\\\$| \`which hg\`|
+				/^[[:space:]]+scm_git_command:/s|\\\$| \`which git\`|
+			\" config/configuration.yml.example > config/configuration.yml
+		
+		RAILS_ENV=production \\
+			rake db:migrate
+		
 		RAILS_ENV=production \\
 		REDMINE_LANG=${LANGUAGE:-en} \\
-			rake db:migrate redmine:load_default_data
-		rails console --environment=production | grep -vw password <<'EOF'
+			rake redmine:load_default_data
+		
+		tmp_f=\`mktemp\`
+		cat >| \$tmp_f <<EOF
+Setting.app_title = '$RM_TITLE'
+Setting.host_name = '$RM_SITE_lc'
+Setting.protocol = 'https'
+Setting.mail_from = '$RM_MAIL_FROM'
+Setting.emails_footer = Setting.emails_footer.sub(/\bhttp\b/, 'https').sub(/\bhostname\b/, '$RM_SITE_lc')
+Setting.enabled_scm = ['Subversion', 'Mercurial', 'Git']
+Setting.self_registration = 1
 adm = User.where(login: 'admin').first
-adm.password_confirmation = adm.password = '$rm_adm_pw'; nil
+adm_em = EmailAddress.where(user_id: adm.id).first
+adm.password_confirmation = adm.password = '$rm_adm_pw'
 adm.must_change_passwd = false
-adm.passwd_changed_on = Time.current()
-adm.save!
-exit
+adm_em.address = 'webmaster@$RM_SITE_lc'
+Process.exit!(adm.save && adm_em.save)
 EOF
+		script -q -e /dev/null rails console --environment=production -- --noreadline --noinspect --noautocomplete --nocolorize --nomultiline --singleline --noecho --noprompt \$tmp_f | sed -e \"/password/s/'.*'/'%%-REDACTED-%%'/g\"
+		rm \$tmp_f
+		
 	"; then
 		nu_http_host -C /var/jail/redmine -x -d /home/rm5/redmine.jail/www/public -h redmine.jail
 		# maybe soon:
