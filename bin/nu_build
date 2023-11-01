@@ -529,6 +529,7 @@ nuos_firstboot_start ()
 		(
 			export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/nuos/bin
 			export HOME=/root
+			export TERM=vt100
 			date
 			time sh "$nuos_firstboot_script"
 		) >> "$nuos_firstboot_log" 2>&1 &

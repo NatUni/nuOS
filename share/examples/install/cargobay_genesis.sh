@@ -157,6 +157,9 @@ if [ -f /root/nuos_deliverance/pm/virtual ]; then
 	postmap /var/jail/postmaster/usr/local/etc/postfix/virtual
 fi
 
+# This option makes SCRAM encrypted logins more than twice as quick but dictionary attacks against stolen SCRAM hashes about 16 times faster, so password strength becomes more crucial
+GENESIS_PGSQL_FAST_LOGIN=y
+
 init_jail pgsql-pre
 service jail start pgsql
 init_jail pgsql-post
@@ -314,18 +317,29 @@ DROP ROLE IF EXISTS redmine;
 EOF
 	fi
 	
-	rm_db_pw=`nu_randpw`
+	rm_db_pw=`nu_randpw -b 32`
 	jexec pgsql su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<EOF
-CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD '$rm_db_pw' NOINHERIT VALID UNTIL 'infinity';
+CREATE ROLE redmine LOGIN ${GENESIS_REDMINE_NETWORK_DB:+ENCRYPTED }PASSWORD '$rm_db_pw' NOINHERIT VALID UNTIL 'infinity';
 CREATE DATABASE redmine WITH ENCODING='UTF8' OWNER=redmine;
 \c redmine;
 GRANT ALL ON SCHEMA public TO redmine;
 EOF
-
+	
+	if srsly ${GENESIS_REDMINE_NETWORK_DB-}; then
+		db_type=host
+		db_client_host=`getent hosts redmine.jail | head -n 1 | cut -w -f 1`/32
+		db_meth=scram-sha-256
+	else
+		local_rm_db=y
+		db_type=local
+		db_client_host=
+		db_meth=password
+	fi
+	
 	sed -e '/^#/!{/\<redmine\>/d;}' /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf | sed -e '${/^$/d;}' > /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new
 	cat >> /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new <<EOF
 
-host	redmine		 redmine		 `getent hosts redmine.jail | head -n 1 | cut -w -f 1`/32		  scram-sha-256
+$db_type${GENESIS_REDMINE_NETWORK_DB:+ }   redmine         redmine         $db_client_host${local_rm_db:+              }          $db_meth
 EOF
 	mv /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf.new /var/jail/pgsql/var/db/postgres/data15/pg_hba.conf
 	
@@ -335,6 +349,8 @@ EOF
 	
 	nu_http -C /var/jail/redmine -IIII
 	echo /var/jail/postmaster/var/spool/postfix/maildrop /var/jail/redmine/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.redmine
+	mkdir /var/jail/redmine/var/run/pgsql
+	echo /var/jail/pgsql/var/run/pgsql /var/jail/redmine/var/run/pgsql nullfs ro >> /etc/fstab.redmine
 	
 	pkg info -Do www/rubygem-passenger | sed -ne '/add these lines:/,/^[[:graph:]]/{/^[[:space:]]/p;}' | sed -e 's/^[[:space:]]*//' > `echo /var/jail/redmine/usr/local/etc/apache*/Includes`/passenger.conf
 	mkdir /var/jail/redmine/home/rm5/redmine.jail
@@ -346,8 +362,8 @@ EOF
 production:
   adapter: postgresql
   database: redmine
-  host: pgsql.jail
-  sslmode: disable
+  host: ${local_rm_db:+/var/run/pgsql}${GENESIS_REDMINE_NETWORK_DB:+pgsql.jail
+  sslmode: disable}
   username: redmine
   password: "$rm_db_pw"
 EOF
@@ -357,9 +373,9 @@ EOF
 	
 	service jail start redmine
 	sleep 3
-	try 7 -p 3 jexec redmine su -l rm5 -c 'env PGSSLMODE=disable pg_isready -h pgsql.jail -U redmine -d redmine'
+	try 7 -p 3 jexec redmine su -l rm5 -c "${GENESIS_REDMINE_NETWORK_DB:+env PGSSLMODE=disable }pg_isready -h ${GENESIS_REDMINE_NETWORK_DB:+pgsql.jail}${local_rm_db:+/var/run/pgsql} -U redmine -d redmine"
 	
-	rm_adm_pw=`umask 277; nu_randpw | tee /root/.redmine_pw`
+	rm_adm_pw=`umask 277; nu_randpw -b 24 | tee /root/.redmine_pw`
 
 	if jexec redmine su -l rm5 -c "
 		
