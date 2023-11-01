@@ -114,7 +114,6 @@ collection_vars_init () {
 		lang/seed7
 		textproc/riffdiff
 		lang/chez-scheme
-		devel/wasmer
 		emulators/qemu
 	'
 	
@@ -340,6 +339,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		devel/wasmer
 		graphics/blender
 		audio/mixxx
 		net/kamailio

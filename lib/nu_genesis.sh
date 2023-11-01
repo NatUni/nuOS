@@ -328,7 +328,7 @@ init_jail () {
 			;;
 			pgsql-post)
 				if [ ! -f /var/jail/pgsql/etc/rc.conf.d/postgresql ]; then
-					nu_pgsql -j pgsql -n -s -h $INFRA_HOST_lc
+					nu_pgsql -j pgsql -n -s ${GENESIS_PGSQL_FAST_LOGIN:+-p 256} -h $INFRA_HOST_lc
 				fi
 			;;
 		esac

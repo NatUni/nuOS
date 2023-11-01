@@ -16,11 +16,12 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts C:h:j:nPsv OPT; do case $OPT in
+while getopts C:h:j:np:Psv OPT; do case $OPT in
 	C) CHROOTDIR=$OPTARG;;
 	h) HOST_NAME=$OPTARG;;
 	j) JAIL_NAME=$OPTARG;;
 	n) OPT_NETWORK=y;;
+	p) SCRAM_ITERATIONS=$OPTARG;; # available soon with PostgreSQL 16
 	P) OPT_OLD_PASSWORD_HASH=y;;
 	s) OPT_SSL=y;;
 	v) OPT_VERBOSE=y;;
@@ -53,13 +54,17 @@ which expect
 
 if canhas "${OPT_OLD_PASSWORD_HASH-}"; then
 	pwh=md5
+	! canhas ${SCRAM_ITERATIONS-} || error 22 'Cannot choose number of iterations with MD5 password hash'
 else
 	pwh=scram-sha-256
 fi
+
+mkdir "${CHROOTDIR-}/var/run/pgsql"
+
 sister enable_svc ${CHROOTDIR:+-C "$CHROOTDIR"} postgresql
 echo "postgresql_initdb_flags=\"-E utf-8 --lc-collate=C -A $pwh -W\"" >> "${CHROOTDIR-}/etc/rc.conf.d/postgresql"
 
-rand_token=`sister nu_randpw`
+rand_token=`sister nu_randpw -b 48`
 
 # will need to refine in order to simultaneously support CHROOTDIR with JAIL_NAME
 ${JAIL_NAME:+jexec "$JAIL_NAME"} expect -n -c '
@@ -80,11 +85,16 @@ EOF
 (umask 77 && cat > "${CHROOTDIR-}$pghome/.pgpass") <<EOF
 localhost:*:*:postgres:$rand_token
 EOF
-${CHROOTDIR:+chroot "$CHROOTDIR"} chown postgres:postgres "$pghome/.pgpass"
+${CHROOTDIR:+chroot "$CHROOTDIR"} chown postgres:postgres "$pghome/.pgpass" "/var/run/pgsql"
+
+# to disable all default host based access credentials
+# sed -i '' -e '/^[^#]/{/^./,$s/^/#/;}' "$pg/pg_hba.conf"
 
 sed -i '' -e 's/^password_encryption\>/#&/' "$pg/postgresql.conf"
 cat >> "$pg/postgresql.conf" <<EOF
-password_encryption = $pwh
+unix_socket_directories = '/tmp,/var/run/pgsql'
+password_encryption = $pwh${SCRAM_ITERATIONS:+
+#scram_iterations = $SCRAM_ITERATIONS}
 EOF
 
 if [ -n "${OPT_NETWORK-}" ]; then
