@@ -121,6 +121,7 @@ collection_vars_init () {
 		lite
 		sysutils/password-store
 		sysutils/pass-otp
+		security/py-xkcdpass
 		textproc/moar
 		finance/ledger
 		irc/irssi
@@ -305,8 +306,10 @@ collection_vars_init () {
 		x11/xdg-desktop-portal-gtk
 		x11/xdg-desktop-portal-hyprland@qt6
 		x11/xdg-desktop-portal-wlr
+		security/openssh-askpass
 		sysutils/qtpass
 		graphics/zbar
+		sysutils/plasma-pass
 		lang/pharo
 		net-p2p/bitcoin
 		net-p2p/litecoin
