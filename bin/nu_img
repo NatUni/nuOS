@@ -71,7 +71,7 @@ for img_name in $@; do
 	if zpool list $img_name > /dev/null 2>&1; then
 		error 1 $img_name is a currently imported pool.
 	elif srsly ${OPT_DELETE-}; then
-		[ -f "/tmp/nu_img.vol-$img_name.conf" ] || error 85 "ERROR: image unknown"
+		[ -f "/tmp/nu_img.vol-$img_name.conf" ] || error 85 "image unknown"
 		[ 0:0:600 = "$(stat -f %u:%g:%Lp "/tmp/nu_img.vol-$img_name.conf")" ]
 		cat /tmp/nu_img.vol-$img_name.conf
 		require_tmp image_conf
@@ -90,7 +90,7 @@ for img_name in $@; do
 		rm /tmp/nu_img.vol-$img_name.conf
 		rm /tmp/nu_img.dev-$zvdev.conf
 	else
-		[ ! -f "/tmp/nu_img.vol-$img_name.conf" ] || error 17 "ERROR: image already configured"
+		[ ! -f "/tmp/nu_img.vol-$img_name.conf" ] || error 17 "image already configured"
 		require_tmp image_conf
 		zv=$POOL_NAME/img/$img_name
 		spill zv >> "$image_conf"
