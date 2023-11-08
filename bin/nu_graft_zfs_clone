@@ -51,7 +51,7 @@ which rsync > /dev/null
 
 [ "x$mod_ds" != "x$tgt_ds" ] || overwrite=y
 
-srsly ${OPT_NO_SNAP} || zfs snapshot -r $src_ds@${SNAPSHOT:=t`date +%s`}
+srsly ${OPT_NO_SNAP-} || zfs snapshot -r $src_ds@${SNAPSHOT:=t`date +%s`}
 
 require_tmp -d src_mnt
 require_tmp -d mod_mnt
