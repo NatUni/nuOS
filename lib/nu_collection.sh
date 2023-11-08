@@ -119,6 +119,8 @@ collection_vars_init () {
 	
 	COLL_user='
 		lite
+		sysutils/password-store
+		sysutils/pass-otp
 		textproc/moar
 		finance/ledger
 		irc/irssi
@@ -304,6 +306,7 @@ collection_vars_init () {
 		x11/xdg-desktop-portal-hyprland@qt6
 		x11/xdg-desktop-portal-wlr
 		sysutils/qtpass
+		graphics/zbar
 		lang/pharo
 		net-p2p/bitcoin
 		net-p2p/litecoin
@@ -321,6 +324,7 @@ collection_vars_init () {
 		multimedia/obs-studio
 		multimedia/wlrobs
 		multimedia/shotcut
+		net-p2p/qbittorrent
 		audio/qtractor
 		audio/pt2-clone
 		audio/fasttracker2
