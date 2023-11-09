@@ -84,7 +84,7 @@ require_base_src () {
 	
 	local kconf=/usr/src/sys/$TRGT_ARCH/conf/NUOS
 	if [ $TRGT_KERN = NUOS ] && [ ! -e $kconf -o $kconf -ot "$NUOS_CODE/share/kern/NUOS" ]; then
-		cp -p "$NUOS_CODE/share/kern/NUOS" $kconf
+		cp "$NUOS_CODE/share/kern/NUOS" $kconf
 	fi
 	
 	local kobj=/usr/obj/usr/src${new_build:+/$TRGT_ARCH.$TRGT_PROC}/sys/$TRGT_KERN
