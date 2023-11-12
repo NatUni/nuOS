@@ -1,11 +1,8 @@
 --- ../pipewire/Makefile
 +++ Makefile
-@@ -111,7 +111,7 @@ post-install-MEDIASESSION-on:
+@@ -109,4 +109,5 @@ post-install-MEDIASESSION-on:
+	${INSTALL_DATA} ${WRKDIR}/10-alsa-default.conf \
+		${STAGEDIR}${ETCDIR}/${PORTNAME}.conf.d
  
- .include <bsd.port.pre.mk>
- 
--.if ${SSL_DEFAULT:C,3[0-9],3,} == openssl3
-+.if ${SSL_DEFAULT} == openssl
- CFLAGS+=	-DOPENSSL_API_COMPAT=0x10100000L
- .endif
- 
++CFLAGS+=	-DOPENSSL_API_COMPAT=0x10100000L
+ .include <bsd.port.mk>

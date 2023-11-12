@@ -159,6 +159,7 @@ collection_vars_init () {
 		databases/mysql80-server
 		databases/redis
 		databases/mongodb70
+		databases/mongodb-tools
 		databases/cassandra4
 		databases/cayley
 		net/kafka

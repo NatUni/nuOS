@@ -1,1 +1,1 @@
-grep -qw openssl3 Makefile
+! grep -qw DOPENSSL_API_COMPAT Makefile
