@@ -1,0 +1,19 @@
+--- /dev/null	2023-11-13 09:44:35.338621000 -0500
++++ files/patch-pyblake2module.c	2023-11-13 09:43:12.674660000 -0500
+@@ -0,0 +1,16 @@
++--- pyblake2module.c.orig	2018-04-11 11:20:50.000000000 -0400
+++++ pyblake2module.c	2023-11-13 09:43:03.557297000 -0500
++@@ -696,11 +696,11 @@
++ {
++     PyObject *m;
++ 
++-    Py_TYPE(&blake2bType) = &PyType_Type;
+++    Py_SET_TYPE(&blake2bType, &PyType_Type);
++     if (PyType_Ready(&blake2bType) < 0)
++         INIT_ERROR;
++ 
++-    Py_TYPE(&blake2sType) = &PyType_Type;
+++    Py_SET_TYPE(&blake2sType, &PyType_Type);
++     if (PyType_Ready(&blake2sType) < 0)
++         INIT_ERROR;
++ 
