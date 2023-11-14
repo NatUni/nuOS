@@ -96,7 +96,6 @@ collection_vars_init () {
 	COLL_developer='
 		lite
 		graphics/jp2a
-		devel/py-setuptools_scm
 		devel/subversion
 		devel/git
 		devel/mercurial
@@ -315,6 +314,7 @@ collection_vars_init () {
 		net-p2p/bitcoin
 		net-p2p/litecoin
 		net-p2p/namecoin
+		finance/electrum
 		x11/kitty
 		x11/rio
 		net/x11vnc
