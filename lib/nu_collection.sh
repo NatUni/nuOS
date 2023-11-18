@@ -234,6 +234,7 @@ collection_vars_init () {
 		net-p2p/namecoin-daemon
 		net-p2p/namecoin-utils
 		net-p2p/monero-cli
+		finance/vanitysearch
 		security/palisade
 	'
 	
@@ -314,7 +315,6 @@ collection_vars_init () {
 		net-p2p/bitcoin
 		net-p2p/litecoin
 		net-p2p/namecoin
-		finance/electrum
 		x11/kitty
 		x11/rio
 		net/x11vnc

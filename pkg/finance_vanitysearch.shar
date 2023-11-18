@@ -1,0 +1,116 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	vanitysearch
+#	vanitysearch/files
+#	vanitysearch/files/patch-hash_sha512.h
+#	vanitysearch/files/patch-Timer.h
+#	vanitysearch/files/patch-hash_sha256.h
+#	vanitysearch/files/patch-Vanity.h
+#	vanitysearch/pkg-descr
+#	vanitysearch/distinfo
+#	vanitysearch/Makefile
+#
+echo c - vanitysearch
+mkdir -p vanitysearch > /dev/null 2>&1
+echo c - vanitysearch/files
+mkdir -p vanitysearch/files > /dev/null 2>&1
+echo x - vanitysearch/files/patch-hash_sha512.h
+sed 's/^X//' >vanitysearch/files/patch-hash_sha512.h << '8470546b49090b35e1231a7a64f2f1b3'
+X--- hash/sha512.h.orig	2023-11-15 22:21:53 UTC
+X+++ hash/sha512.h
+X@@ -17,6 +17,7 @@
+X 
+X #ifndef SHA512_H
+X #define SHA512_H
+X+#include <cstdint>
+X #include <string>
+X 
+X void sha512(unsigned char *input, int length, unsigned char *digest);
+8470546b49090b35e1231a7a64f2f1b3
+echo x - vanitysearch/files/patch-Timer.h
+sed 's/^X//' >vanitysearch/files/patch-Timer.h << '3c2cd07e7ba946caf1c2877c684ee51a'
+X--- Timer.h.orig	2023-11-15 22:19:34 UTC
+X+++ Timer.h
+X@@ -18,6 +18,7 @@
+X #ifndef TIMERH
+X #define TIMERH
+X 
+X+#include <cstdint>
+X #include <time.h>
+X #include <string>
+X #ifdef WIN64
+3c2cd07e7ba946caf1c2877c684ee51a
+echo x - vanitysearch/files/patch-hash_sha256.h
+sed 's/^X//' >vanitysearch/files/patch-hash_sha256.h << 'a38b8f27430cc85f2df12ed1cfd7745e'
+X--- hash/sha256.h.orig	2023-11-15 22:21:21 UTC
+X+++ hash/sha256.h
+X@@ -17,6 +17,7 @@
+X 
+X #ifndef SHA256_H
+X #define SHA256_H
+X+#include <cstdint>
+X #include <string>
+X 
+X void sha256(uint8_t *input,int length, uint8_t *digest);
+a38b8f27430cc85f2df12ed1cfd7745e
+echo x - vanitysearch/files/patch-Vanity.h
+sed 's/^X//' >vanitysearch/files/patch-Vanity.h << 'f39fa2e3a3254b36f36320dbcac6953d'
+X--- Vanity.h.orig	2023-11-15 22:19:52 UTC
+X+++ Vanity.h
+X@@ -18,6 +18,7 @@
+X #ifndef VANITYH
+X #define VANITYH
+X 
+X+#include <mutex>
+X #include <string>
+X #include <vector>
+X #include "SECP256k1.h"
+f39fa2e3a3254b36f36320dbcac6953d
+echo x - vanitysearch/pkg-descr
+sed 's/^X//' >vanitysearch/pkg-descr << '2b8443c13cd80900cdf2ff531976bc9f'
+XVanitySearch is a bitcoin address prefix finder.
+2b8443c13cd80900cdf2ff531976bc9f
+echo x - vanitysearch/distinfo
+sed 's/^X//' >vanitysearch/distinfo << '70c2a4d26734429855073a0db9d946e4'
+XTIMESTAMP = 1700085065
+XSHA256 (JeanLucPons-VanitySearch-1.19_GH0.tar.gz) = 62d6a41dea34e2fb2952ce2ecb551c686b5e854f9455e6882c4a12188f85e9ff
+XSIZE (JeanLucPons-VanitySearch-1.19_GH0.tar.gz) = 149136
+70c2a4d26734429855073a0db9d946e4
+echo x - vanitysearch/Makefile
+sed 's/^X//' >vanitysearch/Makefile << '0b3e4a4b6142b591a8585691d465e863'
+XPORTNAME=	vanitysearch
+XDISTVERSION=	1.19
+XCATEGORIES=	finance
+X
+XMAINTAINER=	milios@ccsys.com
+XCOMMENT=	Standalone vanity address generator for bitcoin
+XWWW=		https://github.com/JeanLucPons/VanitySearch
+X
+XLICENSE=	GPLv3
+XLICENSE_FILE=	${WRKSRC}/LICENSE.txt
+X
+XUSE_GITHUB=	yes
+XGH_ACCOUNT=	JeanLucPons
+XGH_PROJECT=	VanitySearch
+X
+XUSES=		compiler:gcc-c++11-lib gmake
+X
+XBINARY_ALIAS=	g++=g++13
+X
+XPLIST_FILES=	bin/VanitySearch
+X
+X.include <bsd.port.pre.mk>
+X
+Xdo-install:
+X	(cd ${WRKSRC} && ${INSTALL_PROGRAM} VanitySearch \
+X		${STAGEDIR}${PREFIX}/bin)
+X
+X.include <bsd.port.post.mk>
+0b3e4a4b6142b591a8585691d465e863
+exit
+
