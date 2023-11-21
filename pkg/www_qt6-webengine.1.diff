@@ -1,6 +1,6 @@
 --- ../qt6-webengine.orig/Makefile	2023-02-27 18:25:20.345922000 +0000
 +++ Makefile	2023-02-27 18:25:32.784807000 +0000
-@@ -47,7 +47,7 @@
+@@ -48,7 +48,7 @@
  		libxkbcommon.so:x11/libxkbcommon
  
  USES=	bison cmake gl gnome gperf jpeg localbase:ldflags minizip ninja:build \
