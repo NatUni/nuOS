@@ -95,6 +95,8 @@ collection_vars_init () {
 	
 	COLL_developer='
 		lite
+		devel/bsddialog
+		ports-mgmt/portconfig
 		graphics/jp2a
 		devel/subversion
 		devel/git
@@ -263,6 +265,7 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
+		sysutils/radeontop
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
 		x11-wm/wayfire
@@ -287,11 +290,11 @@ collection_vars_init () {
 		graphics/gimp
 		graphics/krita
 		graphics/inkscape
-		audio/audacity
 		print/scribus-devel
 		deskutils/calibre
 		print/fontforge
 		x11/xorg
+		graphics/scrot
 		x11/xeyes
 		x11/wshowkeys
 		x11/gnome
@@ -347,6 +350,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		audio/audacity
 		devel/wasmer
 		graphics/blender
 		audio/mixxx
