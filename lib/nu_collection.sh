@@ -193,6 +193,8 @@ collection_vars_init () {
 		security/suricata
 		security/lego
 		www/matomo
+		security/shibboleth-sp
+		security/shibboleth-idp
 		www/authelia
 		net/keycloak
 		net-im/ejabberd
@@ -335,6 +337,7 @@ collection_vars_init () {
 		audio/qtractor
 		audio/pt2-clone
 		audio/fasttracker2
+		audio/audacity
 		audio/muse-sequencer
 		audio/zrythm
 		cad/opencascade
@@ -350,7 +353,6 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
-		audio/audacity
 		devel/wasmer
 		graphics/blender
 		audio/mixxx
