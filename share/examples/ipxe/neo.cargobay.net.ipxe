@@ -1,0 +1,17 @@
+#!ipxe
+
+set ifname net4
+set root-path iscsi:66.206.20.42::::iqn.2020-04.site.woneye.willy:tgt0
+set keep-san 1
+set initiator-iqn iqn.1999-10.net.cargobay.neo:${mac:hexhyp}
+set username joe
+set password mamatitzbitz
+
+iflinkwait --timeout 60000 ${ifname}
+
+set ${ifname}/ip 209.133.193.154
+set ${ifname}/netmask 255.255.255.248
+set ${ifname}/gateway 209.133.193.153
+set dns 8.8.8.8
+
+sanboot ${root-path} || shell
