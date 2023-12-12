@@ -1,11 +1,11 @@
---- ../qt6-webengine.orig/Makefile	2023-02-27 18:25:20.345922000 +0000
-+++ Makefile	2023-02-27 18:25:32.784807000 +0000
-@@ -48,7 +48,7 @@
+--- ../qt6-webengine.orig/Makefile
++++ Makefile
+@@ -26,7 +26,7 @@
  		libxkbcommon.so:x11/libxkbcommon
  
- USES=		bison cmake compiler:c++17-lang gl gnome gperf jpeg \
--		localbase:ldflags minizip ninja:build nodejs:build,lts \
-+		localbase:ldflags minizip ninja:build nodejs:build \
- 		pkgconfig python:build qt-dist:6,webengine xorg
- USE_GL=		gbm gl
- USE_GNOME=	glib20 libxml2 libxslt
+ USES=		bison cmake compiler:c++17-lang gl gperf \
+-		localbase:ldflags ninja:build nodejs:build,lts \
++		localbase:ldflags ninja:build nodejs:build \
+ 		pkgconfig python:build qt-dist:6,webengine
+ USE_GL=		opengl
+ USE_QT=		base declarative tools
