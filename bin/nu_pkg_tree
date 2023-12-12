@@ -38,7 +38,7 @@ while getopts DfFi:kNo:OpPRSt:rxv OPT; do case $OPT in
 	v) OPT_VERBOSE=y;;
 esac; done; shift $(($OPTIND-1))
 
-: ${THREADS:=$((`sysctl -n hw.ncpu` * 3))}
+: ${THREADS:=8}
 
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"

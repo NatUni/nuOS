@@ -11,6 +11,12 @@ case $NAME in
 		defaultrouter=66.206.20.41
 		primary_if=igb0
 	;;
+	neo|matrix)
+		my_ip=209.133.193.154
+		netmask=0xfffffff8
+		defaultrouter=209.133.193.153
+		primary_if=ix0
+	;;
 	iron)
 		my_ip=168.235.81.21
 		netmask=0xffffff00
@@ -21,7 +27,7 @@ case $NAME in
 		netmask=0xffffff00
 		defaultrouter=168.235.71.1
 	;;
-	*) die
+	*) error 6 "No network configuration found for $NAME"
 esac
 
 if canhas ${primary_if-}; then
@@ -29,14 +35,14 @@ if canhas ${primary_if-}; then
 fi
 
 sed -i '' -e '/^#/d;/^$/d' "$TRGT/etc/rc.conf.local"
+sed -i '' -e "/^ifconfig_net0=/s/\<up\>/inet $my_ip netmask $netmask/" "$TRGT/etc/rc.conf.local"
 
 cat >> "$TRGT/etc/rc.conf.local" <<EOF
-ifconfig_net0="inet $my_ip netmask $netmask -rxcsum -rxcsum6 -txcsum -txcsum6 -lro -tso -vlanhwtso"
 defaultrouter="$defaultrouter"
 EOF
 
 case $NAME in
-	willy|mama|hub|spore)
+	willy|mama|hub|neo|matrix)
 		cat >> "$TRGT/etc/rc.conf.local" <<EOF
 ifconfig_net0_alias0="inet `next_ip $my_ip` netmask 0xffffffff"
 EOF
