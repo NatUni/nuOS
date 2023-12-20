@@ -18,7 +18,7 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts A:a:b:c:C:d:e:fFh:j:kK:l:Lm:Mn:No:p:stT:Su:vW OPT; do case $OPT in
+while getopts A:a:b:c:C:d:e:fFh:j:kK:l:Lm:Mn:No:p:stT:Su:vw:W OPT; do case $OPT in
 	A) KNOT_ALTERNATE=$OPTARG;;
 	a) AUTH_FILE=$OPTARG;;
 	b) KEY_BITS=$OPTARG;;
@@ -46,6 +46,7 @@ while getopts A:a:b:c:C:d:e:fFh:j:kK:l:Lm:Mn:No:p:stT:Su:vW OPT; do case $OPT in
 	T) TLSA_TRANSPORT=$OPTARG;;
 	u) DEPT=$OPTARG;;
 	v) OPT_VERBOSE=y;;
+	w) SAN_LIST=$OPTARG;;
 	W) OPT_EMPTY_SAN_LIST=y;;
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
