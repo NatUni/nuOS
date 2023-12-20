@@ -314,7 +314,16 @@ init_jail () {
 					nu_jail -x -q -t vnet -H domain -S $my_ip_1:domain -S $my_ip_2:domain -j ns
 					nu_ns_server -C /var/jail/ns -l all -d -k 4096 -z 2048 -i $my_ip_1 -i $my_ip_2
 					if [ -d /root/nuos_deliverance/ns ]; then
-						tar -cf - -C /root/nuos_deliverance/ns/knotdb keys | tar -xvf - -C /var/jail/ns/var/db/knot
+						if [ -d /root/nuos_deliverance/ns/idx ]; then
+							mount -rt nullfs /root/nuos_deliverance/ns/knotdb/keys/keys /var/jail/ns/mnt
+							cat /root/nuos_deliverance/ns/idx/knot@* | sed -E -e 's/\<(tag|public-only|pre-active|retire-active|post-active)=(yes|no|[[:digit:]]+)\>//g' | while read -r z id args; do
+								eko Importing DNSSEC keys for zone: $z
+								chroot -u knot -g knot /var/jail/ns keymgr $z import-pem /mnt/$id.pem $args || true
+							done
+							umount /var/jail/ns/mnt
+						else
+							tar -cf - -C /root/nuos_deliverance/ns/knotdb keys | tar -xvf - -C /var/jail/ns/var/db/knot
+						fi
 					fi
 					ns_jails=ns
 					sysrc -f /etc/rc.conf.d/jail jail_list+=ns
