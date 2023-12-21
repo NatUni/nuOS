@@ -91,15 +91,18 @@ san_init () {
 	fi
 	spill SAN_LIST
 	san_value="DNS.1=$SSL_HOST"
+	full_san_list="$SSL_HOST"
 	i=2
 	SAN_LIST="$(echo $SAN_LIST | sed -e s/%/$SSL_HOST/g)"
 	for h in $SAN_LIST; do
 		if [ "$SSL_HOST" != $h ]; then
 			san_value="$san_value, DNS.$i=$h"
+			push full_san_list $h
 			i=$(($i + 1))
 		fi
 	done
 	spill san_value
+	spill full_san_list
 }
 
 if [ -n "${OPT_EXPORT_TLSA-}" -o -n "${OPT_EXPORT_HPKP-}" ]; then
@@ -251,7 +254,7 @@ if [ -n "${OPT_LETS_ENCRYPT-}" ]; then
 	[ -z "${AUTH_FILE-}" ]
 	check_ns_server
 	san_init
-	for a in $SSL_HOST $SAN_LIST; do
+	for a in $full_san_list; do
 		dom_args="${dom_args:+$dom_args }-d $a"
 	done
 	parent_zone=$(ns_master_zone ${NAMESERVER_JAILNAME:+-j $NAMESERVER_JAILNAME} ${CHROOTDIR:+-c} ${KNOT_ALTERNATE:+-A $KNOT_ALTERNATE} $SSL_HOST)
@@ -263,7 +266,7 @@ if [ -n "${OPT_LETS_ENCRYPT-}" ]; then
 	require_tmp acme_challenge
 	sed -n -E -e "/^\\[[^\]+\\] Domain: '([[:alnum:]\\._\\-]+)'$/{s//\\1/;N;{/\\n\\[[^\]+\\] TXT value: '([[:alnum:]_\\-]+)'$/s// \\1/p;};}" "$acme_output" >| "$acme_challenge"
 	#retire_tmp acme_output
-	for a in $SSL_HOST $SAN_LIST; do
+	for a in $full_san_list; do
 		h=_acme-challenge.$a
 		txt=$(grep "^$h " "$acme_challenge" | cut -w -f 2)
 		if [ -n "$txt" ]; then
@@ -340,7 +343,7 @@ subjectAltName = @alt_names
 	
 	echo '[alt_names]' >> "$ssl_cnf"
 	i=1
-	for a in $SSL_HOST $SAN_LIST; do
+	for a in $full_san_list; do
 		echo "DNS.$i = $a" >> "$ssl_cnf"
 		i=$(($i + 1 ))
 	done
