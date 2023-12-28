@@ -1,0 +1,489 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	bitcoincash
+#	bitcoincash/distinfo
+#	bitcoincash/Makefile
+#	bitcoincash/pkg-descr
+#	bitcoincash/files
+#	bitcoincash/files/bitcoincash-qt.desktop
+#	bitcoincash/files/patch-src_qt_trafficgraphwidget.h
+#	bitcoincash/files/bitcoincash.conf
+#	bitcoincash/files/bitcoincashd.in
+#	bitcoincash/files/patch-src_util_system.cpp
+#	bitcoincash-daemon
+#	bitcoincash-daemon/Makefile
+#	bitcoincash-utils
+#	bitcoincash-utils/Makefile
+#
+echo c - bitcoincash
+mkdir -p bitcoincash > /dev/null 2>&1
+echo x - bitcoincash/distinfo
+sed 's/^X//' >bitcoincash/distinfo << '95d367624488c7ce98fa22d76738e1f9'
+XTIMESTAMP = 1703355192
+XSHA256 (bitcoincash/bitcoin-cash-node-v27.0.0.tar.gz) = 7d338b69eeeec075ccbd327ea128b5917675860f9685eeed9dc1d1aaf5df23da
+XSIZE (bitcoincash/bitcoin-cash-node-v27.0.0.tar.gz) = 34642356
+95d367624488c7ce98fa22d76738e1f9
+echo x - bitcoincash/Makefile
+sed 's/^X//' >bitcoincash/Makefile << '8421c84385b850cde0ff7aae996e668f'
+XPORTNAME=	bitcoincash
+XPORTVERSION=	27.0.0
+XCATEGORIES=	net-p2p finance
+XMASTER_SITES=	https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/archive/${DISTVERSIONPREFIX}${DISTVERSION}${DISTVERSIONSUFFIX}/
+XDISTVERSIONPREFIX=	v
+XDISTNAME=	bitcoin-cash-node-${DISTVERSIONPREFIX}${DISTVERSION}${DISTVERSIONSUFFIX}
+XDISTFILES=	${DISTNAME}${EXTRACT_SUFX}
+XDIST_SUBDIR=	${PORTNAME}
+X
+XMAINTAINER=	milios@ccsys.com
+XCOMMENT?=	Virtual Peer-to-Peer Currency Client (QT)
+XWWW=		https://www.bitcoincashnode.org/
+X
+XLICENSE=	MIT
+X
+XLIB_DEPENDS=	libboost_date_time.so:devel/boost-libs \
+X		libevent.so:devel/libevent
+X
+XUSES=		cmake compiler:c++11-lib cpe libtool pkgconfig qt:5 shebangfix
+X
+XSLAVE_PORT?=	no
+X
+X.if defined(SLAVE_PORT) && ${SLAVE_PORT} == "no"
+XUSES+=		desktop-file-utils
+XUSE_QT=		core gui network widgets \
+X		buildtools:build linguisttools:build qmake:build
+X
+XBUILD_DEPENDS+=	protoc:devel/protobuf
+XLIB_DEPENDS+=	libprotobuf.so:devel/protobuf
+X
+XTESTS_USE=		QT=testlib
+XTESTS_PLIST_FILES=	bin/test_bitcoincash-qt \
+X			bin/test_bitcoincash
+X.endif
+X
+XOPTIONS_DEFINE?=	DBUS DEBUG HARDENING QRCODES TESTS UPNP WALLET ZMQ
+XOPTIONS_DEFAULT?=	DBUS DEBUG HARDENING QRCODES UPNP WALLET ZMQ
+XOPTIONS_SUB=		yes
+X
+XHARDENING_DESC=	Attempt to harden binaries (PIE for ASLR, NX Stack)
+XQRCODES_DESC=	Display QR Codes
+XTESTS_DESC=	Build test binary and unit tests
+XWALLET_DESC=	Wallet Management Support
+XZMQ_DESC=	Block and transaction broadcasting with ZeroMQ
+X
+XDBUS_CONFIGURE_WITH=	dbus
+XDBUS_USE=		QT=dbus
+X
+XDEBUG_INSTALL_TARGET_OFF=	install-strip
+X
+XHARDENING_CONFIGURE_ENABLE=	hardening
+X
+XTESTS_CONFIGURE_ENABLE=	tests bench
+X.if defined(SLAVE_PORT) && ${SLAVE_PORT} == "yes"
+XTESTS_PLIST_FILES=	bin/test_bitcoincash
+X.endif
+XTESTS_PLIST_FILES+=	bin/bench_bitcoincash
+X
+XUPNP_CMAKE_ON=		-DENABLE_UPNP:BOOL=ON
+XUPNP_CMAKE_OFF=		-DENABLE_UPNP:BOOL=OFF
+XUPNP_LIB_DEPENDS=	libminiupnpc.so:net/miniupnpc
+XUPNP_CPPFLAGS=		-I${LOCALBASE}/include
+XUPNP_LIBS=		-L${LOCALBASE}/lib
+X
+XQRCODES_CMAKE_ON=	-DENABLE_QRCODE:BOOL=ON
+XQRCODES_CMAKE_OFF=	-DENABLE_QRCODE:BOOL=OFF
+XQRCODES_LIB_DEPENDS=	libqrencode.so:graphics/libqrencode
+X
+XWALLET_CMAKE_ON=	-DBUILD_BITCOIN_WALLET:BOOL=ON
+XWALLET_CMAKE_OFF=	-DBUILD_BITCOIN_WALLET:BOOL=OFF
+XWALLET_USES=		bdb:5+ sqlite:3
+X
+XZMQ_CMAKE_ON=		-DBUILD_BITCOIN_ZMQ:BOOL=ON
+XZMQ_CMAKE_OFF=		-DBUILD_BITCOIN_ZMQ:BOOL=OFF
+XZMQ_BUILD_DEPENDS=	libzmq4>0:net/libzmq4
+XZMQ_RUN_DEPENDS=	libzmq4>0:net/libzmq4
+X
+XCONFIGURE_ARGS?=	--without-libs \
+X			--with-gui=qt5 \
+X			--without-daemon \
+X			--without-utils
+X
+XCONFIGURE_ENV=	OBJCXX="${CXX}" OBJCXXFLAGS="${CXXFLAGS}"
+XMAKE_ENV+=	V=1
+X
+XPLIST_FILES?=	bin/bitcoincash-qt share/man/man1/bitcoincash-qt.1.gz \
+X		share/applications/bitcoincash-qt.desktop \
+X		share/pixmaps/bitcoincash128.png \
+X		share/pixmaps/bitcoincash256.png
+X
+X.include <bsd.port.pre.mk>
+X
+X.if !empty(PORT_OPTIONS:MDEBUG)
+XCMAKE_BUILD_TYPE=	Debug
+X.endif
+X
+X.if defined(SLAVE_PORT) && ${SLAVE_PORT} == "no"
+X
+Xpost-install:
+X	${INSTALL} ${FILESDIR}/bitcoincash-qt.desktop \
+X		${STAGEDIR}${PREFIX}/share/applications
+X	${INSTALL} ${WRKSRC}/share/pixmaps/bitcoin128.png \
+X		${STAGEDIR}${PREFIX}/share/pixmaps/bitcoincash128.png
+X	${INSTALL} ${WRKSRC}/share/pixmaps/bitcoin256.png \
+X		${STAGEDIR}${PREFIX}/share/pixmaps/bitcoincash256.png
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-qt.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-qt.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoind.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincashd.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-tx.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-seeder.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-seeder.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-cli.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-cli.1
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoind ${STAGEDIR}${PREFIX}/bin/bitcoincashd
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoincash-tx
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-qt ${STAGEDIR}${PREFIX}/bin/bitcoincash-qt
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-seeder ${STAGEDIR}${PREFIX}/bin/bitcoincash-seeder
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-wallet ${STAGEDIR}${PREFIX}/bin/bitcoincash-wallet
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-cli ${STAGEDIR}${PREFIX}/bin/bitcoincash-cli
+X	mv ${STAGEDIR}${PREFIX}/include/bitcoinconsensus.h ${STAGEDIR}${PREFIX}/include/bitcoincashconsensus.h
+X	mv ${STAGEDIR}${PREFIX}/lib/libbitcoinconsensus.so.27 ${STAGEDIR}${PREFIX}/lib/libbitcoincashconsensus.so.27
+X
+X.endif
+X
+Xregression-test: build
+X	# To use this sucessfully, remove --without-daemon and --without-utils
+X	# from CONFIGURE_ARGS above.
+X
+X	@cd ${WRKSRC} && ${GMAKE} check
+X
+X.include <bsd.port.post.mk>
+8421c84385b850cde0ff7aae996e668f
+echo x - bitcoincash/pkg-descr
+sed 's/^X//' >bitcoincash/pkg-descr << 'f50c42295c9c994cbe9f0040be6a8a4a'
+XBitcoin is a free open source peer-to-peer electronic cash system that
+Xis completely decentralized, without the need for a central server or
+Xtrusted parties. Users hold the crypto keys to their own money and
+Xtransact directly with each other, with the help of a P2P network to
+Xcheck for double-spending.
+f50c42295c9c994cbe9f0040be6a8a4a
+echo c - bitcoincash/files
+mkdir -p bitcoincash/files > /dev/null 2>&1
+echo x - bitcoincash/files/bitcoincash-qt.desktop
+sed 's/^X//' >bitcoincash/files/bitcoincash-qt.desktop << '3a752d85ee9258886bfaccc47af26e18'
+X[Desktop Entry]
+XVersion=1.0
+XName=Bitcoin Cash Node
+XComment=Connect to the Bitcoin Cash P2P Network
+XComment[de]=Verbinde mit dem Bitcoin Cash peer-to-peer Netzwerk
+XComment[fr]=Bitcoin Cash, monnaie virtuelle cryptographique pair à pair
+XComment[tr]=Bitcoin Cash, eşten eşe kriptografik sanal para birimi
+XExec=bitcoincash-qt %u
+XTerminal=false
+XType=Application
+XIcon=bitcoincash128
+XMimeType=x-scheme-handler/bitcoincash;
+XCategories=Office;Finance;
+XStartupWMClass=BitcoinCash-qt
+3a752d85ee9258886bfaccc47af26e18
+echo x - bitcoincash/files/patch-src_qt_trafficgraphwidget.h
+sed 's/^X//' >bitcoincash/files/patch-src_qt_trafficgraphwidget.h << 'c9e698104570da917c8f63a9dd8e1e87'
+X--- src/qt/trafficgraphwidget.h.orig	2023-12-12 20:02:14.000000000 +0000
+X+++ src/qt/trafficgraphwidget.h	2023-12-23 18:21:04.982276000 +0000
+X@@ -6,6 +6,7 @@
+X #pragma once
+X 
+X #include <QQueue>
+X+#include <QPainterPath>
+X #include <QWidget>
+X 
+X class ClientModel;
+c9e698104570da917c8f63a9dd8e1e87
+echo x - bitcoincash/files/bitcoincash.conf
+sed 's/^X//' >bitcoincash/files/bitcoincash.conf << '0d8203790298a534743bf8df0fd2471e'
+X# FreeBSD bitcoincashd configuration file
+X
+X# This file is used by bitcoincashd
+X# The GUI and CLI will default to generating and using ~/.bitcoincash/bitcoincash.conf
+X
+X# Bind to given address and always listen on it. Use [host]:port notation for IPv6
+X#bind=<addr>
+X
+X# Specify your own public IP address.
+X#externalip=<ip>
+X
+X# Listen for incoming connections on non-default port.
+X#port=<port>
+X
+X# Connect via a SOCKS5 proxy
+X#proxy=127.0.0.1:9050
+0d8203790298a534743bf8df0fd2471e
+echo x - bitcoincash/files/bitcoincashd.in
+sed 's/^X//' >bitcoincash/files/bitcoincashd.in << '880485a68ec4b45b9bccdba6db72d12a'
+X#!/bin/sh
+X
+X# PROVIDE: bitcoincashd
+X# REQUIRE: LOGIN cleanvar
+X# KEYWORD: shutdown
+X
+X#
+X# Add the following lines to /etc/rc.conf to enable :
+X# bitcoincashd_enable (bool):	Set to "NO" by default.
+X#				Set it to "YES" to enable bitcoincashd
+X# bitcoincashd_user (str)		Set to "bitcoincash" by default.
+X# bitcoincashd_group (str)		Set to "bitcoincash" by default.
+X# bitcoincashd_conf (str)		Set to "%%PREFIX%%/etc/bitcoincashd.conf" by default.
+X# bitcoincashd_data_dir (str)	Set to "/var/db/bitcoincash" by default.
+X# bitcoincashdlimits_enable (bool)	Set to "NO" by default.
+X#				Set it to "YES" to enable bitcoincashdlimits
+X# bitcoincashdlimits_args		Set to "-e -U ${bitcoincashd_user}" by default
+X
+X
+X. /etc/rc.subr
+X
+Xname="bitcoincashd"
+Xrcvar=bitcoincashd_enable
+X
+Xstart_precmd="bitcoincashd_precmd"
+Xstart_cmd="bitcoincashd_start"
+Xrestart_precmd="bitcoincashd_checkconfig"
+Xreload_precmd="bitcoincashd_checkconfig"
+Xconfigtest_cmd="bitcoincashd_checkconfig"
+Xstatus_cmd="bitcoincashd_status"
+Xstop_cmd="bitcoincashd_stop"
+Xstop_postcmd="bitcoincashd_wait"
+Xcommand="%%PREFIX%%/bin/bitcoincashd"
+Xdaemon_command="/usr/sbin/daemon"
+Xpidfile="/var/run/${name}.pid"
+Xextra_commands="configtest"
+X
+X
+X: ${bitcoincashd_enable:="NO"}
+X: ${bitcoincashdlimits_enable:="NO"}
+X
+Xload_rc_config ${name}
+X
+X: ${bitcoincashd_user:="bitcoincash"}
+X: ${bitcoincashd_group:="bitcoincash"}
+X: ${bitcoincashd_data_dir:="/var/db/bitcoincash"}
+X: ${bitcoincashd_config_file:="%%PREFIX%%/etc/bitcoincash.conf"}
+X: ${bitcoincashdlimits_args:="-e -U ${bitcoincashd_user}"}
+X
+X# set up dependant variables
+Xprocname="${command}"
+Xrequired_files="${bitcoincashd_config_file}"
+X
+X
+Xbitcoincashd_checkconfig()
+X{
+X  echo "Performing sanity check on bitcoincashd configuration:"
+X  if [ ! -d "${bitcoincashd_data_dir}" ]
+X  then
+X    echo "Missing data directory: ${bitcoincashd_data_dir}"
+X    exit 1
+X  fi
+X  chown -R "${bitcoincashd_user}:${bitcoincashd_group}" "${bitcoincashd_data_dir}"
+X
+X  if [ ! -f "${bitcoincashd_config_file}" ]
+X  then
+X    echo "Missing configuration file: ${bitcoincashd_config_file}"
+X    exit 1
+X  fi
+X  if [ ! -x "${command}" ]
+X  then
+X    echo "Missing executable: ${command}"
+X    exit 1
+X  fi
+X  return 0
+X}
+X
+Xbitcoincashd_cleanup()
+X{
+X  rm -f "${pidfile}"
+X}
+X
+Xbitcoincashd_precmd()
+X{
+X  bitcoincashd_checkconfig
+X
+X  pid=$(check_pidfile "${pidfile}" "${procname}")
+X  if [ -z "${pid}" ]
+X  then
+X    echo "Bitcoincashd is not running"
+X    rm -f "${pidfile}"
+X  fi
+X
+X  if checkyesno bitcoincashdlimits_enable
+X  then
+X    eval $(/usr/bin/limits ${bitcoincashdlimits_args}) 2>/dev/null
+X  else
+X    return 0
+X  fi
+X}
+X
+Xbitcoincashd_status()
+X{
+X  local pid
+X  pid=$(check_pidfile "${pidfile}" "${procname}")
+X  if [ -z "${pid}" ]
+X  then
+X    echo "Bitcoincashd is not running"
+X    return 1
+X  else
+X    echo "Bitcoincashd running, pid: ${pid}"
+X  fi
+X}
+X
+Xbitcoincashd_start()
+X{
+X  echo "Starting bitcoincashd:"
+X  cd "${bitcoincashd_data_dir}" || return 1
+X  ${daemon_command} -u "${bitcoincashd_user}" -p "${pidfile}" -f \
+X    ${command} \
+X    -conf="${bitcoincashd_config_file}" \
+X    -datadir="${bitcoincashd_data_dir}"
+X}
+X
+Xbitcoincashd_stop()
+X{
+X  echo "Stopping bitcoincashd:"
+X  pid=$(check_pidfile "${pidfile}" "${procname}")
+X  if [ -z "${pid}" ]
+X  then
+X    echo "Bitcoincashd is not running"
+X    return 1
+X  else
+X    kill ${pid}
+X  fi
+X}
+X
+Xbitcoincashd_wait()
+X{
+X  local n=60
+X  echo "Waiting for bitcoincashd shutdown:"
+X  while :
+X  do
+X    printf '.'
+X    pid=$(check_pidfile "${pidfile}" "${procname}")
+X    if [ -z "${pid}" ]
+X    then
+X      printf '\n'
+X      break
+X    fi
+X    sleep 1
+X    n=$((${n} - 1))
+X    if [ ${n} -eq 0 -a -f "${pidfile}" ]
+X    then
+X      printf "\nForce shutdown"
+X      kill -9 $(cat "${pidfile}")
+X      for n in 1 2 3
+X      do
+X        printf '.'
+X        sleep 1
+X      done
+X      printf '\n'
+X      break
+X    fi
+X  done
+X  rm -f "${pidfile}"
+X  echo "Shutdown complete"
+X}
+X
+Xrun_rc_command "$1"
+880485a68ec4b45b9bccdba6db72d12a
+echo x - bitcoincash/files/patch-src_util_system.cpp
+sed 's/^X//' >bitcoincash/files/patch-src_util_system.cpp << 'b461cbae399489dd5faa916ce2911dae'
+X--- src/util/system.cpp.orig	2023-12-24 10:46:23.290021000 +0000
+X+++ src/util/system.cpp	2023-12-24 10:53:48.330486000 +0000
+X@@ -78,7 +78,7 @@
+X // Application startup time (used for uptime calculation)
+X const int64_t nStartupTime = GetTime();
+X 
+X-const char *const BITCOIN_CONF_FILENAME = "bitcoin.conf";
+X+const char *const BITCOIN_CONF_FILENAME = "bitcoincash.conf";
+X 
+X ArgsManager gArgs;
+X 
+X@@ -810,7 +810,7 @@
+X     return pathRet / "Library/Application Support/Bitcoin";
+X #else
+X     // Unix
+X-    return pathRet / ".bitcoin";
+X+    return pathRet / ".bitcoincash";
+X #endif
+X #endif
+X }
+b461cbae399489dd5faa916ce2911dae
+echo c - bitcoincash-daemon
+mkdir -p bitcoincash-daemon > /dev/null 2>&1
+echo x - bitcoincash-daemon/Makefile
+sed 's/^X//' >bitcoincash-daemon/Makefile << 'ae92af783244e7345d0d15b5846ab59c'
+XMASTERDIR=	${.CURDIR}/../bitcoincash
+XPKGNAMESUFFIX=	-daemon
+X
+XCOMMENT=	Virtual Peer-to-Peer Currency (Daemon)
+X
+XSLAVE_PORT=	yes
+X
+XOPTIONS_DEFINE=		DEBUG HARDENING TESTS UPNP WALLET ZMQ
+XOPTIONS_DEFAULT=	HARDENING UPNP WALLET ZMQ
+X
+XUSERS=		bitcoincash
+XGROUPS=		bitcoincash
+X
+XCONFIGURE_ARGS=	--with-daemon \
+X		--without-gui \
+X		--without-libs \
+X		--without-qrencode \
+X		--without-utils
+X
+XPLIST_FILES=	bin/bitcoincashd \
+X		share/man/man1/bitcoincashd.1.gz \
+X		"@sample %%ETCDIR%%.conf.sample"
+X
+XUSE_RC_SUBR=	bitcoincashd
+X
+Xpost-install:
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoind.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincashd.1
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoind ${STAGEDIR}${PREFIX}/bin/bitcoincashd
+X	${INSTALL_DATA} ${FILESDIR}/bitcoincash.conf ${STAGEDIR}${PREFIX}/etc/bitcoincash.conf.sample
+X
+X.include "${MASTERDIR}/Makefile"
+ae92af783244e7345d0d15b5846ab59c
+echo c - bitcoincash-utils
+mkdir -p bitcoincash-utils > /dev/null 2>&1
+echo x - bitcoincash-utils/Makefile
+sed 's/^X//' >bitcoincash-utils/Makefile << 'a8a1d90bd29a1da6171fb7dc65a9cf70'
+XMASTERDIR=	${.CURDIR}/../bitcoincash
+XPKGNAMESUFFIX=	-utils
+X
+XCOMMENT=	Virtual Peer-to-Peer Currency (CLI and Utilities)
+XSLAVE_PORT=	yes
+X
+XOPTIONS_DEFINE=		DEBUG HARDENING TESTS
+XOPTIONS_DEFAULT=	HARDENING TESTS
+X
+XCONFIGURE_ARGS=	--without-daemon \
+X		--without-gui \
+X		--without-libs \
+X		--without-qrencode \
+X		--without-miniupnpc \
+X		--with-utils \
+X		--disable-wallet
+X
+XPLIST_FILES=	bin/bitcoincash-cli bin/bitcoincash-tx bin/bitcoincash-seeder \
+X		share/man/man1/bitcoincash-cli.1.gz share/man/man1/bitcoincash-tx.1.gz \
+X		share/man/man1/bitcoincash-seeder.1.gz
+X
+Xpost-install:
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-tx.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-seeder.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-seeder.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-cli.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-cli.1
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoincash-tx
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-seeder ${STAGEDIR}${PREFIX}/bin/bitcoincash-seeder
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-cli ${STAGEDIR}${PREFIX}/bin/bitcoincash-cli
+X
+X.include "${MASTERDIR}/Makefile"
+a8a1d90bd29a1da6171fb7dc65a9cf70
+exit
+
