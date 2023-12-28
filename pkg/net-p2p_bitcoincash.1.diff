@@ -1,0 +1,13 @@
+diff --git a/UIDs b/UIDs
+index 1f590ce112ba..c1619e8d9d27 100644
+--- a/UIDs
++++ b/UIDs
+@@ -729,7 +729,7 @@ bitcoin:*:779:779::0:0:bitcoin Daemon:/var/db/bitcoin:/usr/sbin/nologin
+ zetacoin:*:780:780::0:0:ZetaCoin Daemon:/nonexistent:/usr/sbin/nologin
+ monero:*:781:781::0:0:Monero Daemon:/var/db/monero:/usr/sbin/nologin
+ zeek:*:782:782::0:0:Zeek Network Security Monitor:/nonexistent:/usr/sbin/nologin
+-# free: 783
++bitcoincash:*:783:783::0:0:Bitcoin Cash Daemon:/var/db/bitcoincash:/usr/sbin/nologin
+ # free: 784
+ # free: 785
+ # free: 786
