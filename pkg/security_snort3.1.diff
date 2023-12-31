@@ -1,20 +1,18 @@
 --- ../snort3.orig/Makefile	2023-07-19 12:03:36.000000000 +0000
 +++ ./Makefile	2023-07-30 19:00:00.000000000 +0000
-@@ -62,6 +62,8 @@
- THREADSANITIZER_CMAKE_BOOL=	ENABLE_THREAD_SANITIZER
- TSC_CMAKE_BOOL=			ENABLE_TSC_CLOCK
+@@ -20,6 +20,7 @@ LIB_DEPENDS=	libdaq.so:net/libdaq \
  
-+DOCS_USES=			ruby:build
-+
- .include <bsd.port.options.mk>
+ USES=		cmake compiler:c++14-lang cpe iconv localbase luajit pathfix pkgconfig \
+ 		shebangfix ssl
++DOCS_USES=	ruby:build
+ USE_GITHUB=	yes
  
- .if ${OPSYS} == FreeBSD && ${OSVERSION} < 1300000
-@@ -71,5 +73,8 @@
- post-patch:
+ GH_ACCOUNT=	snort3
+@@ -66,4 +67,7 @@ post-patch:
  	${REINPLACE_CMD} -e 's|_LIBDIR}/pkgconfig|_PREFIX}/libdata/pkgconfig|g' \
  		${WRKSRC}/cmake/create_pkg_config.cmake
-+
+ 
 +post-stage-DOCS-on:
 +	${RUBY} ${WRKSRC}/doc/upgrade/get_differences.rb ${WRKSRC}/tools/snort2lua > ${STAGEDIR}${PREFIX}/share/doc/snort/config_changes.txt
- 
++
  .include <bsd.port.mk>
