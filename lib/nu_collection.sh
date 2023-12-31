@@ -116,6 +116,7 @@ collection_vars_init () {
 		textproc/riffdiff
 		lang/chez-scheme
 		emulators/qemu
+		devel/wasmer
 	'
 	
 	COLL_user='
@@ -258,6 +259,7 @@ collection_vars_init () {
 		www/redmine50
 		www/rubygem-passenger
 		x11-fonts/webfonts
+		net/kamailio
 		net-im/jitsi-videobridge
 		www/jitsi-meet
 		print/gutenprint
@@ -340,7 +342,9 @@ collection_vars_init () {
 		audio/audacity
 		audio/muse-sequencer
 		audio/zrythm
+		audio/mixxx
 		cad/opencascade
+		graphics/blender
 		games/sdlpop
 		games/openarena
 		games/openrct2
@@ -353,10 +357,6 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
-		devel/wasmer
-		graphics/blender
-		audio/mixxx
-		net/kamailio
 		www/iridium
 		games/veloren-weekly
 		net-p2p/cardano-node
