@@ -330,7 +330,6 @@ collection_vars_init () {
 		multimedia/haruna
 		java/icedtea-web
 		mail/thunderbird
-		net/quiterss
 		multimedia/vlc
 		multimedia/obs-studio
 		multimedia/wlrobs

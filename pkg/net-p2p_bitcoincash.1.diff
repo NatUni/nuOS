@@ -1,7 +1,5 @@
-diff --git a/UIDs b/UIDs
-index 1f590ce112ba..c1619e8d9d27 100644
---- a/UIDs
-+++ b/UIDs
+--- ../../UIDs.orig
++++ ../../UIDs
 @@ -729,7 +729,7 @@ bitcoin:*:779:779::0:0:bitcoin Daemon:/var/db/bitcoin:/usr/sbin/nologin
  zetacoin:*:780:780::0:0:ZetaCoin Daemon:/nonexistent:/usr/sbin/nologin
  monero:*:781:781::0:0:Monero Daemon:/var/db/monero:/usr/sbin/nologin

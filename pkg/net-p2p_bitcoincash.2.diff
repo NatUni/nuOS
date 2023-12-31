@@ -1,7 +1,5 @@
-diff --git a/GIDs b/GIDs
-index ebfa48fa4eeb..43b69ca36d63 100644
---- a/GIDs
-+++ b/GIDs
+--- ../../GIDs.orig
++++ ../../GIDs
 @@ -724,7 +724,7 @@ bitcoin:*:779:
  zetacoin:*:780:
  monero:*:781:
