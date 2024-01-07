@@ -1,0 +1,1 @@
+[ _1.83. = "_`grep ^BOOST_M..OR_VER= ../boost-all/common.mk | cut -d = -f 2 | tr \\\n .`" -a ! -f files/patch-boost_function_function__base.hpp ]

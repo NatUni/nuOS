@@ -6,28 +6,93 @@
 # This archive contains:
 #
 #	bitcoincash
-#	bitcoincash/distinfo
+#	bitcoincash-daemon
+#	bitcoincash-utils
+#	bitcoincash-daemon/Makefile
+#	bitcoincash-utils/Makefile
 #	bitcoincash/Makefile
-#	bitcoincash/pkg-descr
+#	bitcoincash/distinfo
 #	bitcoincash/files
-#	bitcoincash/files/bitcoincash-qt.desktop
 #	bitcoincash/files/patch-src_qt_trafficgraphwidget.h
+#	bitcoincash/files/bitcoincash-qt.desktop
 #	bitcoincash/files/bitcoincash.conf
 #	bitcoincash/files/bitcoincashd.in
 #	bitcoincash/files/patch-src_util_system.cpp
-#	bitcoincash-daemon
-#	bitcoincash-daemon/Makefile
-#	bitcoincash-utils
-#	bitcoincash-utils/Makefile
+#	bitcoincash/pkg-descr
 #
 echo c - bitcoincash
 mkdir -p bitcoincash > /dev/null 2>&1
-echo x - bitcoincash/distinfo
-sed 's/^X//' >bitcoincash/distinfo << '95d367624488c7ce98fa22d76738e1f9'
-XTIMESTAMP = 1703355192
-XSHA256 (bitcoincash/bitcoin-cash-node-v27.0.0.tar.gz) = 7d338b69eeeec075ccbd327ea128b5917675860f9685eeed9dc1d1aaf5df23da
-XSIZE (bitcoincash/bitcoin-cash-node-v27.0.0.tar.gz) = 34642356
-95d367624488c7ce98fa22d76738e1f9
+echo c - bitcoincash-daemon
+mkdir -p bitcoincash-daemon > /dev/null 2>&1
+echo c - bitcoincash-utils
+mkdir -p bitcoincash-utils > /dev/null 2>&1
+echo x - bitcoincash-daemon/Makefile
+sed 's/^X//' >bitcoincash-daemon/Makefile << 'ae92af783244e7345d0d15b5846ab59c'
+XMASTERDIR=	${.CURDIR}/../bitcoincash
+XPKGNAMESUFFIX=	-daemon
+X
+XCOMMENT=	Virtual Peer-to-Peer Currency (Daemon)
+X
+XSLAVE_PORT=	yes
+X
+XOPTIONS_DEFINE=		DEBUG HARDENING TESTS UPNP WALLET ZMQ
+XOPTIONS_DEFAULT=	HARDENING UPNP WALLET ZMQ
+X
+XUSERS=		bitcoincash
+XGROUPS=		bitcoincash
+X
+XCONFIGURE_ARGS=	--with-daemon \
+X		--without-gui \
+X		--without-libs \
+X		--without-qrencode \
+X		--without-utils
+X
+XPLIST_FILES=	bin/bitcoincashd \
+X		share/man/man1/bitcoincashd.1.gz \
+X		"@sample %%ETCDIR%%.conf.sample"
+X
+XUSE_RC_SUBR=	bitcoincashd
+X
+Xpost-install:
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoind.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincashd.1
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoind ${STAGEDIR}${PREFIX}/bin/bitcoincashd
+X	${INSTALL_DATA} ${FILESDIR}/bitcoincash.conf ${STAGEDIR}${PREFIX}/etc/bitcoincash.conf.sample
+X
+X.include "${MASTERDIR}/Makefile"
+ae92af783244e7345d0d15b5846ab59c
+echo x - bitcoincash-utils/Makefile
+sed 's/^X//' >bitcoincash-utils/Makefile << 'a8a1d90bd29a1da6171fb7dc65a9cf70'
+XMASTERDIR=	${.CURDIR}/../bitcoincash
+XPKGNAMESUFFIX=	-utils
+X
+XCOMMENT=	Virtual Peer-to-Peer Currency (CLI and Utilities)
+XSLAVE_PORT=	yes
+X
+XOPTIONS_DEFINE=		DEBUG HARDENING TESTS
+XOPTIONS_DEFAULT=	HARDENING TESTS
+X
+XCONFIGURE_ARGS=	--without-daemon \
+X		--without-gui \
+X		--without-libs \
+X		--without-qrencode \
+X		--without-miniupnpc \
+X		--with-utils \
+X		--disable-wallet
+X
+XPLIST_FILES=	bin/bitcoincash-cli bin/bitcoincash-tx bin/bitcoincash-seeder \
+X		share/man/man1/bitcoincash-cli.1.gz share/man/man1/bitcoincash-tx.1.gz \
+X		share/man/man1/bitcoincash-seeder.1.gz
+X
+Xpost-install:
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-tx.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-seeder.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-seeder.1
+X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-cli.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-cli.1
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoincash-tx
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-seeder ${STAGEDIR}${PREFIX}/bin/bitcoincash-seeder
+X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-cli ${STAGEDIR}${PREFIX}/bin/bitcoincash-cli
+X
+X.include "${MASTERDIR}/Makefile"
+a8a1d90bd29a1da6171fb7dc65a9cf70
 echo x - bitcoincash/Makefile
 sed 's/^X//' >bitcoincash/Makefile << '8421c84385b850cde0ff7aae996e668f'
 XPORTNAME=	bitcoincash
@@ -159,16 +224,27 @@ X	@cd ${WRKSRC} && ${GMAKE} check
 X
 X.include <bsd.port.post.mk>
 8421c84385b850cde0ff7aae996e668f
-echo x - bitcoincash/pkg-descr
-sed 's/^X//' >bitcoincash/pkg-descr << 'f50c42295c9c994cbe9f0040be6a8a4a'
-XBitcoin is a free open source peer-to-peer electronic cash system that
-Xis completely decentralized, without the need for a central server or
-Xtrusted parties. Users hold the crypto keys to their own money and
-Xtransact directly with each other, with the help of a P2P network to
-Xcheck for double-spending.
-f50c42295c9c994cbe9f0040be6a8a4a
+echo x - bitcoincash/distinfo
+sed 's/^X//' >bitcoincash/distinfo << '95d367624488c7ce98fa22d76738e1f9'
+XTIMESTAMP = 1704551502
+XSHA256 (bitcoincash/bitcoin-cash-node-v27.0.0.tar.gz) = ea2338df89b3f7be3861041c9ddd46e94aa3ae8938d35109eeac4a756d670fa9
+XSIZE (bitcoincash/bitcoin-cash-node-v27.0.0.tar.gz) = 34642354
+95d367624488c7ce98fa22d76738e1f9
 echo c - bitcoincash/files
 mkdir -p bitcoincash/files > /dev/null 2>&1
+echo x - bitcoincash/files/patch-src_qt_trafficgraphwidget.h
+sed 's/^X//' >bitcoincash/files/patch-src_qt_trafficgraphwidget.h << 'c9e698104570da917c8f63a9dd8e1e87'
+X--- src/qt/trafficgraphwidget.h.orig	2023-12-12 20:02:14.000000000 +0000
+X+++ src/qt/trafficgraphwidget.h	2023-12-23 18:21:04.982276000 +0000
+X@@ -6,6 +6,7 @@
+X #pragma once
+X 
+X #include <QQueue>
+X+#include <QPainterPath>
+X #include <QWidget>
+X 
+X class ClientModel;
+c9e698104570da917c8f63a9dd8e1e87
 echo x - bitcoincash/files/bitcoincash-qt.desktop
 sed 's/^X//' >bitcoincash/files/bitcoincash-qt.desktop << '3a752d85ee9258886bfaccc47af26e18'
 X[Desktop Entry]
@@ -186,19 +262,6 @@ XMimeType=x-scheme-handler/bitcoincash;
 XCategories=Office;Finance;
 XStartupWMClass=BitcoinCash-qt
 3a752d85ee9258886bfaccc47af26e18
-echo x - bitcoincash/files/patch-src_qt_trafficgraphwidget.h
-sed 's/^X//' >bitcoincash/files/patch-src_qt_trafficgraphwidget.h << 'c9e698104570da917c8f63a9dd8e1e87'
-X--- src/qt/trafficgraphwidget.h.orig	2023-12-12 20:02:14.000000000 +0000
-X+++ src/qt/trafficgraphwidget.h	2023-12-23 18:21:04.982276000 +0000
-X@@ -6,6 +6,7 @@
-X #pragma once
-X 
-X #include <QQueue>
-X+#include <QPainterPath>
-X #include <QWidget>
-X 
-X class ClientModel;
-c9e698104570da917c8f63a9dd8e1e87
 echo x - bitcoincash/files/bitcoincash.conf
 sed 's/^X//' >bitcoincash/files/bitcoincash.conf << '0d8203790298a534743bf8df0fd2471e'
 X# FreeBSD bitcoincashd configuration file
@@ -414,76 +477,15 @@ X #endif
 X #endif
 X }
 b461cbae399489dd5faa916ce2911dae
-echo c - bitcoincash-daemon
-mkdir -p bitcoincash-daemon > /dev/null 2>&1
-echo x - bitcoincash-daemon/Makefile
-sed 's/^X//' >bitcoincash-daemon/Makefile << 'ae92af783244e7345d0d15b5846ab59c'
-XMASTERDIR=	${.CURDIR}/../bitcoincash
-XPKGNAMESUFFIX=	-daemon
-X
-XCOMMENT=	Virtual Peer-to-Peer Currency (Daemon)
-X
-XSLAVE_PORT=	yes
-X
-XOPTIONS_DEFINE=		DEBUG HARDENING TESTS UPNP WALLET ZMQ
-XOPTIONS_DEFAULT=	HARDENING UPNP WALLET ZMQ
-X
-XUSERS=		bitcoincash
-XGROUPS=		bitcoincash
-X
-XCONFIGURE_ARGS=	--with-daemon \
-X		--without-gui \
-X		--without-libs \
-X		--without-qrencode \
-X		--without-utils
-X
-XPLIST_FILES=	bin/bitcoincashd \
-X		share/man/man1/bitcoincashd.1.gz \
-X		"@sample %%ETCDIR%%.conf.sample"
-X
-XUSE_RC_SUBR=	bitcoincashd
-X
-Xpost-install:
-X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoind.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincashd.1
-X	mv ${STAGEDIR}${PREFIX}/bin/bitcoind ${STAGEDIR}${PREFIX}/bin/bitcoincashd
-X	${INSTALL_DATA} ${FILESDIR}/bitcoincash.conf ${STAGEDIR}${PREFIX}/etc/bitcoincash.conf.sample
-X
-X.include "${MASTERDIR}/Makefile"
-ae92af783244e7345d0d15b5846ab59c
-echo c - bitcoincash-utils
-mkdir -p bitcoincash-utils > /dev/null 2>&1
-echo x - bitcoincash-utils/Makefile
-sed 's/^X//' >bitcoincash-utils/Makefile << 'a8a1d90bd29a1da6171fb7dc65a9cf70'
-XMASTERDIR=	${.CURDIR}/../bitcoincash
-XPKGNAMESUFFIX=	-utils
-X
-XCOMMENT=	Virtual Peer-to-Peer Currency (CLI and Utilities)
-XSLAVE_PORT=	yes
-X
-XOPTIONS_DEFINE=		DEBUG HARDENING TESTS
-XOPTIONS_DEFAULT=	HARDENING TESTS
-X
-XCONFIGURE_ARGS=	--without-daemon \
-X		--without-gui \
-X		--without-libs \
-X		--without-qrencode \
-X		--without-miniupnpc \
-X		--with-utils \
-X		--disable-wallet
-X
-XPLIST_FILES=	bin/bitcoincash-cli bin/bitcoincash-tx bin/bitcoincash-seeder \
-X		share/man/man1/bitcoincash-cli.1.gz share/man/man1/bitcoincash-tx.1.gz \
-X		share/man/man1/bitcoincash-seeder.1.gz
-X
-Xpost-install:
-X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-tx.1
-X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-seeder.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-seeder.1
-X	mv ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-cli.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoincash-cli.1
-X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoincash-tx
-X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-seeder ${STAGEDIR}${PREFIX}/bin/bitcoincash-seeder
-X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-cli ${STAGEDIR}${PREFIX}/bin/bitcoincash-cli
-X
-X.include "${MASTERDIR}/Makefile"
-a8a1d90bd29a1da6171fb7dc65a9cf70
+echo x - bitcoincash/pkg-descr
+sed 's/^X//' >bitcoincash/pkg-descr << 'f50c42295c9c994cbe9f0040be6a8a4a'
+XBitcoin Cash is a fork of the Bitcoin project with a different
+Xphilosophy on the blocksize limit controversy which caused a
+Xbifurcation of the Bitcoin blockchain. The original Bitcoin
+Xblockchain continues on unaltered, but the new fork is a distinct
+Xblockchain with the same transaction history as Bitcoin up until
+Xthe fork (block 478559) where it then diverged from it. As a
+Xresult a new cryptocurrency was born.
+f50c42295c9c994cbe9f0040be6a8a4a
 exit
 

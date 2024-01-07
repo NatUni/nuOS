@@ -1,0 +1,11 @@
+--- ../../UIDs.orig
++++ ../../UIDs
+@@ -731,7 +731,7 @@ monero:*:781:781::0:0:Monero Daemon:/var/db/monero:/usr/sbin/nologin
+ zeek:*:782:782::0:0:Zeek Network Security Monitor:/nonexistent:/usr/sbin/nologin
+ bitcoincash:*:783:783::0:0:Bitcoin Cash Daemon:/var/db/bitcoincash:/usr/sbin/nologin
+ # free: 784
+-# free: 785
++bitcoingold:*:785:785::0:0:Bitcoin Gold Daemon:/var/db/bitcoingold:/usr/sbin/nologin
+ # free: 786
+ # free: 787
+ # free: 788
