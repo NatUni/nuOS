@@ -84,11 +84,7 @@ collection_vars_init () {
 		sysutils/ztop
 		sysutils/bhyve-firmware
 		sysutils/grub2-bhyve
-		net/wifi-firmware-ath10k-kmod
-		net/wifi-firmware-ath11k-kmod
-		net/wifi-firmware-mt76-kmod
-		net/wifi-firmware-rtw88-kmod
-		net/wifi-firmware-rtw89-kmod
+		net/wifi-firmware-kmod
 		net/wifibox
 		net/ntopng
 	'
