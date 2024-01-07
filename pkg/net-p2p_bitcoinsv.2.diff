@@ -1,0 +1,11 @@
+--- ../../GIDs.orig
++++ ../../GIDs
+@@ -725,7 +725,7 @@ zetacoin:*:780:
+ monero:*:781:
+ zeek:*:782:
+ bitcoincash:*:783:
+-# free: 784
++bitcoinsv:*:784:
+ bitcoingold:*:785:
+ # free: 786
+ # free: 787

@@ -1,0 +1,14 @@
+--- /dev/null	2024-01-06 13:25:02.956148000 +0000
++++ files/patch-boost_function_function__base.hpp	2024-01-06 13:04:35.044365000 +0000
+@@ -0,0 +1,11 @@
++--- boost/function/function_base.hpp.orig	2024-01-06 00:05:46.999367000 +0000
+++++ boost/function/function_base.hpp	2024-01-06 00:06:29.254222000 +0000
++@@ -648,7 +648,7 @@
++                       detail::function::check_functor_type_tag);
++       // GCC 2.95.3 gets the CV qualifiers wrong here, so we
++       // can't do the static_cast that we should do.
++-      return static_cast<const Functor*>(type_result.members.obj_ptr);
+++      return reinterpret_cast<const Functor*>(type_result.members.obj_ptr);
++     }
++ 
++   template<typename F>

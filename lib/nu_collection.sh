@@ -238,6 +238,10 @@ collection_vars_init () {
 		net-p2p/litecoin-utils
 		net-p2p/namecoin-daemon
 		net-p2p/namecoin-utils
+		net-p2p/bitcoincash-daemon
+		net-p2p/bitcoincash-utils
+		net-p2p/bitcoinsv-daemon
+		net-p2p/bitcoinsv-utils
 		net-p2p/monero-cli
 		finance/vanitysearch
 		security/palisade
@@ -290,11 +294,12 @@ collection_vars_init () {
 		sysutils/touchegg
 		security/howdy
 		devel/tortoisehg
+		editors/calligra
 		editors/libreoffice
 		graphics/gimp
 		graphics/krita
 		graphics/inkscape
-		print/scribus-devel
+		print/scribus
 		deskutils/calibre
 		print/fontforge
 		x11/xorg
