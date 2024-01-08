@@ -236,6 +236,8 @@ collection_vars_init () {
 		net-p2p/namecoin-utils
 		net-p2p/bitcoincash-daemon
 		net-p2p/bitcoincash-utils
+		net-p2p/bitcoingold-daemon
+		net-p2p/bitcoingold-utils
 		net-p2p/bitcoinsv-daemon
 		net-p2p/bitcoinsv-utils
 		net-p2p/monero-cli
@@ -323,6 +325,8 @@ collection_vars_init () {
 		net-p2p/bitcoin
 		net-p2p/litecoin
 		net-p2p/namecoin
+		net-p2p/bitcoincash
+		net-p2p/bitcoingold
 		x11/kitty
 		x11/rio
 		net/x11vnc
