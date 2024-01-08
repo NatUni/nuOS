@@ -13,10 +13,10 @@
 #	bitcoincash/Makefile
 #	bitcoincash/distinfo
 #	bitcoincash/files
-#	bitcoincash/files/patch-src_qt_trafficgraphwidget.h
 #	bitcoincash/files/bitcoincash-qt.desktop
 #	bitcoincash/files/bitcoincash.conf
 #	bitcoincash/files/bitcoincashd.in
+#	bitcoincash/files/patch-src_qt_trafficgraphwidget.h
 #	bitcoincash/files/patch-src_util_system.cpp
 #	bitcoincash/pkg-descr
 #
@@ -232,19 +232,6 @@ XSIZE (bitcoincash/bitcoin-cash-node-v27.0.0.tar.gz) = 34642354
 95d367624488c7ce98fa22d76738e1f9
 echo c - bitcoincash/files
 mkdir -p bitcoincash/files > /dev/null 2>&1
-echo x - bitcoincash/files/patch-src_qt_trafficgraphwidget.h
-sed 's/^X//' >bitcoincash/files/patch-src_qt_trafficgraphwidget.h << 'c9e698104570da917c8f63a9dd8e1e87'
-X--- src/qt/trafficgraphwidget.h.orig	2023-12-12 20:02:14.000000000 +0000
-X+++ src/qt/trafficgraphwidget.h	2023-12-23 18:21:04.982276000 +0000
-X@@ -6,6 +6,7 @@
-X #pragma once
-X 
-X #include <QQueue>
-X+#include <QPainterPath>
-X #include <QWidget>
-X 
-X class ClientModel;
-c9e698104570da917c8f63a9dd8e1e87
 echo x - bitcoincash/files/bitcoincash-qt.desktop
 sed 's/^X//' >bitcoincash/files/bitcoincash-qt.desktop << '3a752d85ee9258886bfaccc47af26e18'
 X[Desktop Entry]
@@ -454,6 +441,19 @@ X}
 X
 Xrun_rc_command "$1"
 880485a68ec4b45b9bccdba6db72d12a
+echo x - bitcoincash/files/patch-src_qt_trafficgraphwidget.h
+sed 's/^X//' >bitcoincash/files/patch-src_qt_trafficgraphwidget.h << 'c9e698104570da917c8f63a9dd8e1e87'
+X--- src/qt/trafficgraphwidget.h.orig	2023-12-12 20:02:14.000000000 +0000
+X+++ src/qt/trafficgraphwidget.h	2023-12-23 18:21:04.982276000 +0000
+X@@ -6,6 +6,7 @@
+X #pragma once
+X 
+X #include <QQueue>
+X+#include <QPainterPath>
+X #include <QWidget>
+X 
+X class ClientModel;
+c9e698104570da917c8f63a9dd8e1e87
 echo x - bitcoincash/files/patch-src_util_system.cpp
 sed 's/^X//' >bitcoincash/files/patch-src_util_system.cpp << 'b461cbae399489dd5faa916ce2911dae'
 X--- src/util/system.cpp.orig	2023-12-24 10:46:23.290021000 +0000

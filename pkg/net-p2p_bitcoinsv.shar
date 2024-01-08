@@ -9,19 +9,20 @@
 #	bitcoinsv-daemon
 #	bitcoinsv-utils
 #	bitcoinsv-daemon/Makefile
+#	bitcoinsv-daemon/pkg-message
 #	bitcoinsv-utils/Makefile
 #	bitcoinsv/Makefile
 #	bitcoinsv/distinfo
 #	bitcoinsv/files
 #	bitcoinsv/files/bitcoinsv-qt.desktop
-#	bitcoinsv/files/patch-src_util.cpp
-#	bitcoinsv/files/patch-src_net_fixed__len__multi__parser.cpp
-#	bitcoinsv/files/bitcoinsvd.in
-#	bitcoinsv/files/patch-src_rpc_net.cpp
 #	bitcoinsv/files/bitcoinsv.conf
-#	bitcoinsv/files/patch-src_rpc_misc.cpp
-#	bitcoinsv/files/patch-src_vmtouch.cpp
+#	bitcoinsv/files/bitcoinsvd.in
 #	bitcoinsv/files/patch-src_bench_Examples.cpp
+#	bitcoinsv/files/patch-src_net_fixed__len__multi__parser.cpp
+#	bitcoinsv/files/patch-src_rpc_misc.cpp
+#	bitcoinsv/files/patch-src_rpc_net.cpp
+#	bitcoinsv/files/patch-src_util.cpp
+#	bitcoinsv/files/patch-src_vmtouch.cpp
 #	bitcoinsv/pkg-descr
 #	bitcoinsv/pkg-message
 #
@@ -65,6 +66,23 @@ X	${INSTALL_DATA} ${FILESDIR}/bitcoinsv.conf ${STAGEDIR}${PREFIX}/etc/bitcoinsv.
 X
 X.include "${MASTERDIR}/Makefile"
 1eae2b0c4234c457b7b86392254f919a
+echo x - bitcoinsv-daemon/pkg-message
+sed 's/^X//' >bitcoinsv-daemon/pkg-message << '460d6f20166fc3ddec6864f6dffd4a28'
+X[
+X{ type: install
+X  message: <<EOM
+XThis FreeBSD port normalizes the names of some executables and config
+Xfiles to be consistent with and coexist with other bitcoin forks. When
+XBitcoin SV discussion or documentation refers to bitcoin in particular 
+Xcontexts, think bitcoinsv.
+X
+XWARNING: BitcoinSV requires fast random-access storage (SSD or NVMe) to
+Xbe at all usable and will attempt to download and store well over 8 TB
+Xof data upon starting as per default configuration. You've been warned. 
+XEOM
+X}
+X]
+460d6f20166fc3ddec6864f6dffd4a28
 echo x - bitcoinsv-utils/Makefile
 sed 's/^X//' >bitcoinsv-utils/Makefile << '3d0ae8f1507cd543079fc2e30a2465c3'
 XMASTERDIR=	${.CURDIR}/../bitcoinsv
@@ -123,6 +141,10 @@ X
 XSLAVE_PORT?=	no
 X
 X.if defined(SLAVE_PORT) && ${SLAVE_PORT} == "no"
+XBROKEN=		This BitcoinSV distribution does not offer a GUI app. These FreeBSD ports\
+X		are simply lazy copypasta of loosely related softwares that do. See the\
+X		bitcoinsv-daemon and bitcoinsv-utils slave ports
+X
 XUSES+=		desktop-file-utils
 XUSE_QT=		core gui network widgets \
 X		buildtools:build linguisttools:build qmake:build
@@ -235,42 +257,93 @@ XMimeType=x-scheme-handler/bitcoinsv;
 XCategories=Office;Finance;
 XStartupWMClass=BitcoinSV-qt
 707082f54a5b1b5ed4e153b32a34c878
-echo x - bitcoinsv/files/patch-src_util.cpp
-sed 's/^X//' >bitcoinsv/files/patch-src_util.cpp << 'ff4a1d2633b01fcc386f1fa55ad2a033'
-X--- src/util.cpp.orig	2024-01-02 12:56:18.342421000 +0000
-X+++ src/util.cpp	2024-01-02 12:57:57.219052000 +0000
-X@@ -84,7 +84,7 @@
-X // Application startup time (used for uptime calculation)
-X const int64_t nStartupTime = GetTime();
-X 
-X-const char *const BITCOIN_CONF_FILENAME = "bitcoin.conf";
-X+const char *const BITCOIN_CONF_FILENAME = "bitcoinsv.conf";
-X const char *const BITCOIN_PID_FILENAME = "bitcoind.pid";
-X 
-X ArgsManager gArgs;
-X@@ -481,7 +481,7 @@
-X     return pathRet / "Library/Application Support/Bitcoin";
-X #else
-X     // Unix
-X-    return pathRet / ".bitcoin";
-X+    return pathRet / ".bitcoinsv";
-X #endif
-X #endif
-X }
-ff4a1d2633b01fcc386f1fa55ad2a033
-echo x - bitcoinsv/files/patch-src_net_fixed__len__multi__parser.cpp
-sed 's/^X//' >bitcoinsv/files/patch-src_net_fixed__len__multi__parser.cpp << '51b3d851d9a533ea1626b1092485e0f0'
-X--- src/net/fixed_len_multi_parser.cpp.orig	2024-01-02 07:12:49.846523000 +0000
-X+++ src/net/fixed_len_multi_parser.cpp	2024-01-02 07:13:19.198017000 +0000
-X@@ -14,6 +14,7 @@
-X #include <thread>
-X #include <unistd.h>
-X #include <utility>
-X+#include <fstream>
-X 
-X #include "cmpct_size.h"
-X #include "msg_parser.h"
-51b3d851d9a533ea1626b1092485e0f0
+echo x - bitcoinsv/files/bitcoinsv.conf
+sed 's/^X//' >bitcoinsv/files/bitcoinsv.conf << '2b855a2c5ee2367e1befd66f7e0e5a8d'
+X# FreeBSD bitcoinsvd configuration file
+X
+X# This file is used by bitcoinsvd
+X# The GUI and CLI will default to generating and using ~/.bitcoinsv/bitcoinsv.conf
+X#
+X# BitcoinSV has hundreds of config options and there isn't a single mode of
+X# operation (mining, client, testnet etc)  that can be easily covered by a
+X# sample file.
+X
+X# Bind to given address and always listen on it. Use [host]:port notation for IPv6
+X#bind=<addr>
+X
+X# Specify your own public IP address.
+X#externalip=<ip>
+X
+X# Listen for incoming connections on non-default port.
+X#port=<port>
+X
+X# Connect via a SOCKS5 proxy
+X#proxy=127.0.0.1:9050
+X
+X# Setting minminingfee is mandatory even if you never intend to mine any BSV. The
+X# setting below is a sensible default chosen by the FreeBSD port maintainer per
+X# recommendation in the source distribution version 1.0.11 release notes. If you
+X# intend to mine BSV you should inform yourself as to your decided setting value.
+Xminminingtxfee=0.000005
+X
+X# The source distribution includes a checkpoint of block #532487. To speed up the
+X# IBD (initial block download) and/or tax your system less during the loading of
+X# historical blocks, the FreeBSD port maintainer has here included for you the
+X# hash of block #825115 (2024-01-01 00:07:28 UTC).
+Xassumevalid=00000000000000000445c21a11e6efe5f391c5a4a29a959c19f0dee0dd8f8919
+X
+X# Delete oldest blocks from local storage as block storage approaches this many
+X# megabytes. As of January 1, 2024 the entire BSV blockchain exceeds 8 terabytes.
+X# Default is to accumulate all blocks. Pruning is incompatible with txindex mode.
+X#prune=500000
+X
+X# Maintain an index of all global transactions. Incompatible with block pruning.
+X# Default is to only index transactions involving your own wallet.
+X#txindex=1
+X
+X# Disable connecting to peer nodes over the network. This can be useful if, for 
+X# instance, you first want to import private keys before beginning the initial
+X# block download, since pruning would preclude a rescan of the local database.
+X#noconnect=1
+X
+X# Disable the "safe" mode which prevents one from spending coins while the local
+X# database is behind the network of up-to-date peers. This can be useful when it
+X# is already known to the user at what addresses and in what blocks all of their
+X# unspent transaction outputs are, such as when liquidating all BSV held from
+X# prior to the hard fork(s) from ancestor blockchain(s) by using imported keys.
+X# Once the entirety of coin is detected by the node, a valid transaction can be
+X# broadcast despite having an incomplete database of blocks. Thus, one can avoid
+X# drudging through the laughable self-pwn that is the explosion of spam, attack
+X# and other tiny transactions BSV invited unto itself, apparently to solidify
+X# the very sort of centralization its disingenuous proponents claim to denounce.
+X# If using this method of operation, be sure to completely spend any such UTXOs
+X# because you will not be able to access any remainder returned to you by the
+X# transaction to a change address until after you make your way through all the
+X# blocks mined before your transaction was sent, terabytes of data which "peer"
+X# nodes are hesitant and sluggish to share with your node without an out-of-
+X# band commercial agreement made with one or more of the few in-crowd cronies.
+X#disablesafemode=1
+X
+X# Fee (in BSV/kB) to add to transactions you send; (default: 0). This is easily
+X# set at runtime as needed on the basis of individual transactions but it might
+X# be helpful to initialize to a sensible value to avoid accidentally sending
+X# slow or stagnant transactions after a fresh (re)start.
+X#paytxfee=0.00001
+X
+X# The maxstackmemoryusageconsensus and excessiveblocksize settings are critical
+X# settings central to BitcoinSV's entire purported reason for being. Settings
+X# below are informed as of January 1, 2024 to the FreeBSD port maintainer by the
+X# monopolizing organizations of Craig Wright and Richard Baker. You should make
+X# an informed decision based on your use case for BSV. These are workable...
+X
+X# ...for BSV miners as of 2024-01-01:
+X#maxstackmemoryusageconsensus=100000000
+X#excessiveblocksize=4000000000
+X
+X# ...for BSV listeners/wallets as of 2024-01-01:
+X#maxstackmemoryusageconsensus=200000000
+X#excessiveblocksize=10000000000
+2b855a2c5ee2367e1befd66f7e0e5a8d
 echo x - bitcoinsv/files/bitcoinsvd.in
 sed 's/^X//' >bitcoinsv/files/bitcoinsvd.in << 'b0c3cea8f92f77b19547e728311f7037'
 X#!/bin/sh
@@ -444,6 +517,52 @@ X}
 X
 Xrun_rc_command "$1"
 b0c3cea8f92f77b19547e728311f7037
+echo x - bitcoinsv/files/patch-src_bench_Examples.cpp
+sed 's/^X//' >bitcoinsv/files/patch-src_bench_Examples.cpp << '95f8174bc17c301d121be8182aa910e3'
+X--- src/bench/Examples.cpp.orig	2024-01-02 14:03:14.064806000 +0000
+X+++ src/bench/Examples.cpp	2024-01-02 14:03:35.231687000 +0000
+X@@ -25,7 +25,7 @@
+X     std::atomic<double> sum {0.0};  // atomic so not optimised away
+X     double d = 0.01;
+X     while (state.KeepRunning()) {
+X-        sum += sin(d);
+X+        sum = sum + sin(d);
+X         d += 0.000001;
+X     }
+X }
+95f8174bc17c301d121be8182aa910e3
+echo x - bitcoinsv/files/patch-src_net_fixed__len__multi__parser.cpp
+sed 's/^X//' >bitcoinsv/files/patch-src_net_fixed__len__multi__parser.cpp << '51b3d851d9a533ea1626b1092485e0f0'
+X--- src/net/fixed_len_multi_parser.cpp.orig	2024-01-02 07:12:49.846523000 +0000
+X+++ src/net/fixed_len_multi_parser.cpp	2024-01-02 07:13:19.198017000 +0000
+X@@ -14,6 +14,7 @@
+X #include <thread>
+X #include <unistd.h>
+X #include <utility>
+X+#include <fstream>
+X 
+X #include "cmpct_size.h"
+X #include "msg_parser.h"
+51b3d851d9a533ea1626b1092485e0f0
+echo x - bitcoinsv/files/patch-src_rpc_misc.cpp
+sed 's/^X//' >bitcoinsv/files/patch-src_rpc_misc.cpp << '5305e58c501dae7496fd546dbdcedc9a'
+X--- src/rpc/misc.cpp.orig	2024-01-02 09:20:43.936583000 +0000
+X+++ src/rpc/misc.cpp	2024-01-02 09:22:46.225744000 +0000
+X@@ -1229,10 +1229,10 @@
+X     obj.push_back(Pair("acceptnonstdoutputs", config.GetAcceptNonStandardOutput(true)));
+X     obj.push_back(Pair("datacarrier", config.GetDataCarrier()));
+X     obj.push_back(Pair("minminingtxfee", ValueFromAmount(mempool.GetBlockMinTxFee().GetFeePerK())));
+X-    obj.push_back(Pair("maxstdtxvalidationduration", config.GetMaxStdTxnValidationDuration().count()));
+X-    obj.push_back(Pair("maxnonstdtxvalidationduration", config.GetMaxNonStdTxnValidationDuration().count()));
+X+    obj.push_back(Pair("maxstdtxvalidationduration", static_cast<uint64_t>(config.GetMaxStdTxnValidationDuration().count())));
+X+    obj.push_back(Pair("maxnonstdtxvalidationduration", static_cast<uint64_t>(config.GetMaxNonStdTxnValidationDuration().count())));
+X 
+X-    obj.push_back(Pair("maxtxchainvalidationbudget", config.GetMaxTxnChainValidationBudget().count()));
+X+    obj.push_back(Pair("maxtxchainvalidationbudget", static_cast<uint64_t>(config.GetMaxTxnChainValidationBudget().count())));
+X     obj.push_back(Pair("validationclockcpu", config.GetValidationClockCPU()));
+X 
+X 
+5305e58c501dae7496fd546dbdcedc9a
 echo x - bitcoinsv/files/patch-src_rpc_net.cpp
 sed 's/^X//' >bitcoinsv/files/patch-src_rpc_net.cpp << '6c563b98144d72227aafacac074d9c07'
 X--- src/rpc/net.cpp.orig	2024-01-02 09:46:21.884165000 +0000
@@ -467,112 +586,29 @@ X }
 X 
 X static UniValue getauthconninfo(const Config &config,
 6c563b98144d72227aafacac074d9c07
-echo x - bitcoinsv/files/bitcoinsv.conf
-sed 's/^X//' >bitcoinsv/files/bitcoinsv.conf << '2b855a2c5ee2367e1befd66f7e0e5a8d'
-X# FreeBSD bitcoinsvd configuration file
-X
-X# This file is used by bitcoinsvd
-X# The GUI and CLI will default to generating and using ~/.bitcoinsv/bitcoinsv.conf
-X#
-X# BitcoinSV has hundreds of config options and there isn't a single mode of
-X# operation (mining, client, testnet etc)  that can be easily covered by a
-X# sample file.
-X
-X# Bind to given address and always listen on it. Use [host]:port notation for IPv6
-X#bind=<addr>
-X
-X# Specify your own public IP address.
-X#externalip=<ip>
-X
-X# Listen for incoming connections on non-default port.
-X#port=<port>
-X
-X# Connect via a SOCKS5 proxy
-X#proxy=127.0.0.1:9050
-X
-X# Setting minminingfee is mandatory even if you never intend to mine any BSV. The
-X# setting below is a sensible default chosen by the FreeBSD port maintainer per
-X# recommendation in the source distribution version 1.0.11 release notes. If you
-X# intend to mine BSV you should inform yourself as to your decided setting value.
-Xminminingtxfee=0.000005
-X
-X# The source distribution includes a checkpoint of block #532487. To speed up the
-X# IBD (initial block download) and/or tax your system less during the loading of
-X# historical blocks, the FreeBSD port maintainer has here included for you the
-X# hash of block #825115 (2024-01-01 00:07:28 UTC).
-Xassumevalid=00000000000000000445c21a11e6efe5f391c5a4a29a959c19f0dee0dd8f8919
-X
-X# Delete oldest blocks from local storage as block storage approaches this many
-X# megabytes. As of January 1, 2024 the entire BSV blockchain exceeds 8 terabytes.
-X# Default is to accumulate all blocks. Pruning is incompatible with txindex mode.
-X#prune=500000
-X
-X# Maintain an index of all global transactions. Incompatible with block pruning.
-X# Default is to only index transactions involving your own wallet.
-X#txindex=1
-X
-X# Disable connecting to peer nodes over the network. This can be useful if, for 
-X# instance, you first want to import private keys before beginning the initial
-X# block download, since pruning would preclude a rescan of the local database.
-X#noconnect=1
-X
-X# Disable the "safe" mode which prevents one from spending coins while the local
-X# database is behind the network of up-to-date peers. This can be useful when it
-X# is already known to the user at what addresses and in what blocks all of their
-X# unspent transaction outputs are, such as when liquidating all BSV held from
-X# prior to the hard fork(s) from ancestor blockchain(s) by using imported keys.
-X# Once the entirety of coin is detected by the node, a valid transaction can be
-X# broadcast despite having an incomplete database of blocks. Thus, one can avoid
-X# drudging through the laughable self-pwn that is the explosion of spam, attack
-X# and other tiny transactions BSV invited unto itself, apparently to solidify
-X# the very sort of centralization its disingenuous proponents claim to denounce.
-X# If using this method of operation, be sure to completely spend any such UTXOs
-X# because you will not be able to access any remainder returned to you by the
-X# transaction to a change address until after you make your way through all the
-X# blocks mined before your transaction was sent, terabytes of data which "peer"
-X# nodes are hesitant and sluggish to share with your node without an out-of-
-X# band commercial agreement made with one or more of the few in-crowd cronies.
-X#disablesafemode=1
-X
-X# Fee (in BSV/kB) to add to transactions you send; (default: 0). This is easily
-X# set at runtime as needed on the basis of individual transactions but it might
-X# be helpful to initialize to a sensible value to avoid accidentally sending
-X# slow or stagnant transactions after a fresh (re)start.
-X#paytxfee=0.00001
-X
-X# The maxstackmemoryusageconsensus and excessiveblocksize settings are critical
-X# settings central to BitcoinSV's entire purported reason for being. Settings
-X# below are informed as of January 1, 2024 to the FreeBSD port maintainer by the
-X# monopolizing organizations of Craig Wright and Richard Baker. You should make
-X# an informed decision based on your use case for BSV. These are workable...
-X
-X# ...for BSV miners as of 2024-01-01:
-X#maxstackmemoryusageconsensus=100000000
-X#excessiveblocksize=4000000000
-X
-X# ...for BSV listeners/wallets as of 2024-01-01:
-X#maxstackmemoryusageconsensus=200000000
-X#excessiveblocksize=10000000000
-2b855a2c5ee2367e1befd66f7e0e5a8d
-echo x - bitcoinsv/files/patch-src_rpc_misc.cpp
-sed 's/^X//' >bitcoinsv/files/patch-src_rpc_misc.cpp << '5305e58c501dae7496fd546dbdcedc9a'
-X--- src/rpc/misc.cpp.orig	2024-01-02 09:20:43.936583000 +0000
-X+++ src/rpc/misc.cpp	2024-01-02 09:22:46.225744000 +0000
-X@@ -1229,10 +1229,10 @@
-X     obj.push_back(Pair("acceptnonstdoutputs", config.GetAcceptNonStandardOutput(true)));
-X     obj.push_back(Pair("datacarrier", config.GetDataCarrier()));
-X     obj.push_back(Pair("minminingtxfee", ValueFromAmount(mempool.GetBlockMinTxFee().GetFeePerK())));
-X-    obj.push_back(Pair("maxstdtxvalidationduration", config.GetMaxStdTxnValidationDuration().count()));
-X-    obj.push_back(Pair("maxnonstdtxvalidationduration", config.GetMaxNonStdTxnValidationDuration().count()));
-X+    obj.push_back(Pair("maxstdtxvalidationduration", static_cast<uint64_t>(config.GetMaxStdTxnValidationDuration().count())));
-X+    obj.push_back(Pair("maxnonstdtxvalidationduration", static_cast<uint64_t>(config.GetMaxNonStdTxnValidationDuration().count())));
+echo x - bitcoinsv/files/patch-src_util.cpp
+sed 's/^X//' >bitcoinsv/files/patch-src_util.cpp << 'ff4a1d2633b01fcc386f1fa55ad2a033'
+X--- src/util.cpp.orig	2024-01-02 12:56:18.342421000 +0000
+X+++ src/util.cpp	2024-01-02 12:57:57.219052000 +0000
+X@@ -84,7 +84,7 @@
+X // Application startup time (used for uptime calculation)
+X const int64_t nStartupTime = GetTime();
 X 
-X-    obj.push_back(Pair("maxtxchainvalidationbudget", config.GetMaxTxnChainValidationBudget().count()));
-X+    obj.push_back(Pair("maxtxchainvalidationbudget", static_cast<uint64_t>(config.GetMaxTxnChainValidationBudget().count())));
-X     obj.push_back(Pair("validationclockcpu", config.GetValidationClockCPU()));
+X-const char *const BITCOIN_CONF_FILENAME = "bitcoin.conf";
+X+const char *const BITCOIN_CONF_FILENAME = "bitcoinsv.conf";
+X const char *const BITCOIN_PID_FILENAME = "bitcoind.pid";
 X 
-X 
-5305e58c501dae7496fd546dbdcedc9a
+X ArgsManager gArgs;
+X@@ -481,7 +481,7 @@
+X     return pathRet / "Library/Application Support/Bitcoin";
+X #else
+X     // Unix
+X-    return pathRet / ".bitcoin";
+X+    return pathRet / ".bitcoinsv";
+X #endif
+X #endif
+X }
+ff4a1d2633b01fcc386f1fa55ad2a033
 echo x - bitcoinsv/files/patch-src_vmtouch.cpp
 sed 's/^X//' >bitcoinsv/files/patch-src_vmtouch.cpp << '0c283f8a3c1dcb934e2b3aafdfba5563'
 X--- src/vmtouch.cpp.orig	2024-01-02 12:03:43.989401000 +0000
@@ -590,20 +626,6 @@ X
 X       // 3rd arg to mincore is char* on BSD and unsigned char* on linux      
 X       if (mincore(mem, len_of_range, mincore_array.data()) != 0) {
 0c283f8a3c1dcb934e2b3aafdfba5563
-echo x - bitcoinsv/files/patch-src_bench_Examples.cpp
-sed 's/^X//' >bitcoinsv/files/patch-src_bench_Examples.cpp << '95f8174bc17c301d121be8182aa910e3'
-X--- src/bench/Examples.cpp.orig	2024-01-02 14:03:14.064806000 +0000
-X+++ src/bench/Examples.cpp	2024-01-02 14:03:35.231687000 +0000
-X@@ -25,7 +25,7 @@
-X     std::atomic<double> sum {0.0};  // atomic so not optimised away
-X     double d = 0.01;
-X     while (state.KeepRunning()) {
-X-        sum += sin(d);
-X+        sum = sum + sin(d);
-X         d += 0.000001;
-X     }
-X }
-95f8174bc17c301d121be8182aa910e3
 echo x - bitcoinsv/pkg-descr
 sed 's/^X//' >bitcoinsv/pkg-descr << 'afed6ce53477e74a97aa72bb9376c375'
 XBitcoin SV (Satoshi Vision) is a fork of the Bitcoin Cash
@@ -626,6 +648,11 @@ sed 's/^X//' >bitcoinsv/pkg-message << '6771aa348cd4c87cb5cd0190789601cb'
 X[
 X{ type: install
 X  message: <<EOM
+XThis FreeBSD port normalizes the names of some executables and config
+Xfiles to be consistent with and coexist with other bitcoin forks. When
+XBitcoin SV discussion or documentation refers to bitcoin in particular 
+Xcontexts, think bitcoinsv.
+X
 XWARNING: BitcoinSV requires fast random-access storage (SSD or NVMe) to
 Xbe at all usable and will attempt to download and store well over 8 TB
 Xof data upon starting as per default configuration. You've been warned. 

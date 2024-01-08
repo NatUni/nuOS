@@ -6,40 +6,125 @@
 # This archive contains:
 #
 #	bitcoingold
-#	bitcoingold/pkg-descr
+#	bitcoingold-daemon
+#	bitcoingold-utils
+#	bitcoingold-daemon/Makefile
+#	bitcoingold-daemon/pkg-message
+#	bitcoingold-utils/Makefile
 #	bitcoingold/Makefile
 #	bitcoingold/distinfo
-#	bitcoingold/ass.out
 #	bitcoingold/files
-#	bitcoingold/files/patch-src_httpserver.cpp
-#	bitcoingold/files/patch-src_qt_splashscreen.cpp
-#	bitcoingold/files/patch-src_qt_clientmodel.cpp
-#	bitcoingold/files/patch-src_validation.cpp
-#	bitcoingold/files/bitcoingoldd.in
-#	bitcoingold/files/patch-src_qt_bitcoingui.cpp
 #	bitcoingold/files/bitcoingold-qt.desktop
-#	bitcoingold/files/patch-src_net_processing.cpp
-#	bitcoingold/files/patch-src_validationinterface.cpp
-#	bitcoingold/files/patch-src_qt_walletmodel.cpp
-#	bitcoingold/files/patch-src_qt_transactiontablemodel.cpp
 #	bitcoingold/files/bitcoingold.conf
+#	bitcoingold/files/bitcoingoldd.in
+#	bitcoingold/files/patch-src_httpserver.cpp
+#	bitcoingold/files/patch-src_net_processing.cpp
+#	bitcoingold/files/patch-src_qt_bitcoingui.cpp
+#	bitcoingold/files/patch-src_qt_clientmodel.cpp
+#	bitcoingold/files/patch-src_qt_splashscreen.cpp
 #	bitcoingold/files/patch-src_qt_trafficgraphwidget.h
-#	bitcoingold-daemon
-#	bitcoingold-daemon/Makefile
-#	bitcoingold-utils
-#	bitcoingold-utils/Makefile
+#	bitcoingold/files/patch-src_qt_transactiontablemodel.cpp
+#	bitcoingold/files/patch-src_qt_walletmodel.cpp
+#	bitcoingold/files/patch-src_validation.cpp
+#	bitcoingold/files/patch-src_validationinterface.cpp
+#	bitcoingold/files/patch-src_wallet_coinselection.cpp
+#	bitcoingold/pkg-descr
+#	bitcoingold/pkg-message
 #
 echo c - bitcoingold
 mkdir -p bitcoingold > /dev/null 2>&1
-echo x - bitcoingold/pkg-descr
-sed 's/^X//' >bitcoingold/pkg-descr << '006a48fa4e2762acc98643cf23e766ae'
-XBitcoin Gold is a fork of the Bitcoin project with a different
-Xproof-of-work algorithm which caused a bifurcation of the Bitcoin
-Xblockchain. The original Bitcoin blockchain continues on unaltered,
-Xbut the new fork is a distinct blockchain with the same transaction
-Xhistory as Bitcoin up until the fork (block 491407) where it then
-Xdiverged from it. As a result a new cryptocurrency was born.
-006a48fa4e2762acc98643cf23e766ae
+echo c - bitcoingold-daemon
+mkdir -p bitcoingold-daemon > /dev/null 2>&1
+echo c - bitcoingold-utils
+mkdir -p bitcoingold-utils > /dev/null 2>&1
+echo x - bitcoingold-daemon/Makefile
+sed 's/^X//' >bitcoingold-daemon/Makefile << '84fe1e82edda964a88fa3376afc554ff'
+XMASTERDIR=	${.CURDIR}/../bitcoingold
+XPKGNAMESUFFIX=	-daemon
+X
+XCOMMENT=	Virtual Peer-to-Peer Currency (Daemon)
+X
+XSLAVE_PORT=	yes
+X
+XNOT_FOR_ARCHS=		powerpc powerpc64 sparc64
+XNOT_FOR_ARCHS_REASON=	does not support big-endian architectures
+X
+XOPTIONS_DEFINE=		DEBUG HARDENING TESTS UPNP WALLET ZMQ
+XOPTIONS_DEFAULT=	HARDENING UPNP WALLET
+X
+XUSERS=		bitcoingold
+XGROUPS=		bitcoingold
+X
+XCONFIGURE_ARGS=	--with-daemon \
+X		--with-incompatible-bdb \
+X		--without-gui \
+X		--without-libs \
+X		--without-qrencode \
+X		--without-utils
+X
+XPLIST_FILES=	bin/bitcoingoldd \
+X		man/man1/bitcoingoldd.1.gz \
+X		etc/bitcoingold.conf.sample
+X
+XUSE_RC_SUBR=	bitcoingoldd
+X
+Xpost-install:
+X	${INSTALL_DATA} ${WRKSRC}/contrib/debian/examples/bitcoingold.conf ${STAGEDIR}${PREFIX}/etc/bitcoingold.conf.sample
+X	${MV} ${STAGEDIR}${PREFIX}/bin/bgoldd ${STAGEDIR}${PREFIX}/bin/bitcoingoldd
+X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bgoldd.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingoldd.1
+X
+X.include "${MASTERDIR}/Makefile"
+84fe1e82edda964a88fa3376afc554ff
+echo x - bitcoingold-daemon/pkg-message
+sed 's/^X//' >bitcoingold-daemon/pkg-message << '251b9dc823b1859a311dc903089beab8'
+X[
+X{ type: install
+X  message: <<EOM
+XThis FreeBSD port normalizes the names of some executables and config
+Xfiles to be consistent with and coexist with other bitcoin forks. When
+XBitcoin Gold discussion or documentation refers to bgold or bitcoin in
+Xparticular contexts, think bitcoingold.
+X
+XWARNING: Found Berkeley DB other than 4.8; wallets opened by this build
+Xwill not be portable! Be sure to use the facilities utilizing plaintext
+Xformats for wallet backup/restore.
+XEOM
+X}
+X]
+251b9dc823b1859a311dc903089beab8
+echo x - bitcoingold-utils/Makefile
+sed 's/^X//' >bitcoingold-utils/Makefile << '017da92757830ebf5ed74f3cf3588f52'
+XMASTERDIR=	${.CURDIR}/../bitcoingold
+XPKGNAMESUFFIX=	-utils
+X
+XCOMMENT=	Virtual Peer-to-Peer Currency (CLI and Utilities)
+XSLAVE_PORT=	yes
+X
+XNOT_FOR_ARCHS=		powerpc powerpc64 sparc64
+XNOT_FOR_ARCHS_REASON=	does not support big-endian architectures
+X
+XOPTIONS_DEFINE=		DEBUG HARDENING TESTS
+XOPTIONS_DEFAULT=	HARDENING
+X
+XCONFIGURE_ARGS=	--without-daemon \
+X		--without-gui \
+X		--without-libs \
+X		--without-qrencode \
+X		--without-miniupnpc \
+X		--with-utils \
+X		--disable-wallet
+X
+XPLIST_FILES=	bin/bitcoingold-cli bin/bitcoingold-tx \
+X		man/man1/bitcoingold-cli.1.gz man/man1/bitcoingold-tx.1.gz
+X
+Xpost-install:
+X	${MV} ${STAGEDIR}${PREFIX}/bin/bgold-cli ${STAGEDIR}${PREFIX}/bin/bitcoingold-cli
+X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bgold-cli.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-cli.1
+X	${MV} ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoingold-tx
+X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-tx.1
+X
+X.include "${MASTERDIR}/Makefile"
+017da92757830ebf5ed74f3cf3588f52
 echo x - bitcoingold/Makefile
 sed 's/^X//' >bitcoingold/Makefile << '7563b7e189ea792af64d1a1b621d8cf4'
 XPORTNAME=	bitcoingold
@@ -144,12 +229,9 @@ X
 X.if defined(SLAVE_PORT) && ${SLAVE_PORT} == "no"
 X
 Xpost-install:
-X	${REINPLACE_CMD} -e 's,=/usr,=${PREFIX},;s/Exec=bitcoin-qt/Exec=bitcoingold-qt/;s/Icon=bitcoin128/Icon=bitcoingold128/' \
-X		${WRKSRC}/contrib/debian/bitcoin-qt.desktop
 X	${MV} ${STAGEDIR}${PREFIX}/bin/bitcoin-qt ${STAGEDIR}${PREFIX}/bin/bitcoingold-qt
 X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bitcoin-qt.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-qt.1
-X	${INSTALL} ${WRKSRC}/contrib/debian/bitcoin-qt.desktop \
-X		${STAGEDIR}${PREFIX}/share/applications/bitcoingold-qt.desktop
+X	${INSTALL} ${FILESDIR}/bitcoingold-qt.desktop ${STAGEDIR}${PREFIX}/share/applications/
 X	${INSTALL} ${WRKSRC}/share/pixmaps/bitcoin128.png \
 X		${STAGEDIR}${PREFIX}/share/pixmaps/bitcoingold128.png
 X
@@ -176,179 +258,48 @@ XTIMESTAMP = 1704428771
 XSHA256 (BTCGPU-BTCGPU-v0.17.3_GH0.tar.gz) = e4466be5adab6ae3400642daa76b85c06766883f8120f44331a81202eb477c7a
 XSIZE (BTCGPU-BTCGPU-v0.17.3_GH0.tar.gz) = 5589404
 c62ccaff1130564e47593307416a99a2
-echo x - bitcoingold/ass.out
-sed 's/^X//' >bitcoingold/ass.out << '7a0860d09a841a2a091ca3a70956f69f'
-X===>  Building for bitcoingold-0.17.3
-Xgmake[1]: Entering directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3'
-XMaking all in src
-Xgmake[2]: Entering directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3/src'
-Xgmake[3]: Entering directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3/src'
-Xgmake[4]: Entering directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3'
-Xgmake[4]: Leaving directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3'
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include  -I/usr/local/include -I/usr/local/include -D_THREAD_SAFE -pthread -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_server_a-validationinterface.o -MD -MP -MF .deps/libbitcoin_server_a-validationinterface.Tpo -c -o libbitcoin_server_a-validationinterface.o `test -f 'validationinterface.cpp' || echo './'`validationinterface.cpp
-Xmv -f .deps/libbitcoin_server_a-validationinterface.Tpo .deps/libbitcoin_server_a-validationinterface.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include  -I/usr/local/include -I/usr/local/include -D_THREAD_SAFE -pthread -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_server_a-versionbits.o -MD -MP -MF .deps/libbitcoin_server_a-versionbits.Tpo -c -o libbitcoin_server_a-versionbits.o `test -f 'versionbits.cpp' || echo './'`versionbits.cpp
-Xmv -f .deps/libbitcoin_server_a-versionbits.Tpo .deps/libbitcoin_server_a-versionbits.Po
-Xrm -f libbitcoin_server.a
-X/usr/bin/ar cr libbitcoin_server.a libbitcoin_server_a-addrdb.o libbitcoin_server_a-addrman.o libbitcoin_server_a-bloom.o libbitcoin_server_a-blockencodings.o libbitcoin_server_a-chain.o libbitcoin_server_a-checkpoints.o consensus/libbitcoin_server_a-tx_verify.o libbitcoin_server_a-httprpc.o libbitcoin_server_a-httpserver.o index/libbitcoin_server_a-base.o index/libbitcoin_server_a-txindex.o libbitcoin_server_a-init.o libbitcoin_server_a-dbwrapper.o libbitcoin_server_a-merkleblock.o libbitcoin_server_a-miner.o libbitcoin_server_a-net.o libbitcoin_server_a-net_processing.o libbitcoin_server_a-noui.o libbitcoin_server_a-outputtype.o policy/libbitcoin_server_a-fees.o policy/libbitcoin_server_a-policy.o policy/libbitcoin_server_a-rbf.o libbitcoin_server_a-pow.o libbitcoin_server_a-rest.o rpc/libbitcoin_server_a-blockchain.o rpc/libbitcoin_server_a-mining.o rpc/libbitcoin_server_a-misc.o rpc/libbitcoin_server_a-net.o rpc/libbitcoin_server_a-rawtransaction.o rpc/libbitcoin_server_a-server.o rpc/libbitcoin_server_a-util.o script/libbitcoin_server_a-sigcache.o libbitcoin_server_a-shutdown.o libbitcoin_server_a-timedata.o libbitcoin_server_a-torcontrol.o libbitcoin_server_a-txdb.o libbitcoin_server_a-txmempool.o libbitcoin_server_a-ui_interface.o libbitcoin_server_a-validation.o libbitcoin_server_a-validationinterface.o libbitcoin_server_a-versionbits.o  
-X/usr/bin/ranlib libbitcoin_server.a
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT support/libbitcoin_util_a-lockedpool.o -MD -MP -MF support/.deps/libbitcoin_util_a-lockedpool.Tpo -c -o support/libbitcoin_util_a-lockedpool.o `test -f 'support/lockedpool.cpp' || echo './'`support/lockedpool.cpp
-Xmv -f support/.deps/libbitcoin_util_a-lockedpool.Tpo support/.deps/libbitcoin_util_a-lockedpool.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-chainparamsbase.o -MD -MP -MF .deps/libbitcoin_util_a-chainparamsbase.Tpo -c -o libbitcoin_util_a-chainparamsbase.o `test -f 'chainparamsbase.cpp' || echo './'`chainparamsbase.cpp
-Xmv -f .deps/libbitcoin_util_a-chainparamsbase.Tpo .deps/libbitcoin_util_a-chainparamsbase.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-clientversion.o -MD -MP -MF .deps/libbitcoin_util_a-clientversion.Tpo -c -o libbitcoin_util_a-clientversion.o `test -f 'clientversion.cpp' || echo './'`clientversion.cpp
-Xmv -f .deps/libbitcoin_util_a-clientversion.Tpo .deps/libbitcoin_util_a-clientversion.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT compat/libbitcoin_util_a-glibc_sanity.o -MD -MP -MF compat/.deps/libbitcoin_util_a-glibc_sanity.Tpo -c -o compat/libbitcoin_util_a-glibc_sanity.o `test -f 'compat/glibc_sanity.cpp' || echo './'`compat/glibc_sanity.cpp
-Xmv -f compat/.deps/libbitcoin_util_a-glibc_sanity.Tpo compat/.deps/libbitcoin_util_a-glibc_sanity.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT compat/libbitcoin_util_a-glibcxx_sanity.o -MD -MP -MF compat/.deps/libbitcoin_util_a-glibcxx_sanity.Tpo -c -o compat/libbitcoin_util_a-glibcxx_sanity.o `test -f 'compat/glibcxx_sanity.cpp' || echo './'`compat/glibcxx_sanity.cpp
-Xmv -f compat/.deps/libbitcoin_util_a-glibcxx_sanity.Tpo compat/.deps/libbitcoin_util_a-glibcxx_sanity.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT compat/libbitcoin_util_a-strnlen.o -MD -MP -MF compat/.deps/libbitcoin_util_a-strnlen.Tpo -c -o compat/libbitcoin_util_a-strnlen.o `test -f 'compat/strnlen.cpp' || echo './'`compat/strnlen.cpp
-Xmv -f compat/.deps/libbitcoin_util_a-strnlen.Tpo compat/.deps/libbitcoin_util_a-strnlen.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-fs.o -MD -MP -MF .deps/libbitcoin_util_a-fs.Tpo -c -o libbitcoin_util_a-fs.o `test -f 'fs.cpp' || echo './'`fs.cpp
-Xmv -f .deps/libbitcoin_util_a-fs.Tpo .deps/libbitcoin_util_a-fs.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT interfaces/libbitcoin_util_a-handler.o -MD -MP -MF interfaces/.deps/libbitcoin_util_a-handler.Tpo -c -o interfaces/libbitcoin_util_a-handler.o `test -f 'interfaces/handler.cpp' || echo './'`interfaces/handler.cpp
-Xmv -f interfaces/.deps/libbitcoin_util_a-handler.Tpo interfaces/.deps/libbitcoin_util_a-handler.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT interfaces/libbitcoin_util_a-node.o -MD -MP -MF interfaces/.deps/libbitcoin_util_a-node.Tpo -c -o interfaces/libbitcoin_util_a-node.o `test -f 'interfaces/node.cpp' || echo './'`interfaces/node.cpp
-Xmv -f interfaces/.deps/libbitcoin_util_a-node.Tpo interfaces/.deps/libbitcoin_util_a-node.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-logging.o -MD -MP -MF .deps/libbitcoin_util_a-logging.Tpo -c -o libbitcoin_util_a-logging.o `test -f 'logging.cpp' || echo './'`logging.cpp
-Xmv -f .deps/libbitcoin_util_a-logging.Tpo .deps/libbitcoin_util_a-logging.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-random.o -MD -MP -MF .deps/libbitcoin_util_a-random.Tpo -c -o libbitcoin_util_a-random.o `test -f 'random.cpp' || echo './'`random.cpp
-Xmv -f .deps/libbitcoin_util_a-random.Tpo .deps/libbitcoin_util_a-random.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT rpc/libbitcoin_util_a-protocol.o -MD -MP -MF rpc/.deps/libbitcoin_util_a-protocol.Tpo -c -o rpc/libbitcoin_util_a-protocol.o `test -f 'rpc/protocol.cpp' || echo './'`rpc/protocol.cpp
-Xmv -f rpc/.deps/libbitcoin_util_a-protocol.Tpo rpc/.deps/libbitcoin_util_a-protocol.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT support/libbitcoin_util_a-cleanse.o -MD -MP -MF support/.deps/libbitcoin_util_a-cleanse.Tpo -c -o support/libbitcoin_util_a-cleanse.o `test -f 'support/cleanse.cpp' || echo './'`support/cleanse.cpp
-Xmv -f support/.deps/libbitcoin_util_a-cleanse.Tpo support/.deps/libbitcoin_util_a-cleanse.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-sync.o -MD -MP -MF .deps/libbitcoin_util_a-sync.Tpo -c -o libbitcoin_util_a-sync.o `test -f 'sync.cpp' || echo './'`sync.cpp
-Xmv -f .deps/libbitcoin_util_a-sync.Tpo .deps/libbitcoin_util_a-sync.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-threadinterrupt.o -MD -MP -MF .deps/libbitcoin_util_a-threadinterrupt.Tpo -c -o libbitcoin_util_a-threadinterrupt.o `test -f 'threadinterrupt.cpp' || echo './'`threadinterrupt.cpp
-Xmv -f .deps/libbitcoin_util_a-threadinterrupt.Tpo .deps/libbitcoin_util_a-threadinterrupt.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-util.o -MD -MP -MF .deps/libbitcoin_util_a-util.Tpo -c -o libbitcoin_util_a-util.o `test -f 'util.cpp' || echo './'`util.cpp
-Xmv -f .deps/libbitcoin_util_a-util.Tpo .deps/libbitcoin_util_a-util.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-utilmoneystr.o -MD -MP -MF .deps/libbitcoin_util_a-utilmoneystr.Tpo -c -o libbitcoin_util_a-utilmoneystr.o `test -f 'utilmoneystr.cpp' || echo './'`utilmoneystr.cpp
-Xmv -f .deps/libbitcoin_util_a-utilmoneystr.Tpo .deps/libbitcoin_util_a-utilmoneystr.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-utilstrencodings.o -MD -MP -MF .deps/libbitcoin_util_a-utilstrencodings.Tpo -c -o libbitcoin_util_a-utilstrencodings.o `test -f 'utilstrencodings.cpp' || echo './'`utilstrencodings.cpp
-Xmv -f .deps/libbitcoin_util_a-utilstrencodings.Tpo .deps/libbitcoin_util_a-utilstrencodings.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT libbitcoin_util_a-utiltime.o -MD -MP -MF .deps/libbitcoin_util_a-utiltime.Tpo -c -o libbitcoin_util_a-utiltime.o `test -f 'utiltime.cpp' || echo './'`utiltime.cpp
-Xmv -f .deps/libbitcoin_util_a-utiltime.Tpo .deps/libbitcoin_util_a-utiltime.Po
-Xrm -f libbitcoin_util.a
-X/usr/bin/ar cr libbitcoin_util.a support/libbitcoin_util_a-lockedpool.o libbitcoin_util_a-chainparamsbase.o libbitcoin_util_a-clientversion.o compat/libbitcoin_util_a-glibc_sanity.o compat/libbitcoin_util_a-glibcxx_sanity.o compat/libbitcoin_util_a-strnlen.o libbitcoin_util_a-fs.o interfaces/libbitcoin_util_a-handler.o interfaces/libbitcoin_util_a-node.o libbitcoin_util_a-logging.o libbitcoin_util_a-random.o rpc/libbitcoin_util_a-protocol.o support/libbitcoin_util_a-cleanse.o libbitcoin_util_a-sync.o libbitcoin_util_a-threadinterrupt.o libbitcoin_util_a-util.o libbitcoin_util_a-utilmoneystr.o libbitcoin_util_a-utilstrencodings.o libbitcoin_util_a-utiltime.o    
-X/usr/bin/ranlib libbitcoin_util.a
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT interfaces/libbitcoin_wallet_a-wallet.o -MD -MP -MF interfaces/.deps/libbitcoin_wallet_a-wallet.Tpo -c -o interfaces/libbitcoin_wallet_a-wallet.o `test -f 'interfaces/wallet.cpp' || echo './'`interfaces/wallet.cpp
-Xmv -f interfaces/.deps/libbitcoin_wallet_a-wallet.Tpo interfaces/.deps/libbitcoin_wallet_a-wallet.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-coincontrol.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-coincontrol.Tpo -c -o wallet/libbitcoin_wallet_a-coincontrol.o `test -f 'wallet/coincontrol.cpp' || echo './'`wallet/coincontrol.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-coincontrol.Tpo wallet/.deps/libbitcoin_wallet_a-coincontrol.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-crypter.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-crypter.Tpo -c -o wallet/libbitcoin_wallet_a-crypter.o `test -f 'wallet/crypter.cpp' || echo './'`wallet/crypter.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-crypter.Tpo wallet/.deps/libbitcoin_wallet_a-crypter.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-db.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-db.Tpo -c -o wallet/libbitcoin_wallet_a-db.o `test -f 'wallet/db.cpp' || echo './'`wallet/db.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-db.Tpo wallet/.deps/libbitcoin_wallet_a-db.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-feebumper.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-feebumper.Tpo -c -o wallet/libbitcoin_wallet_a-feebumper.o `test -f 'wallet/feebumper.cpp' || echo './'`wallet/feebumper.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-feebumper.Tpo wallet/.deps/libbitcoin_wallet_a-feebumper.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-fees.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-fees.Tpo -c -o wallet/libbitcoin_wallet_a-fees.o `test -f 'wallet/fees.cpp' || echo './'`wallet/fees.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-fees.Tpo wallet/.deps/libbitcoin_wallet_a-fees.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-init.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-init.Tpo -c -o wallet/libbitcoin_wallet_a-init.o `test -f 'wallet/init.cpp' || echo './'`wallet/init.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-init.Tpo wallet/.deps/libbitcoin_wallet_a-init.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-rpcdump.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-rpcdump.Tpo -c -o wallet/libbitcoin_wallet_a-rpcdump.o `test -f 'wallet/rpcdump.cpp' || echo './'`wallet/rpcdump.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-rpcdump.Tpo wallet/.deps/libbitcoin_wallet_a-rpcdump.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-rpcwallet.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-rpcwallet.Tpo -c -o wallet/libbitcoin_wallet_a-rpcwallet.o `test -f 'wallet/rpcwallet.cpp' || echo './'`wallet/rpcwallet.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-rpcwallet.Tpo wallet/.deps/libbitcoin_wallet_a-rpcwallet.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-wallet.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-wallet.Tpo -c -o wallet/libbitcoin_wallet_a-wallet.o `test -f 'wallet/wallet.cpp' || echo './'`wallet/wallet.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-wallet.Tpo wallet/.deps/libbitcoin_wallet_a-wallet.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-walletdb.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-walletdb.Tpo -c -o wallet/libbitcoin_wallet_a-walletdb.o `test -f 'wallet/walletdb.cpp' || echo './'`wallet/walletdb.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-walletdb.Tpo wallet/.deps/libbitcoin_wallet_a-walletdb.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-walletutil.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-walletutil.Tpo -c -o wallet/libbitcoin_wallet_a-walletutil.o `test -f 'wallet/walletutil.cpp' || echo './'`wallet/walletutil.cpp
-Xmv -f wallet/.deps/libbitcoin_wallet_a-walletutil.Tpo wallet/.deps/libbitcoin_wallet_a-walletutil.Po
-Xc++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config   -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I/usr/local/include/db5/ -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv -I/usr/local/include -I/usr/local/include -I./secp256k1/include -I./univalue/include -I/usr/local/include -I/usr/local/include/db5 -I/usr/local/include -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -Wstack-protector -fstack-protector-all      -fPIE -O2 -pipe -march=opteron-sse3  -fstack-protector-strong -fno-strict-aliasing   -I/usr/local/include/db5 -std=gnu++17  -MT wallet/libbitcoin_wallet_a-coinselection.o -MD -MP -MF wallet/.deps/libbitcoin_wallet_a-coinselection.Tpo -c -o wallet/libbitcoin_wallet_a-coinselection.o `test -f 'wallet/coinselection.cpp' || echo './'`wallet/coinselection.cpp
-Xgmake[3]: Leaving directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3/src'
-Xgmake[2]: Leaving directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3/src'
-Xgmake[1]: Leaving directory '/usr/ports/net-p2p/bitcoingold/work/BTCGPU-0.17.3'
-X*** Error code 1
-X
-XStop.
-Xmake: stopped in /usr/ports/net-p2p/bitcoingold
-7a0860d09a841a2a091ca3a70956f69f
 echo c - bitcoingold/files
 mkdir -p bitcoingold/files > /dev/null 2>&1
-echo x - bitcoingold/files/patch-src_httpserver.cpp
-sed 's/^X//' >bitcoingold/files/patch-src_httpserver.cpp << 'a806d0f97dfc3e8ad384f5942a0532f3'
-X--- src/httpserver.cpp.orig	2024-01-05 06:22:07.860078000 +0000
-X+++ src/httpserver.cpp	2024-01-05 06:22:30.564086000 +0000
-X@@ -13,6 +13,7 @@
-X #include <sync.h>
-X #include <ui_interface.h>
-X 
-X+#include <deque>
-X #include <memory>
-X #include <stdio.h>
-X #include <stdlib.h>
-a806d0f97dfc3e8ad384f5942a0532f3
-echo x - bitcoingold/files/patch-src_qt_splashscreen.cpp
-sed 's/^X//' >bitcoingold/files/patch-src_qt_splashscreen.cpp << '5f6a200338f2490dd472c401f04b8859'
-X--- src/qt/splashscreen.cpp.orig	2024-01-05 05:40:52.950271000 +0000
-X+++ src/qt/splashscreen.cpp	2024-01-05 05:41:59.087691000 +0000
-X@@ -178,7 +178,7 @@
-X #ifdef ENABLE_WALLET
-X void SplashScreen::ConnectWallet(std::unique_ptr<interfaces::Wallet> wallet)
-X {
-X-    m_connected_wallet_handlers.emplace_back(wallet->handleShowProgress(boost::bind(ShowProgress, this, _1, _2, false)));
-X+    m_connected_wallet_handlers.emplace_back(wallet->handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2, false)));
-X     m_connected_wallets.emplace_back(std::move(wallet));
-X }
-X #endif
-X@@ -186,8 +186,8 @@
-X void SplashScreen::subscribeToCoreSignals()
-X {
-X     // Connect signals to client
-X-    m_handler_init_message = m_node.handleInitMessage(boost::bind(InitMessage, this, _1));
-X-    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, _1, _2, _3));
-X+    m_handler_init_message = m_node.handleInitMessage(boost::bind(InitMessage, this, boost::placeholders::_1));
-X+    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
-X #ifdef ENABLE_WALLET
-X     m_handler_load_wallet = m_node.handleLoadWallet([this](std::unique_ptr<interfaces::Wallet> wallet) { ConnectWallet(std::move(wallet)); });
-X #endif
-5f6a200338f2490dd472c401f04b8859
-echo x - bitcoingold/files/patch-src_qt_clientmodel.cpp
-sed 's/^X//' >bitcoingold/files/patch-src_qt_clientmodel.cpp << '34620545f53a5d4b650385cfd5ddf139'
-X--- src/qt/clientmodel.cpp.orig	2024-01-05 05:34:23.994426000 +0000
-X+++ src/qt/clientmodel.cpp	2024-01-05 05:35:49.274895000 +0000
-X@@ -247,13 +247,13 @@
-X void ClientModel::subscribeToCoreSignals()
-X {
-X     // Connect signals to client
-X-    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, _1, _2));
-X-    m_handler_notify_num_connections_changed = m_node.handleNotifyNumConnectionsChanged(boost::bind(NotifyNumConnectionsChanged, this, _1));
-X-    m_handler_notify_network_active_changed = m_node.handleNotifyNetworkActiveChanged(boost::bind(NotifyNetworkActiveChanged, this, _1));
-X+    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
-X+    m_handler_notify_num_connections_changed = m_node.handleNotifyNumConnectionsChanged(boost::bind(NotifyNumConnectionsChanged, this, boost::placeholders::_1));
-X+    m_handler_notify_network_active_changed = m_node.handleNotifyNetworkActiveChanged(boost::bind(NotifyNetworkActiveChanged, this, boost::placeholders::_1));
-X     m_handler_notify_alert_changed = m_node.handleNotifyAlertChanged(boost::bind(NotifyAlertChanged, this));
-X     m_handler_banned_list_changed = m_node.handleBannedListChanged(boost::bind(BannedListChanged, this));
-X-    m_handler_notify_block_tip = m_node.handleNotifyBlockTip(boost::bind(BlockTipChanged, this, _1, _2, _3, _4, false));
-X-    m_handler_notify_header_tip = m_node.handleNotifyHeaderTip(boost::bind(BlockTipChanged, this, _1, _2, _3, _4, true));
-X+    m_handler_notify_block_tip = m_node.handleNotifyBlockTip(boost::bind(BlockTipChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, false));
-X+    m_handler_notify_header_tip = m_node.handleNotifyHeaderTip(boost::bind(BlockTipChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, true));
-X }
-X 
-X void ClientModel::unsubscribeFromCoreSignals()
-34620545f53a5d4b650385cfd5ddf139
-echo x - bitcoingold/files/patch-src_validation.cpp
-sed 's/^X//' >bitcoingold/files/patch-src_validation.cpp << '9ffd752489ad4c07209ee4049ed983c0'
-X--- src/validation.cpp.orig	2024-01-06 00:33:35.890211000 +0000
-X+++ src/validation.cpp	2024-01-06 00:34:51.980215000 +0000
-X@@ -2432,11 +2432,11 @@
-X 
-X public:
-X     explicit ConnectTrace(CTxMemPool &_pool) : blocksConnected(1), pool(_pool) {
-X-        pool.NotifyEntryRemoved.connect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, _1, _2));
-X+        pool.NotifyEntryRemoved.connect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, boost::placeholders::_1, boost::placeholders::_2));
-X     }
-X 
-X     ~ConnectTrace() {
-X-        pool.NotifyEntryRemoved.disconnect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, _1, _2));
-X+        pool.NotifyEntryRemoved.disconnect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, boost::placeholders::_1, boost::placeholders::_2));
-X     }
-X 
-X     void BlockConnected(CBlockIndex* pindex, std::shared_ptr<const CBlock> pblock) {
-9ffd752489ad4c07209ee4049ed983c0
+echo x - bitcoingold/files/bitcoingold-qt.desktop
+sed 's/^X//' >bitcoingold/files/bitcoingold-qt.desktop << '51f5aa06c4f9c23177a505696cec5afa'
+X[Desktop Entry]
+XVersion=1.0
+XName=Bitcoin Gold Core
+XComment=Connect to the Bitcoin Gold P2P Network
+XComment[de]=Verbinde mit dem Bitcoin Gold peer-to-peer Netzwerk
+XComment[fr]=Bitcoin Gold, monnaie virtuelle cryptographique pair à pair
+XComment[tr]=Bitcoin Gold, eşten eşe kriptografik sanal para birimi
+XExec=bitcoin-qt %u
+XTerminal=false
+XType=Application
+XIcon=bitcoingold128
+XMimeType=x-scheme-handler/bitcoingold;
+XCategories=Office;Finance;
+XStartupWMClass=Bitcoingold-qt
+51f5aa06c4f9c23177a505696cec5afa
+echo x - bitcoingold/files/bitcoingold.conf
+sed 's/^X//' >bitcoingold/files/bitcoingold.conf << '0f5d3aa28c0f016c06ad1843e44d8353'
+X# FreeBSD bitcoingoldd configuration file
+X
+X# This file is used by bitcoingoldd
+X# The GUI and CLI will default to generating and using ~/.bitcoingold/bitcoingold.conf
+X#
+X# bitcoingold has hundreds of config options and there isn't a single mode of
+X# operation (mining, client, testnet etc)  that can be easily covered by a
+X# sample file.
+X
+X# Bind to given address and always listen on it. Use [host]:port notation for IPv6
+X#bind=<addr>
+X
+X# Specify your own public IP address.
+X#externalip=<ip>
+X
+X# Listen for incoming connections on non-default port.
+X#port=<port>
+X
+X# Connect via a SOCKS5 proxy
+X#proxy=127.0.0.1:9050
+0f5d3aa28c0f016c06ad1843e44d8353
 echo x - bitcoingold/files/bitcoingoldd.in
 sed 's/^X//' >bitcoingold/files/bitcoingoldd.in << '45cc1761b4ee270236910c1860b16aff'
 X#!/bin/sh
@@ -522,6 +473,32 @@ X}
 X
 Xrun_rc_command "$1"
 45cc1761b4ee270236910c1860b16aff
+echo x - bitcoingold/files/patch-src_httpserver.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_httpserver.cpp << 'a806d0f97dfc3e8ad384f5942a0532f3'
+X--- src/httpserver.cpp.orig	2024-01-05 06:22:07.860078000 +0000
+X+++ src/httpserver.cpp	2024-01-05 06:22:30.564086000 +0000
+X@@ -13,6 +13,7 @@
+X #include <sync.h>
+X #include <ui_interface.h>
+X 
+X+#include <deque>
+X #include <memory>
+X #include <stdio.h>
+X #include <stdlib.h>
+a806d0f97dfc3e8ad384f5942a0532f3
+echo x - bitcoingold/files/patch-src_net_processing.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_net_processing.cpp << 'c0cd077c9c912662aca03986a0980df3'
+X--- src/net_processing.cpp.orig	2024-01-06 00:28:38.382777000 +0000
+X+++ src/net_processing.cpp	2024-01-06 00:28:07.928136000 +0000
+X@@ -30,6 +30,7 @@
+X #include <utilstrencodings.h>
+X 
+X #include <memory>
+X+#include <array>
+X 
+X #if defined(NDEBUG)
+X # error "Bitcoin cannot be compiled without assertions."
+c0cd077c9c912662aca03986a0980df3
 echo x - bitcoingold/files/patch-src_qt_bitcoingui.cpp
 sed 's/^X//' >bitcoingold/files/patch-src_qt_bitcoingui.cpp << 'fe29ccfea37ba737c31381ea4cd5bd46'
 X--- src/qt/bitcoingui.cpp.orig	2024-01-05 05:29:19.066375000 +0000
@@ -538,36 +515,123 @@ X }
 X 
 X void BitcoinGUI::unsubscribeFromCoreSignals()
 fe29ccfea37ba737c31381ea4cd5bd46
-echo x - bitcoingold/files/bitcoingold-qt.desktop
-sed 's/^X//' >bitcoingold/files/bitcoingold-qt.desktop << '51f5aa06c4f9c23177a505696cec5afa'
-X[Desktop Entry]
-XVersion=1.0
-XName=Bitcoin Gold Core
-XComment=Connect to the Bitcoin Gold P2P Network
-XComment[de]=Verbinde mit dem Bitcoin Gold peer-to-peer Netzwerk
-XComment[fr]=Bitcoin Gold, monnaie virtuelle cryptographique pair à pair
-XComment[tr]=Bitcoin Gold, eşten eşe kriptografik sanal para birimi
-XExec=bitcoin-qt %u
-XTerminal=false
-XType=Application
-XIcon=bitcoingold128
-XMimeType=x-scheme-handler/bitcoingold;
-XCategories=Office;Finance;
-XStartupWMClass=Bitcoingold-qt
-51f5aa06c4f9c23177a505696cec5afa
-echo x - bitcoingold/files/patch-src_net_processing.cpp
-sed 's/^X//' >bitcoingold/files/patch-src_net_processing.cpp << 'c0cd077c9c912662aca03986a0980df3'
-X--- src/net_processing.cpp.orig	2024-01-06 00:28:38.382777000 +0000
-X+++ src/net_processing.cpp	2024-01-06 00:28:07.928136000 +0000
-X@@ -30,6 +30,7 @@
-X #include <utilstrencodings.h>
+echo x - bitcoingold/files/patch-src_qt_clientmodel.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_qt_clientmodel.cpp << '34620545f53a5d4b650385cfd5ddf139'
+X--- src/qt/clientmodel.cpp.orig	2024-01-05 05:34:23.994426000 +0000
+X+++ src/qt/clientmodel.cpp	2024-01-05 05:35:49.274895000 +0000
+X@@ -247,13 +247,13 @@
+X void ClientModel::subscribeToCoreSignals()
+X {
+X     // Connect signals to client
+X-    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, _1, _2));
+X-    m_handler_notify_num_connections_changed = m_node.handleNotifyNumConnectionsChanged(boost::bind(NotifyNumConnectionsChanged, this, _1));
+X-    m_handler_notify_network_active_changed = m_node.handleNotifyNetworkActiveChanged(boost::bind(NotifyNetworkActiveChanged, this, _1));
+X+    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
+X+    m_handler_notify_num_connections_changed = m_node.handleNotifyNumConnectionsChanged(boost::bind(NotifyNumConnectionsChanged, this, boost::placeholders::_1));
+X+    m_handler_notify_network_active_changed = m_node.handleNotifyNetworkActiveChanged(boost::bind(NotifyNetworkActiveChanged, this, boost::placeholders::_1));
+X     m_handler_notify_alert_changed = m_node.handleNotifyAlertChanged(boost::bind(NotifyAlertChanged, this));
+X     m_handler_banned_list_changed = m_node.handleBannedListChanged(boost::bind(BannedListChanged, this));
+X-    m_handler_notify_block_tip = m_node.handleNotifyBlockTip(boost::bind(BlockTipChanged, this, _1, _2, _3, _4, false));
+X-    m_handler_notify_header_tip = m_node.handleNotifyHeaderTip(boost::bind(BlockTipChanged, this, _1, _2, _3, _4, true));
+X+    m_handler_notify_block_tip = m_node.handleNotifyBlockTip(boost::bind(BlockTipChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, false));
+X+    m_handler_notify_header_tip = m_node.handleNotifyHeaderTip(boost::bind(BlockTipChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, true));
+X }
 X 
-X #include <memory>
-X+#include <array>
+X void ClientModel::unsubscribeFromCoreSignals()
+34620545f53a5d4b650385cfd5ddf139
+echo x - bitcoingold/files/patch-src_qt_splashscreen.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_qt_splashscreen.cpp << '5f6a200338f2490dd472c401f04b8859'
+X--- src/qt/splashscreen.cpp.orig	2024-01-05 05:40:52.950271000 +0000
+X+++ src/qt/splashscreen.cpp	2024-01-05 05:41:59.087691000 +0000
+X@@ -178,7 +178,7 @@
+X #ifdef ENABLE_WALLET
+X void SplashScreen::ConnectWallet(std::unique_ptr<interfaces::Wallet> wallet)
+X {
+X-    m_connected_wallet_handlers.emplace_back(wallet->handleShowProgress(boost::bind(ShowProgress, this, _1, _2, false)));
+X+    m_connected_wallet_handlers.emplace_back(wallet->handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2, false)));
+X     m_connected_wallets.emplace_back(std::move(wallet));
+X }
+X #endif
+X@@ -186,8 +186,8 @@
+X void SplashScreen::subscribeToCoreSignals()
+X {
+X     // Connect signals to client
+X-    m_handler_init_message = m_node.handleInitMessage(boost::bind(InitMessage, this, _1));
+X-    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, _1, _2, _3));
+X+    m_handler_init_message = m_node.handleInitMessage(boost::bind(InitMessage, this, boost::placeholders::_1));
+X+    m_handler_show_progress = m_node.handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
+X #ifdef ENABLE_WALLET
+X     m_handler_load_wallet = m_node.handleLoadWallet([this](std::unique_ptr<interfaces::Wallet> wallet) { ConnectWallet(std::move(wallet)); });
+X #endif
+5f6a200338f2490dd472c401f04b8859
+echo x - bitcoingold/files/patch-src_qt_trafficgraphwidget.h
+sed 's/^X//' >bitcoingold/files/patch-src_qt_trafficgraphwidget.h << '077be5f3c4632564c110cd350faf15c7'
+X--- src/qt/trafficgraphwidget.h.orig	2020-05-18 18:05:29 UTC
+X+++ src/qt/trafficgraphwidget.h
+X@@ -7,6 +7,7 @@
 X 
-X #if defined(NDEBUG)
-X # error "Bitcoin cannot be compiled without assertions."
-c0cd077c9c912662aca03986a0980df3
+X #include <QWidget>
+X #include <QQueue>
+X+#include <QPainterPath>
+X 
+X class ClientModel;
+X 
+077be5f3c4632564c110cd350faf15c7
+echo x - bitcoingold/files/patch-src_qt_transactiontablemodel.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_qt_transactiontablemodel.cpp << '7b49b0fa765d2c40572fe171ab7ea544'
+X--- src/qt/transactiontablemodel.cpp.orig	2024-01-05 06:01:17.479235000 +0000
+X+++ src/qt/transactiontablemodel.cpp	2024-01-05 06:02:00.879500000 +0000
+X@@ -744,8 +744,8 @@
+X void TransactionTableModel::subscribeToCoreSignals()
+X {
+X     // Connect signals to wallet
+X-    m_handler_transaction_changed = walletModel->wallet().handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, _1, _2));
+X-    m_handler_show_progress = walletModel->wallet().handleShowProgress(boost::bind(ShowProgress, this, _1, _2));
+X+    m_handler_transaction_changed = walletModel->wallet().handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, boost::placeholders::_1, boost::placeholders::_2));
+X+    m_handler_show_progress = walletModel->wallet().handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
+X }
+X 
+X void TransactionTableModel::unsubscribeFromCoreSignals()
+7b49b0fa765d2c40572fe171ab7ea544
+echo x - bitcoingold/files/patch-src_qt_walletmodel.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_qt_walletmodel.cpp << 'd17b00f3b34ad0c63bb782617c3d5ba7'
+X--- src/qt/walletmodel.cpp.orig	2024-01-05 06:09:08.897868000 +0000
+X+++ src/qt/walletmodel.cpp	2024-01-05 06:10:05.315922000 +0000
+X@@ -427,10 +427,10 @@
+X     // Connect signals to wallet
+X     m_handler_unload = m_wallet->handleUnload(boost::bind(&NotifyUnload, this));
+X     m_handler_status_changed = m_wallet->handleStatusChanged(boost::bind(&NotifyKeyStoreStatusChanged, this));
+X-    m_handler_address_book_changed = m_wallet->handleAddressBookChanged(boost::bind(NotifyAddressBookChanged, this, _1, _2, _3, _4, _5));
+X-    m_handler_transaction_changed = m_wallet->handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, _1, _2));
+X-    m_handler_show_progress = m_wallet->handleShowProgress(boost::bind(ShowProgress, this, _1, _2));
+X-    m_handler_watch_only_changed = m_wallet->handleWatchOnlyChanged(boost::bind(NotifyWatchonlyChanged, this, _1));
+X+    m_handler_address_book_changed = m_wallet->handleAddressBookChanged(boost::bind(NotifyAddressBookChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5));
+X+    m_handler_transaction_changed = m_wallet->handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, boost::placeholders::_1, boost::placeholders::_2));
+X+    m_handler_show_progress = m_wallet->handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
+X+    m_handler_watch_only_changed = m_wallet->handleWatchOnlyChanged(boost::bind(NotifyWatchonlyChanged, this, boost::placeholders::_1));
+X }
+X 
+X void WalletModel::unsubscribeFromCoreSignals()
+d17b00f3b34ad0c63bb782617c3d5ba7
+echo x - bitcoingold/files/patch-src_validation.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_validation.cpp << '9ffd752489ad4c07209ee4049ed983c0'
+X--- src/validation.cpp.orig	2024-01-06 00:33:35.890211000 +0000
+X+++ src/validation.cpp	2024-01-06 00:34:51.980215000 +0000
+X@@ -2432,11 +2432,11 @@
+X 
+X public:
+X     explicit ConnectTrace(CTxMemPool &_pool) : blocksConnected(1), pool(_pool) {
+X-        pool.NotifyEntryRemoved.connect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, _1, _2));
+X+        pool.NotifyEntryRemoved.connect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, boost::placeholders::_1, boost::placeholders::_2));
+X     }
+X 
+X     ~ConnectTrace() {
+X-        pool.NotifyEntryRemoved.disconnect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, _1, _2));
+X+        pool.NotifyEntryRemoved.disconnect(boost::bind(&ConnectTrace::NotifyEntryRemoved, this, boost::placeholders::_1, boost::placeholders::_2));
+X     }
+X 
+X     void BlockConnected(CBlockIndex* pindex, std::shared_ptr<const CBlock> pblock) {
+9ffd752489ad4c07209ee4049ed983c0
 echo x - bitcoingold/files/patch-src_validationinterface.cpp
 sed 's/^X//' >bitcoingold/files/patch-src_validationinterface.cpp << 'c6f56cdb6e492c70ce68100cac463e6d'
 X--- src/validationinterface.cpp.orig	2024-01-06 00:36:53.072504000 +0000
@@ -633,151 +697,56 @@ X }
 X 
 X void UnregisterAllValidationInterfaces() {
 c6f56cdb6e492c70ce68100cac463e6d
-echo x - bitcoingold/files/patch-src_qt_walletmodel.cpp
-sed 's/^X//' >bitcoingold/files/patch-src_qt_walletmodel.cpp << 'd17b00f3b34ad0c63bb782617c3d5ba7'
-X--- src/qt/walletmodel.cpp.orig	2024-01-05 06:09:08.897868000 +0000
-X+++ src/qt/walletmodel.cpp	2024-01-05 06:10:05.315922000 +0000
-X@@ -427,10 +427,10 @@
-X     // Connect signals to wallet
-X     m_handler_unload = m_wallet->handleUnload(boost::bind(&NotifyUnload, this));
-X     m_handler_status_changed = m_wallet->handleStatusChanged(boost::bind(&NotifyKeyStoreStatusChanged, this));
-X-    m_handler_address_book_changed = m_wallet->handleAddressBookChanged(boost::bind(NotifyAddressBookChanged, this, _1, _2, _3, _4, _5));
-X-    m_handler_transaction_changed = m_wallet->handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, _1, _2));
-X-    m_handler_show_progress = m_wallet->handleShowProgress(boost::bind(ShowProgress, this, _1, _2));
-X-    m_handler_watch_only_changed = m_wallet->handleWatchOnlyChanged(boost::bind(NotifyWatchonlyChanged, this, _1));
-X+    m_handler_address_book_changed = m_wallet->handleAddressBookChanged(boost::bind(NotifyAddressBookChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5));
-X+    m_handler_transaction_changed = m_wallet->handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, boost::placeholders::_1, boost::placeholders::_2));
-X+    m_handler_show_progress = m_wallet->handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
-X+    m_handler_watch_only_changed = m_wallet->handleWatchOnlyChanged(boost::bind(NotifyWatchonlyChanged, this, boost::placeholders::_1));
-X }
+echo x - bitcoingold/files/patch-src_wallet_coinselection.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_wallet_coinselection.cpp << '7d5b0b2b8adec0da656a07a9d755e53a'
+X--- src/wallet/coinselection.cpp.orig	2024-01-08 13:09:52.442203000 +0000
+X+++ src/wallet/coinselection.cpp	2024-01-08 13:13:32.625355000 +0000
+X@@ -5,6 +5,8 @@
+X #include <wallet/coinselection.h>
+X #include <util.h>
+X #include <utilmoneystr.h>
+X+#include <random>
+X+#include <algorithm>
 X 
-X void WalletModel::unsubscribeFromCoreSignals()
-d17b00f3b34ad0c63bb782617c3d5ba7
-echo x - bitcoingold/files/patch-src_qt_transactiontablemodel.cpp
-sed 's/^X//' >bitcoingold/files/patch-src_qt_transactiontablemodel.cpp << '7b49b0fa765d2c40572fe171ab7ea544'
-X--- src/qt/transactiontablemodel.cpp.orig	2024-01-05 06:01:17.479235000 +0000
-X+++ src/qt/transactiontablemodel.cpp	2024-01-05 06:02:00.879500000 +0000
-X@@ -744,8 +744,8 @@
-X void TransactionTableModel::subscribeToCoreSignals()
-X {
-X     // Connect signals to wallet
-X-    m_handler_transaction_changed = walletModel->wallet().handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, _1, _2));
-X-    m_handler_show_progress = walletModel->wallet().handleShowProgress(boost::bind(ShowProgress, this, _1, _2));
-X+    m_handler_transaction_changed = walletModel->wallet().handleTransactionChanged(boost::bind(NotifyTransactionChanged, this, boost::placeholders::_1, boost::placeholders::_2));
-X+    m_handler_show_progress = walletModel->wallet().handleShowProgress(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
-X }
+X // Descending order comparator
+X struct {
+X@@ -220,7 +222,9 @@
+X     std::vector<OutputGroup> applicable_groups;
+X     CAmount nTotalLower = 0;
 X 
-X void TransactionTableModel::unsubscribeFromCoreSignals()
-7b49b0fa765d2c40572fe171ab7ea544
-echo x - bitcoingold/files/bitcoingold.conf
-sed 's/^X//' >bitcoingold/files/bitcoingold.conf << '0f5d3aa28c0f016c06ad1843e44d8353'
-X# FreeBSD bitcoingoldd configuration file
-X
-X# This file is used by bitcoingoldd
-X# The GUI and CLI will default to generating and using ~/.bitcoingold/bitcoingold.conf
-X#
-X# bitcoingold has hundreds of config options and there isn't a single mode of
-X# operation (mining, client, testnet etc)  that can be easily covered by a
-X# sample file.
-X
-X# Bind to given address and always listen on it. Use [host]:port notation for IPv6
-X#bind=<addr>
-X
-X# Specify your own public IP address.
-X#externalip=<ip>
-X
-X# Listen for incoming connections on non-default port.
-X#port=<port>
-X
-X# Connect via a SOCKS5 proxy
-X#proxy=127.0.0.1:9050
-0f5d3aa28c0f016c06ad1843e44d8353
-echo x - bitcoingold/files/patch-src_qt_trafficgraphwidget.h
-sed 's/^X//' >bitcoingold/files/patch-src_qt_trafficgraphwidget.h << '077be5f3c4632564c110cd350faf15c7'
-X--- src/qt/trafficgraphwidget.h.orig	2020-05-18 18:05:29 UTC
-X+++ src/qt/trafficgraphwidget.h
-X@@ -7,6 +7,7 @@
+X-    random_shuffle(groups.begin(), groups.end(), GetRandInt);
+X+    std::random_device rd;
+X+    std::mt19937 g(rd());
+X+    shuffle(groups.begin(), groups.end(), g);
 X 
-X #include <QWidget>
-X #include <QQueue>
-X+#include <QPainterPath>
-X 
-X class ClientModel;
-X 
-077be5f3c4632564c110cd350faf15c7
-echo c - bitcoingold-daemon
-mkdir -p bitcoingold-daemon > /dev/null 2>&1
-echo x - bitcoingold-daemon/Makefile
-sed 's/^X//' >bitcoingold-daemon/Makefile << '84fe1e82edda964a88fa3376afc554ff'
-XMASTERDIR=	${.CURDIR}/../bitcoingold
-XPKGNAMESUFFIX=	-daemon
+X     for (const OutputGroup& group : groups) {
+X         if (group.m_value == nTargetValue) {
+7d5b0b2b8adec0da656a07a9d755e53a
+echo x - bitcoingold/pkg-descr
+sed 's/^X//' >bitcoingold/pkg-descr << '006a48fa4e2762acc98643cf23e766ae'
+XBitcoin Gold is a fork of the Bitcoin project with a different
+Xproof-of-work algorithm which caused a bifurcation of the Bitcoin
+Xblockchain. The original Bitcoin blockchain continues on unaltered,
+Xbut the new fork is a distinct blockchain with the same transaction
+Xhistory as Bitcoin up until the fork (block 491407) where it then
+Xdiverged from it. As a result a new cryptocurrency was born.
+006a48fa4e2762acc98643cf23e766ae
+echo x - bitcoingold/pkg-message
+sed 's/^X//' >bitcoingold/pkg-message << '8ba51c44a82845ddae1b7608615a58bd'
+X[
+X{ type: install
+X  message: <<EOM
+XThis FreeBSD port normalizes the names of some executables and config
+Xfiles to be consistent with and coexist with other bitcoin forks. When
+XBitcoin Gold discussion or documentation refers to bgold or bitcoin in
+Xparticular contexts, think bitcoingold.
 X
-XCOMMENT=	Virtual Peer-to-Peer Currency (Daemon)
-X
-XSLAVE_PORT=	yes
-X
-XNOT_FOR_ARCHS=		powerpc powerpc64 sparc64
-XNOT_FOR_ARCHS_REASON=	does not support big-endian architectures
-X
-XOPTIONS_DEFINE=		DEBUG HARDENING TESTS UPNP WALLET ZMQ
-XOPTIONS_DEFAULT=	HARDENING UPNP WALLET
-X
-XUSERS=		bitcoingold
-XGROUPS=		bitcoingold
-X
-XCONFIGURE_ARGS=	--with-daemon \
-X		--without-gui \
-X		--without-libs \
-X		--without-qrencode \
-X		--without-utils
-X
-XPLIST_FILES=	bin/bitcoingoldd \
-X		man/man1/bitcoingoldd.1.gz \
-X		etc/bitcoingold.conf.sample
-X
-XUSE_RC_SUBR=	bitcoingoldd
-X
-Xpost-install:
-X	${INSTALL_DATA} ${WRKSRC}/contrib/debian/examples/bitcoingold.conf ${STAGEDIR}${PREFIX}/etc/bitcoingold.conf.sample
-X	${MV} ${STAGEDIR}${PREFIX}/bin/bgoldd ${STAGEDIR}${PREFIX}/bin/bitcoingoldd
-X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bitcoind.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingoldd.1
-X
-X.include "${MASTERDIR}/Makefile"
-84fe1e82edda964a88fa3376afc554ff
-echo c - bitcoingold-utils
-mkdir -p bitcoingold-utils > /dev/null 2>&1
-echo x - bitcoingold-utils/Makefile
-sed 's/^X//' >bitcoingold-utils/Makefile << '017da92757830ebf5ed74f3cf3588f52'
-XMASTERDIR=	${.CURDIR}/../bitcoingold
-XPKGNAMESUFFIX=	-utils
-X
-XCOMMENT=	Virtual Peer-to-Peer Currency (CLI and Utilities)
-XSLAVE_PORT=	yes
-X
-XNOT_FOR_ARCHS=		powerpc powerpc64 sparc64
-XNOT_FOR_ARCHS_REASON=	does not support big-endian architectures
-X
-XOPTIONS_DEFINE=		DEBUG HARDENING TESTS
-XOPTIONS_DEFAULT=	HARDENING TESTS
-X
-XCONFIGURE_ARGS=	--without-daemon \
-X		--without-gui \
-X		--without-libs \
-X		--without-qrencode \
-X		--without-miniupnpc \
-X		--with-utils \
-X		--disable-wallet
-X
-XPLIST_FILES=	bin/bitcoingold-cli bin/bitcoingold-tx \
-X		man/man1/bitcoingold-cli.1.gz man/man1/bitcoingold-tx.1.gz
-X
-Xpost-install:
-X	${MV} ${STAGEDIR}${PREFIX}/bin/bgold-cli ${STAGEDIR}${PREFIX}/bin/bitcoingold-cli
-X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bitcoin-cli.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-cli.1
-X	${MV} ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoingold-tx
-X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-tx.1
-X
-X.include "${MASTERDIR}/Makefile"
-017da92757830ebf5ed74f3cf3588f52
+XWARNING: Found Berkeley DB other than 4.8; wallets opened by this build
+Xwill not be portable! Be sure to use the facilities utilizing plaintext
+Xformats for wallet backup/restore.
+XEOM
+X}
+X]
+8ba51c44a82845ddae1b7608615a58bd
 exit
 
