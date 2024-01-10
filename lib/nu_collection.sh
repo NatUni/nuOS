@@ -107,7 +107,6 @@ collection_vars_init () {
 		lang/expect
 		math/convertall
 		lang/go
-		lang/opensycl
 		lang/seed7
 		textproc/riffdiff
 		lang/chez-scheme
@@ -369,6 +368,7 @@ collection_vars_init () {
 		multimedia/obs-ndi
 		multimedia/obs-scrab
 		multimedia/obs-streamfx
+		lang/opensycl
 	'
 	
 	COLL_nasty='
