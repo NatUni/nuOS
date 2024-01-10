@@ -1,1 +1,1 @@
-[ _1.83. = "_`grep ^BOOST_M..OR_VER= ../boost-all/common.mk | cut -d = -f 2 | tr \\\n .`" -a ! -f files/patch-boost_function_function__base.hpp ]
+[ `find * -type f -not -path work* | sort | xargs md5 | md5` = e8167415a42b3eed519e53163d405e58 ]
