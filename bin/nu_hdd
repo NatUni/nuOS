@@ -81,7 +81,7 @@ if [ -z "${OPT_DELETE-}" ]; then
 	echo 'pool type           -t POOL_TYPE      ' $pool_display_type
 	echo 'init sectors        -s INIT_SECTOR_SZ ' ${INIT_SECTOR_SZ:=512}
 	echo 'phys sector size    -S PHYS_SECTOR_SZ ' ${PHYS_SECTOR_SZ:=4096}
-	echo 'partition align     -a PART_ALIGN     ' ${PART_ALIGN:=8192} "(i.e. `humanize $(($INIT_SECTOR_SZ * $PART_ALIGN))`)"
+	echo 'partition align     -a PART_ALIGN     ' ${PART_ALIGN:=65536} "(i.e. `humanize $(($INIT_SECTOR_SZ * $PART_ALIGN))`)"
 	echo 'utilize percent     -u UTILIZE_PCT    ' ${UTILIZE_PCT:=99.95} 
 	echo 'pool options        -o POOL_OPTS      ' ${POOL_OPTS=}
 	echo 'zfs options         -O ZFS_OPTS       ' ${ZFS_OPTS="atime=off compression=lz4"}
