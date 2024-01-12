@@ -164,7 +164,6 @@ collection_vars_init () {
 		misc/openhab-addons
 		lang/squeak
 		lang/gravity
-		lang/crystal
 		lang/wren
 		lang/janet
 		lang/python
@@ -369,6 +368,7 @@ collection_vars_init () {
 		multimedia/obs-scrab
 		multimedia/obs-streamfx
 		lang/opensycl
+		lang/crystal
 	'
 	
 	COLL_nasty='
