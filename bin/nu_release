@@ -86,7 +86,7 @@ sister nu_img -p $POOL_NAME -C -z $ZVOL_SIZE $OUTPUT_POOL_NAME
 if ! zpool list $WORK_POOL_NAME; then
 	sister nu_img -p $POOL_NAME -C -z $ZVOL_SIZE $WORK_POOL_NAME
 	work_zvdev=`sister nu_img -i $WORK_POOL_NAME`
-	sister nu_hdd -b -u 100 -a 128 -q -p $WORK_POOL_NAME $work_zvdev
+	sister nu_hdd -b -u 100 -a 2048 -q -p $WORK_POOL_NAME $work_zvdev
 fi
 
 set_std_ds
