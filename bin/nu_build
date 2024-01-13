@@ -225,7 +225,7 @@ EOF
 	
 	cat >> $POOL_MNT/etc/rc.conf <<'EOF'
 linux_enable="YES"
-kld_list="aesni geom_eli ipfw ng_ether ng_bridge nmdm vmm sem cuse accf_data accf_dns accf_http cc_cdg"
+kld_list="geom_eli ipfw ng_ether ng_bridge nmdm vmm sem cuse accf_data accf_dns accf_http cc_cdg"
 entropy_file="/var/db/entropy/seed"
 var_run_enable="YES"
 var_run_autosave="NO"
