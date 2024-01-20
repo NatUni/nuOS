@@ -1,0 +1,121 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	vanitygen++
+#	vanitygen++/pkg-descr
+#	vanitygen++/distinfo
+#	vanitygen++/files
+#	vanitygen++/files/patch-util.c
+#	vanitygen++/files/patch-Makefile
+#	vanitygen++/Makefile
+#
+echo c - vanitygen++
+mkdir -p vanitygen++ > /dev/null 2>&1
+echo x - vanitygen++/pkg-descr
+sed 's/^X//' >vanitygen++/pkg-descr << '4cff14d047745de33383f22f69da2059'
+XVanitySearch is a bitcoin address prefix finder.
+4cff14d047745de33383f22f69da2059
+echo x - vanitygen++/distinfo
+sed 's/^X//' >vanitygen++/distinfo << 'a9583ef2eb6748cfb070fd0fd68d482c'
+XTIMESTAMP = 1705515838
+XSHA256 (10gic-vanitygen-plusplus-2.01.20230626-8d1bb33_GH0.tar.gz) = 91c5a4ea50c23a7ee4c604151b659a35e0e380afdf0c28143524ef56c8e271dc
+XSIZE (10gic-vanitygen-plusplus-2.01.20230626-8d1bb33_GH0.tar.gz) = 1675053
+a9583ef2eb6748cfb070fd0fd68d482c
+echo c - vanitygen++/files
+mkdir -p vanitygen++/files > /dev/null 2>&1
+echo x - vanitygen++/files/patch-util.c
+sed 's/^X//' >vanitygen++/files/patch-util.c << '625f71f8d6264c1015dc265123e70980'
+X--- util.c.orig	2024-01-17 06:11:42.939437000 -0500
+X+++ util.c	2024-01-17 06:12:06.893403000 -0500
+X@@ -1343,23 +1343,7 @@
+X int
+X count_processors(void)
+X {
+X-#if defined(__APPLE__)
+X     int count = sysconf(_SC_NPROCESSORS_ONLN);
+X-#else
+X-    FILE *fp;
+X-	char buf[512];
+X-	int count = 0;
+X-
+X-	fp = fopen("/proc/cpuinfo", "r");
+X-	if (!fp)
+X-		return -1;
+X-
+X-	while (fgets(buf, sizeof(buf), fp)) {
+X-		if (!strncmp(buf, "processor\t", 10))
+X-			count += 1;
+X-	}
+X-	fclose(fp);
+X-#endif
+X     return count;
+X }
+X #endif
+625f71f8d6264c1015dc265123e70980
+echo x - vanitygen++/files/patch-Makefile
+sed 's/^X//' >vanitygen++/files/patch-Makefile << 'f8efb29f7e7d66cb1836615f41f4feed'
+X--- Makefile.orig	2023-06-26 22:17:32.000000000 -0400
+X+++ Makefile	2024-01-17 10:48:57.613174000 -0500
+X@@ -11,7 +11,7 @@
+X # apt install check                # Only need if you want to run tests
+X 
+X LIBS=-lpcre -lcrypto -lm -lpthread
+X-CFLAGS=-ggdb -O3 -Wall -Wno-deprecated
+X+CFLAGS=-O3 -msse4.2 -mavx2 -Wall -Wno-deprecated
+X # CFLAGS=-ggdb -Wall -Wno-deprecated -fsanitize=address
+X # CFLAGS=-ggdb -O3 -Wall -I /usr/local/cuda-10.2/include/
+X 
+X@@ -24,7 +24,7 @@
+X 	OPENCL_LIBS=-framework OpenCL
+X 	LIBS+=-L/usr/local/opt/openssl/lib
+X 	CFLAGS+=-I/usr/local/opt/openssl/include
+X-else ifeq ($(PLATFORM),NetBSD)
+X+else ifeq ($(PLATFORM),FreeBSD)
+X 	LIBS+=`pcre-config --libs`
+X 	CFLAGS+=`pcre-config --cflags`
+X else
+f8efb29f7e7d66cb1836615f41f4feed
+echo x - vanitygen++/Makefile
+sed 's/^X//' >vanitygen++/Makefile << 'b138b710f8f004295685c72db185aad4'
+XPORTNAME=	vanitygen++
+XPORTVERSION=	2.01.20230626
+XCATEGORIES=	finance
+X
+XMAINTAINER=	milios@ccsys.com
+XCOMMENT=	Standalone vanity address generator for bitcoin and more
+XWWW=		https://github.com/10gic/vanitygen-plusplus
+X
+XLICENSE=	AGPLv3
+X
+XUSE_GITHUB=	yes
+XGH_ACCOUNT=	10gic
+XGH_PROJECT=	vanitygen-plusplus
+XGH_TAGNAME=	8d1bb33
+X
+XUSES=		compiler:c++11-lib gmake ssl
+XALL_TARGET=	most
+X
+XPLIST_FILES=	share/${PORTNAME}/base58prefix.txt bin/${PORTNAME} bin/keyconv
+X
+XLIB_DEPENDS=	libpcre.so:devel/pcre
+X
+X.include <bsd.port.pre.mk>
+X
+Xpost-patch:
+X	${REINPLACE_CMD} -e 's|base58prefix.txt|${PREFIX}/share/${PORTNAME}/base58prefix.txt|g' ${WRKSRC}/*.c
+X
+Xdo-install:
+X	(cd ${WRKSRC} && \
+X		${INSTALL_PROGRAM} ${PORTNAME} ${STAGEDIR}${PREFIX}/bin && \
+X		${INSTALL_PROGRAM} keyconv ${STAGEDIR}${PREFIX}/bin && \
+X		${MKDIR} ${STAGEDIR}${PREFIX}/share/${PORTNAME} && \
+X		${CP} base58prefix.txt ${STAGEDIR}${PREFIX}/share/${PORTNAME})
+X
+X.include <bsd.port.post.mk>
+b138b710f8f004295685c72db185aad4
+exit
+
