@@ -1,15 +1,10 @@
---- ../redmine50.orig/files/patch-Gemfile	2023-10-11 22:50:00.990139000 +0000
-+++ files/patch-Gemfile	2023-10-11 22:49:21.942993000 +0000
-@@ -1,7 +1,10 @@
- --- Gemfile.orig	2023-03-05 21:35:36 UTC
- +++ Gemfile
--@@ -3,30 +3,30 @@ gem 'bundler', '>= 1.12.0'
-- ruby '>= 2.5.0', '< 3.2.0'
-+@@ -1,32 +1,32 @@
-+ source 'https://rubygems.org'
-+ 
-+-ruby '>= 2.5.0', '< 3.2.0'
-++ruby '>= 2.5.0', '< 3.3.0'
-  gem 'bundler', '>= 1.12.0'
-  
- -gem 'rails', '6.1.7.6'
+--- ../redmine50.orig/Makefile	2024-01-21 18:17:01.588507000 +0000
++++ Makefile	2024-01-21 18:19:15.438848000 +0000
+@@ -49,7 +49,6 @@
+ 		rubygem-deckar01-task_list>=2.3.1:www/rubygem-deckar01-task_list
+ 
+ USES=		cpe ruby
+-BROKEN_RUBY32=	yes
+ 
+ CONFLICTS_INSTALL=	redmine42
+ 
