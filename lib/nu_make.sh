@@ -93,7 +93,7 @@ prepare_make_conf () {
 		require_tmp makeconf
 		cat >| "$makeconf" <<EOF
 CPUTYPE?=$TRGT_CODE
-DEFAULT_VERSIONS= bdb=18 gcc=13 ghostscript=10 go=1.21 java=18 llvm=16 lua=5.4 mysql=8.0 nodejs=21 perl5=5.38 pgsql=15 php=8.2 python=3.11 python3=3.11 ruby=3.2 samba=4.16 ssl=openssl
+DEFAULT_VERSIONS= bdb=18 gcc=13 ghostscript=10 go=1.21 java=18 llvm=16 lua=5.4 mysql=8.0 nodejs=21 perl5=5.38 pgsql=15 php=8.2 python=3.11 ruby=3.2 samba=4.16 ssl=openssl
 EOF
 		setvar $ret_file_var "$makeconf"
 		setvar $ret_cmd_var retire_tmp
@@ -117,7 +117,18 @@ prepare_src_conf () {
 		local srcconf=
 		require_tmp srcconf
 		cat >| "$srcconf" <<EOF
+WITHOUT_FREEBSD_UPDATE=1
+WITHOUT_PKGBOOTSTRAP=1
+
 WITH_EXTRA_TCP_STACKS=1
+WITH_BHYVE_SNAPSHOT=1
+WITH_ZONEINFO_LEAPSECONDS_SUPPORT=1
+
+WITHOUT_NTP=1
+WITHOUT_OPENSSH=1
+WITHOUT_UNBOUND=1
+WITHOUT_WIRELESS=1
+WITH_WIRELESS_SUPPORT=1
 EOF
 		setvar $ret_file_var "$srcconf"
 		setvar $ret_cmd_var retire_tmp

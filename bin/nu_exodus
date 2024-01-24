@@ -33,6 +33,45 @@ roles="$@"
 
 canhas "$roles"
 
+
+diff_sample () {
+	local keep=
+	case $1 in
+		-k)
+			shift
+			keep=y
+		;;
+	esac
+	mkdir -p "$OUTPUT${2:+/$2}"
+	if srsly $keep; then
+		cp -av "$1.sample" "$OUTPUT/${2:+$2/}${1##*/}.sample" || true
+		cp -av "$1" "$OUTPUT/${2:+$2/}${1##*/}"
+	else
+		status_sfx=.diff
+	fi
+	diff -u "$1.sample" "$1" > "$OUTPUT/${2:+$2/}${1##*/}.diff" || true
+	eko "$1 -> $OUTPUT/${2:+$2/}${1##*/}${status_sfx-}" 2>&1
+}
+
+save_exodus_script () {
+	diff_sample -k /etc/nuos/exodus.local
+}
+
+backup_conf () {
+	diff_sample -k /etc/nuos/backup
+}
+
+bring_sshd_keys () {
+	mkdir -p "$OUTPUT/sshd"
+	cp -av /usr/local/etc/ssh/ssh_host_*_key* "$OUTPUT/sshd/"
+}
+
+root_history () {
+	[ /root = "$HOME" ] || warn nonstandard root home: "$HOME"
+	mkdir -p "$OUTPUT/root"
+	cp -av "$HOME/.history" "$HOME/.sh_history" "$OUTPUT/root/"
+}
+
 for role in $roles; do
 	case $role in
 		ca) # certificate authority
@@ -134,6 +173,17 @@ for role in $roles; do
 				cp -v /var/jail/www/usr/local/etc/apache24/Includes/VirtualHost.custom/$host.conf "$OUTPUT/www/" || true
 			done
 			[ -d "$OUTPUT/www" ] || push err $role
+		;;
+		local) # user script for HARDWARE SPECIFIC modifications
+		       # not to be in the default list of roles
+				if [ -f /etc/nuos/exodus.local ]; then
+						save_exodus_script
+						output_bak=$OUTPUT
+						OUTPUT=$OUTPUT/local
+						mkdir -p "$OUTPUT"
+						( . /etc/nuos/exodus.local )
+						OUTPUT=$output_bak
+				fi
 		;;
 		*) push err $role
 	esac

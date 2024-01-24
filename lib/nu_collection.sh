@@ -52,13 +52,15 @@ collection_vars_init () {
 		net/realtek-re-kmod
 		sysutils/pefs-kmod
 		security/openssh-portable
-		net/hostapd
 		net/dhcpcd
 		dns/unbound
 	'
 	
 	COLL_base='
 		bare
+		net/ntp
+		net/hostapd
+		security/wpa_supplicant
 		security/gnupg
 	'
 	
@@ -75,7 +77,6 @@ collection_vars_init () {
 		sysutils/ipmitool
 		sysutils/freeipmi
 		sysutils/openipmi
-		security/wpa_supplicant
 		net/rsync
 		security/sudo
 		sysutils/lsof
@@ -101,6 +102,7 @@ collection_vars_init () {
 		textproc/gsed
 		devel/gmake
 		sysutils/coreutils
+		security/nmap
 		math/units
 		textproc/ydiff
 		lang/v
@@ -108,10 +110,14 @@ collection_vars_init () {
 		math/convertall
 		lang/go
 		lang/seed7
+		lang/racket
+		lang/cim
 		textproc/riffdiff
 		lang/chez-scheme
 		emulators/qemu
 		devel/wasmer
+		editors/vim
+		editors/neovim
 	'
 	
 	COLL_user='
@@ -136,6 +142,7 @@ collection_vars_init () {
 		security/acme.sh
 		net/openldap26-server
 		security/openvpn
+		security/tailscale
 		net/mpd5
 		security/strongswan
 		textproc/gtk-doc
@@ -240,7 +247,8 @@ collection_vars_init () {
 		net-p2p/bitcoinsv-utils
 		net-p2p/monero-cli
 		finance/vanitysearch
-		security/palisade
+		security/solana
+		security/openfhe
 	'
 	
 	COLL_commonserver='
@@ -290,6 +298,9 @@ collection_vars_init () {
 		sysutils/touchegg
 		security/howdy
 		devel/tortoisehg
+		editors/neovim-qt@qt6
+		editors/neovim-gtk
+		editors/emacs
 		editors/calligra
 		editors/libreoffice
 		graphics/gimp

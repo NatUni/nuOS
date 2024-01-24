@@ -184,7 +184,7 @@ if [ -n "${OPT_SKIP_NUOS-}" ]; then
 else
 	
 	! canhas ${RELEASE_ID-} || (! zfs list $nuos_bin_ds/$RELEASE_ID)
-
+	
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_proj_ds
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_os_ds
 	zfs create -p -o mountpoint=none -o canmount=off $nuos_bin_ds
@@ -193,6 +193,8 @@ else
 	nuos_bld_id=${nuos_sysroot_ds##*/}
 	
 	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
+	
+	mv $POOL_MNT/usr/bin/openssl $POOL_MNT/usr/bin/openssl.fbsd
 	
 	cat > $POOL_MNT/usr/local/etc/beadm.conf <<'EOF'
 echo beadm is incompatible with nuOS >&2
@@ -250,6 +252,8 @@ EOF
 	mkdir -p $POOL_MNT/etc/rc.conf.d.off
 	
 	cat > $POOL_MNT/etc/rc.conf.d.off/ntpd <<'EOF'
+ntpd_program="/usr/local/sbin/ntpd"
+ntpdate_program="/usr/local/sbin/ntpdate"
 ntpd_sync_on_start="YES"
 EOF
 
@@ -438,6 +442,7 @@ case $sw_spc in
 esac
 EOF
 	
+	
 	cat > $POOL_MNT/etc/rc.d/nuos_linshm <<'EOF'
 #!/bin/sh
 
@@ -500,6 +505,53 @@ load_rc_config $name
 run_rc_command "$1"
 EOF
 	chmod a-w+rx $POOL_MNT/etc/rc.d/nuos_linshm
+	
+	cat > $POOL_MNT/etc/rc.d/nuos_gui <<'EOOF'
+#!/bin/sh
+
+# PROVIDE: nuos_gui
+# REQUIRE: LOGIN syscons swaplate sshd cron jail localpkg securelevel power_profile nfscbd natd msgs moused mixer kpasswdd kfd kadmind ipropd_slave ipropd_master ipfw_netflow inetd hostapd gptboot geli2 ftpd ftp-proxy dhclient bsnmpd bluetooth blacklistd bgfsck
+# BEFORE: nuos_firstboot
+
+. /etc/rc.subr
+
+name="nuos_gui"
+desc="Enable fallback video driver"
+start_cmd="${name}_start"
+stop_cmd=":"
+rcvar="${name}_enable"
+: ${nuos_gui_enable:=NO}
+
+nuos_gui_start ()
+{
+	test -d /usr/local/etc/X11/xorg.conf.d || return
+
+	fw=`sysctl -n machdep.bootmethod`
+	echo nuos_gui: $fw
+
+	case $fw in
+		BIOS)
+			drv=vesa
+			rm -vf /usr/local/etc/X11/xorg.conf.d/20-scfb.conf 2>/dev/null;;
+		UEFI)
+			drv=scfb
+			rm -vf /usr/local/etc/X11/xorg.conf.d/20-vesa.conf 2>/dev/null;;
+	esac
+
+	test ! -f /usr/local/etc/X11/xorg.conf.d/20-${drv}.conf || return
+	cat > /usr/local/etc/X11/xorg.conf.d/20-${drv}.conf <<EOF
+
+Section "Device"
+	Identifier "Card0"
+	Driver     "${drv}"
+EndSection
+EOF
+}
+
+load_rc_config $name
+run_rc_command "$1"
+EOOF
+	chmod a-w+rx $POOL_MNT/etc/rc.d/nuos_gui
 	
 	cat > $POOL_MNT/etc/rc.d/nuos_firstboot <<'EOF'
 #!/bin/sh
@@ -601,11 +653,19 @@ EOF
 		echo HOSTOS_NOBRAND=y > $POOL_MNT/$conf
 	fi
 	
-	cat > $POOL_MNT/etc/nuos/backup <<'EOF'
+	cat > $POOL_MNT/etc/nuos/backup.sample <<'EOF'
 home
 ?svc
 EOF
-	
+	cp -av $POOL_MNT/etc/nuos/backup.sample $POOL_MNT/etc/nuos/backup
+
+	cat > $POOL_MNT/etc/nuos/exodus.local.sample <<'EOF'
+backup_conf
+root_history
+# bring_sshd_keys
+EOF
+	cp -av $POOL_MNT/etc/nuos/exodus.local.sample $POOL_MNT/etc/nuos/exodus.local
+
 	cat >> $POOL_MNT/$conf <<EOF
 HOSTOS_TYPE=nuOS
 HOSTOS_VER=$NUOS_VER
