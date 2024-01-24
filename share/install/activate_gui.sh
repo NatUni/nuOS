@@ -1,4 +1,4 @@
-sister enable_svc -C "$TRGT" seatd dbus hald webcamd
+sister enable_svc -C "$TRGT" nuos_gui seatd dbus hald webcamd
 
 if canhas ${GPU_VENDOR-}; then
 	case $GPU_VENDOR in
