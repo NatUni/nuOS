@@ -61,6 +61,9 @@ echo 'output pool          -o OUTPUT_POOL_NAME ' ${OUTPUT_POOL_NAME:=spore}
 maybe_pause
 maybe_yell
 
+: ${RELEASE_ID:=r0}
+[ r0 = $RELEASE_ID ] || non_std_rel_id=$RELEASE_ID
+
 if [ @ = "${DD_IMG-}" ]; then
 	ver=$NUOS_VER
 	while [ $ver != ${ver#0.} ]; do
@@ -73,8 +76,9 @@ if [ @ = "${DD_IMG-}" ]; then
 		2) t=v;; # variant
 		*) t=x;; # xyz/bleeding 
 	esac
-	DD_IMG=nuOS-$t$ver-$TRGT_MACH.dd
+	DD_IMG=nuOS-$t$ver${non_std_rel_id++$non_std_rel_id}-$TRGT_MACH.dd
 fi
+
 
 [ ${KEEP_ONLINE-0} -eq 0 ] || ! canhas ${DD_IMG-}
 ! canhas ${DD_IMG-} || [ ! -e "$DD_IMG" ]
@@ -90,7 +94,6 @@ if ! zpool list $WORK_POOL_NAME; then
 fi
 
 set_std_ds
-: ${RELEASE_ID:=r0}
 
 if ! zfs list $WORK_POOL_NAME/$nuos_proj_ds; then
 	sister nu_build -p $WORK_POOL_NAME -r $RELEASE_ID -c $PKG_COLLECTION -q
