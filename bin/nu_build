@@ -3,7 +3,7 @@ set -e; set -u; set -C
 
 # nuOS 0.0.12.99a0 - bin/nu_build
 #
-# Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.
+# Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
 # All rights reserved.
 #
 # This Source Code Form is subject to the terms of the Simplified BSD License.
@@ -603,7 +603,7 @@ EOF
 	if [ -z "${OPT_NOBRAND-}" ]; then
 		
 		sed -i '' -Ee 's/^(The compilation of software known as )FreeBSD /\1nuOS /;/^Copyright\>.*\<The FreeBSD Project\>/a\
-Copyright (c) 2008-2022 Chad Jacob Milios and Crop Circle Systems.' $POOL_MNT/COPYRIGHT
+Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.' $POOL_MNT/COPYRIGHT
 		
 		if ! [ -f "$NUOS_CODE/share/boot/nuos-mascot.png" -a -f "$NUOS_CODE/share/boot/nuos-brand.png" ]; then
 			user=`stat -f %Su "$NUOS_CODE/share/boot"`
