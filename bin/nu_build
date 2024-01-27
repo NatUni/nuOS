@@ -113,9 +113,13 @@ if [ -z "${OPT_SKIP_FBSD-}" ]; then
 	zfs list -Hro mountpoint,name $fbsd_sysroot_ds | sort | cut -wf2 | xargs -n1 zfs mount
 	
 	if [ -n "${OPT_NOMAKE-}" ]; then
+		# XXX: This code path hasn't been tested in a while. It's just supposed to stub out some bare
+		# necessities that make it possible to rapidly modify/test/debug certain other aspects of the
+		# build. Just an FYI: I don't know that it's still adequate because I haven't had cause to
+		# need/use it again in quite a while.
 		mkdir $POOL_MNT/boot $POOL_MNT/boot/zfs $POOL_MNT/etc/ssh $POOL_MNT/etc/rc.d
 		touch $POOL_MNT/etc/login.conf.db
-		cp /usr/src/COPYRIGHT $POOL_MNT/COPYRIGHT
+		cp -n /usr/src/COPYRIGHT $POOL_MNT/COPYRIGHT
 		echo 'FreeBSD ?.?.?  (UNKNOWN)' > $POOL_MNT/etc/motd${new_motd:+.template}
 	else
 		(cd /usr/src && make -D WITHOUT_KERNEL_SYMBOLS DESTDIR=$POOL_MNT KERNCONF=$TRGT_KERN installkernel installworld distribution)
@@ -610,9 +614,9 @@ Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.' $POOL_MNT/CO
 			make -C "$NUOS_CODE/share/boot"
 			chown -R $user "$NUOS_CODE/share/boot"
 		fi
-		cp "$NUOS_CODE/share/boot/nuos-brand.png" "$NUOS_CODE/share/boot/nuos-mascot.png" \
+		cp -n "$NUOS_CODE/share/boot/nuos-brand.png" "$NUOS_CODE/share/boot/nuos-mascot.png" \
 			$POOL_MNT/boot/images/
-		cp "$NUOS_CODE/share/boot/gfx-nuos.lua" $POOL_MNT/boot/lua/
+		cp -n "$NUOS_CODE/share/boot/gfx-nuos.lua" $POOL_MNT/boot/lua/
 		chmod 444 $POOL_MNT/boot/lua/gfx-nuos.lua $POOL_MNT/boot/images/nuos-brand.png $POOL_MNT/boot/images/nuos-mascot.png
 		
 		cat >> $POOL_MNT/boot/loader.conf <<'EOF'
@@ -653,18 +657,16 @@ EOF
 		echo HOSTOS_NOBRAND=y > $POOL_MNT/$conf
 	fi
 	
-	cat > $POOL_MNT/etc/nuos/backup.sample <<'EOF'
+	tee $POOL_MNT/etc/nuos/backup.sample > $POOL_MNT/etc/nuos/backup <<'EOF'
 home
 ?svc
 EOF
-	cp -av $POOL_MNT/etc/nuos/backup.sample $POOL_MNT/etc/nuos/backup
 
-	cat > $POOL_MNT/etc/nuos/exodus.local.sample <<'EOF'
+	tee $POOL_MNT/etc/nuos/exodus.local.sample > $POOL_MNT/etc/nuos/exodus.local <<'EOF'
 backup_conf
 root_history
 # bring_sshd_keys
 EOF
-	cp -av $POOL_MNT/etc/nuos/exodus.local.sample $POOL_MNT/etc/nuos/exodus.local
 
 	cat >> $POOL_MNT/$conf <<EOF
 HOSTOS_TYPE=nuOS
@@ -727,13 +729,13 @@ EOF
 								chown -R $user "$NUOS_CODE/share/wallpapers/nuOS-default"
 							fi
 							mkdir -p $POOL_MNT/usr/local/share/wallpapers/nuOS-default
-							cp -r "$NUOS_CODE/share/wallpapers/nuOS-default/contents" \
+							cp -nr "$NUOS_CODE/share/wallpapers/nuOS-default/contents" \
 								"$NUOS_CODE/share/wallpapers/nuOS-default/metadata.json" \
 								$POOL_MNT/usr/local/share/wallpapers/nuOS-default/
 							mkdir -p $POOL_MNT/usr/share/skel/dot.config/plasma-workspace/env/
-							cp "$NUOS_CODE/share/wallpapers/nuOS-default/set-nuOS-wallpaper.sh" \
+							cp -n "$NUOS_CODE/share/wallpapers/nuOS-default/set-nuOS-wallpaper.sh" \
 								$POOL_MNT/usr/share/skel/dot.config/plasma-workspace/env/
-							cp "$NUOS_CODE/share/wallpapers/nuOS-default/kscreenlockerrc" \
+							cp -n "$NUOS_CODE/share/wallpapers/nuOS-default/kscreenlockerrc" \
 								$POOL_MNT/usr/share/skel/dot.config/
 							
 							cat > $POOL_MNT/usr/share/skel/dot.config/plasma-workspace/env/disable-ac-sleep.sh <<'EOF'
@@ -852,7 +854,7 @@ if ! srsly ${OPT_SKIP_FACTORY-}; then
 			fi
 		fi
 
-		cp $zpool_cache $POOL_MNT/boot/zfs/zpool.cache
+		cp -n $zpool_cache $POOL_MNT/boot/zfs/zpool.cache
 
 		zfs snapshot -r $new_factory_ds@pool_registered
 		zfs set org.nuos:active_revision=v$factory_rev $factory_ds

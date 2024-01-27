@@ -63,13 +63,13 @@ backup_conf () {
 
 bring_sshd_keys () {
 	mkdir -p "$OUTPUT/sshd"
-	cp -av /usr/local/etc/ssh/ssh_host_*_key* "$OUTPUT/sshd/"
+	cp -anv /usr/local/etc/ssh/ssh_host_*_key* "$OUTPUT/sshd/"
 }
 
 root_history () {
 	[ /root = "$HOME" ] || warn nonstandard root home: "$HOME"
 	mkdir -p "$OUTPUT/root"
-	cp -av "$HOME/.history" "$HOME/.sh_history" "$OUTPUT/root/"
+	cp -anv "$HOME/.history" "$HOME/.sh_history" "$OUTPUT/root/"
 }
 
 for role in $roles; do

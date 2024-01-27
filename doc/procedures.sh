@@ -1,0 +1,276 @@
+#!/usr/bin/false
+echo DO NOT EXECUTE THIS FILE directly or completely. Instead, READ it carefully.
+exit 1
+
+# These are notes, with no particular order to them. DO NOT invoke any of these commands blindly;
+# study them. Many of these commands are literal and verbatim as used on the systems at operation
+# headquarters and in our various development labs for specific usage in particular applications.
+
+# Certain assumptions are as follows:
+
+# The processes documented here are illustrated using a nuOS system by the commands appropriate for
+# instructing a nuOS system to accomplish each step but the steps follow a narrative which assumes
+# you do not yet have nuOS on the intended target computer. So either the assumption is being made
+# that you have at least one nuOS system available to you before installing another nuOS system,
+# or, a level of technical proficiency on the platform of your choice is being assumed in order for
+# you to translate these actions to those appropriate for the current platform you are using. The
+# coverage of this procedure on various alternative platforms is beyond the scope of this document.
+
+# The commands needed to bootstrap the nuOS system should look and work identically to those of
+# the FreeBSD operating system (because it does actually comprise the core foundation and much of
+# the infrastructure of nuOS). You may start your journey with a FreeBSD system and follow along
+# this tutorial exactly or you might feel comfortable performing these steps with another operating
+# system. Hopefully, thorough explanation of each step will make your nuOS experience approachable
+# and powerful as you discover new and exciting ways to take command of your devices and digital
+# lifestyle. Please share your experience and knowledge with us and others early and often through
+# your nuOS journey! Don't hesitate to reach out on nuOS.org and/or CropCircle.Systems for help.
+
+# "jedi" is the name used within our organization for the initial system administrator account.
+# Replace jedi where you see it with the name you have chosen. If removed/unspecified, the nuOS
+# default used is "ninja". The empty string is a valid choice which omits the installation of an
+# administrator altogether, which may be a valid configuration in production if your system is
+# statically defined or to be managed from a higher layer of greater capability (such as your own
+# bespoke programming) or a lower layer of greater authority (such as a virtual machine manager).
+# Note this important distinction affecting system behavior between this value being defined to be
+# empty versus being left undefined by omission.
+
+# "neo" mentioned below, or "neo.zion.top." is one server device currently running at headquarters
+# in central Florida. It accesses a quicker and smaller storage system for primary operations (such
+# as booting up, among other things) which is called "nebu". It also accesses and manages a larger,
+# slower storage subsystem called "zion". Both can be seen in these [literal] examples documented.
+
+# "tty" in most instances below refers to one personal and individual laptop computer of our Chief
+# Technology Operator, Chad Jacob Milios. "tty.zion.top" is the fully qualified DNS hostname for
+# that laptop. Technically, "tty" more frequently here actually refers to its internal hard drive
+# storage by way of its zpool label or the human-meaningful portion of its GPT label. (A zpool is a
+# construct of ZFS, the Zettabyte File System. GPT, the GUID Partition Table, is a construct used
+# to provision physical data storage devices, of significance to your system's firmware and early
+# bootstrap mechanisms of the software.)
+
+#     Note that tty can also refer generally to a teletype, a construct of UNIX (and so derived)
+#     systems: a primitive and powerful interface, historically consisting of a keyboard coupled
+#     with a screen of primarily text and little or no graphics, one or more sets of which are
+#     connected to a system by way of their own bidirectional serial data communication interfaces.
+#     A tty (also known as a terminal) by design lacks any pointing device such as a touchscreen or
+#     mouse (although there are protocols which allow the composition of a tty along with certain
+#     limited functionality from a pointing device to be sent in band along the serial connection.)
+
+#     Know then that nuOS is one such UNIX derived system. Therefore you may encounter in places
+#     some codes, scripts or commands which pertain to teletypes or their functionality and refer
+#     to them using that same identifier, "tty". It is an exercise of an expert or so interested
+#     reader to determine when it is appropriate to change the mention of "tty" from our specific
+#     and individual examples to their own personalized label given to their own systems or on the
+#     other hand when it is not appropriate to modify the general use of the generic term, tty.
+
+# nuOS systems typically (but not exclusively) run atop the ZFS data storage subsystem. In systems
+# with a modest amount of tightly coupled storage, it is conventional for this storage device(s) to
+# be named exactly as the system it is attached to (if it is indeed the storage device containing
+# the operating system involved in its day to day use). Storage devices which are loosely coupled
+# to the systems accessing and running them are typically given distinct names, especially if the
+# storage is an archive or data warehouse intended to evolve beside and to outlive those systems so
+# attached and/or associated.
+
+# If you follow our customary practices then systems of operation and execution (computers and so
+# forth in their various form factors) are typically named for people or characters; think "bart",
+# "lisa" and "milhouse". Devices and systems designed for storage then are named for places; think
+# "springfield" or "shelbyville". To make this rule more general, it is also accepted practice to
+# name computers for dynamic things or concepts and to label storage as static things/ideas; think
+# "rain" and "thunder" vs. "sky" or "ocean". Of course these ideas are entirely subjective and
+# these labels are completely arbitrary.
+
+# It has been said and oft repeated that there are only two truly difficult problems in the science
+# and engineering of computerized and networked systems: naming things and cache invalidation. (A
+# cache is a place to put [a copy of] data which is closer/faster than the authoritative source of
+# truth regarding that data; any modern system involves layers and layers ad nauseam of such caches
+# in vast hierarchies and networks.) It has also been said that we should treat our systems not as
+# pets but rather as livestock. Discussion on the merits and pitfalls of either approach is beyond
+# the scope of this document. Valid rationale can be found on both sides and your solution might be
+# a composition of both strategies according to the context and use case you're interested in.
+
+# This documentation illustrates a few simple systems and a modest network as concrete examples,
+# used in production primarily for our cause of spreading quality open source software to more
+# people and fostering interest in digital sovereignty and independence. Hopefully you will enjoy
+# your experience with us and participate in our growth and expansion. Thank you for taking the
+# time to explore our digital ecosystem!ZX
+
+# The current live boot and installation image is available from https://nuOS.org and retrieved as
+# follows. Note that unless you are already using nuOS you might use an alternate method to get it.
+fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.xz
+
+# For high security environments a PGP signed fingerprint is also available. The commands below are
+# merely illustrative. Note that to download and verify the fingerprint using the same computer and
+# network as downloaded the installation image offers negligible added security benefit. Accessing
+# the fingerprint via an out of band channel(s) and verifying the integrity of the generated boot
+# media using highly trustworthy device(s) is an exercise for a motivated user, situation dependent
+# and not covered in this document. Prepared nuOS system drives are available for shipment at a low
+# cost from https://CropCircle.Systems although it must be understood that ultimately any device we
+# use to run nuOS must still be an implicitly trusted device. nuOS may be quite robust against most
+# sorts of attack or infection once it is operational, however any software can be rendered utterly
+# powerless in defense against preexisting malware of all but the most rudimentary types. Consider
+# a brand new computer for running nuOS offered by a trustworthy vendor of hardware and consulting
+# services specializing in security.
+fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.xz.sum
+
+# List suitable devices recognized by the system.
+geom disk list | grep -wiF -e name: -e descr: -e mediasize: -e ident:
+
+# *Output* from the above command looks something like this:
+# Geom name: nvd0
+#    Mediasize: 256060514304 (238G)
+#    descr: Micron MTFDKCD256TFK
+#    ident: 232040DE5D6B
+# Geom name: da0
+#    Mediasize: 125162225664 (117G)
+#    descr: SanDisk SanDisk 3.2 Gen1
+#    ident: A20038A6280CEB60
+
+# I've recently inserted a SanDisk brand thumb drive of 128 GB capacity so I believe "da0" is our
+# target disk as indicated by "Geom name: da0" above. Note the size, description and serial number
+# match that of the drive you intend to wipe and use for nuOS.
+
+# WARNING: "da0" seen below is the name of a new blank USB thumb drive (of at least 32 GB in size)
+#          when it is attached to tty or neo. Other systems, your system for instance, may have one
+#          or more drives that the system has already identified as da0, da1, da2, etc. Therefore
+#          BE VERY CERTAIN of WHICH DRIVE you wish to ERASE and format exclusively for installing
+#          and running nuOS. (Multi-boot scenarios are an option for the expert or very interested
+#          reader and will not be covered in this document.)
+
+# Investigate the current layout of the disk, "da0" in this case. This does not apply modifications.
+gpart show da0
+
+# *Output* from the above command will look something like this for a typical drive:
+# =>       63  244457409  da0  MBR  (117G)
+#          63       1985       - free -  (993K)
+#        2048  244455424    1  ntfs  (117G)
+
+# TODO: Include example output from the same drive after it contains a nuOS system on it.
+
+# If the output from the preceding command does not appear meaningful to you, don't worry; if you
+# are certain you're ready to totally wipe the drive clean then you may ignore any output or error
+# the previous command produced.
+
+# Become the "root" user. Commands from here will require total access and authority to replace the
+# operating system with one 
+
+###################################################################################################
+# WARNING: The following commands will OBLITERATE any data you might have on drive "da0" (for all #
+#          intents and purposes). Note that if your actual intention *is* to obliterate the data  #
+#          on the drive, this is not the proper and secure way to do that effectively.            #
+###################################################################################################
+
+
+          drive for purposes of confidentiality is beyond the scope of this document; this command
+          would simply make it highly inconvenient to recover prior data, although not difficult
+          for a truly motivated adversary. Recovery from this command will not be covered here.
+# NOTE: Only if you are using a drive that has already been formatted for nuOS in the past, there
+#       is the following additional step. This is necessary because the step after that only erases
+#       the layout information on the drive, and later steps may replace an identical layout, after
+#       which a further step may refuse to overwrite the data contained at areas referenced by the
+#       disk layout. If you're unsure whether or not this step is applicable to you and you're very
+#       certain that the drive contains no data of value to you then you may include this step and
+#       ignore any error it may produce. Importantly, the "p3" after the "da0" in the combined part
+#       identifier ("da0p3") is found by referencing the "3" shown in the third column of output by
+#       the previous investigative command and may actually be a "2" or a "3" (depending on whether
+#       the nuOS (or similarly) formatted drive was used for booting and running a system or merely
+#       for storing data.) The key element to realize is that the proper number is found beside and
+#       on the same line with the information including the type "freebsd-zfs".
+
+
+# Clean the partition on the drive of any vestigial nuOS, FreeBSD or ZFS data structures which may
+# interfere with the fresh installation.
+zpool labelclear -f /dev/da0p3
+
+# Wipe the drive in preparation of installation.
+gpart destroy -F da0
+
+# Simultaneously decompress and write the installation 
+xzcat -T0 /home/jedi/nuOS-v12.99a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=fullblock obs=128K conv=sparse,osync status=progress
+
+
+...more to come...
+
+
+# Your shell is (t)csh and you want to use the nuOS version your system came with:
+setenv PATH ${PATH}:/usr/nuos/bin
+
+# Your shell is (t)csh and you want to use the nuOS version you're developing:
+setenv PATH ${PATH}:/home/jedi/nuOS/bin
+
+# Your shell is (ba)sh and you want to use the nuOS version your system came with:
+PATH=$PATH:/usr/nuos/bin
+
+# Your shell is (ba)sh and you want to use the nuOS version you're developing:
+PATH=$PATH:/home/jedi/nuOS/bin
+
+# WARNING: Passing secrets via the environment or command line is insecure on any multiuser system
+#          and any secrets landing in your shell's command history log are hard to keep private.
+#          The ADMIN_PASS, USER_PASS and BD_PASS variables support one special value, '?' which
+#          will prompt you to enter the password interactively and securely.
+env ADMIN_PASS='?' \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    USER_PASS='?' \
+    DISPLAY_MANAGER=light \
+    TZ=America/Detroit \
+    nu_sys -q \
+        -es 6G \
+        -p tty \
+        -h tty.zion.top \
+        -b '' \
+        -a jedi \
+        -c desktop \
+        -l @set_timezone \
+        -l @keep_time \
+        -l @enable_dynamic_network \
+        -l @cache_dns \
+        -l @harden_remote_login \
+        -l @activate_gui
+
+# "joe" is the default user/owner account without administrator privileges. Some examples leave
+# this user to be implied by the software while others eliminate this user through use of the empty
+# string.
+
+# "sumyungai" is the default vendor backdoor administrator account name. As this is a facility for
+# vendors and value added resellers to offer bespoke services and customer support (upstream of
+# their clients and downstream of the nuOS team) this functionality is disabled at headquarters
+# and should be disabled by any end users not acquiring a commercial contract for support services.
+# Nonetheless, we want this facility to remain robust, secure and well tested. You are encouraged
+# to consider commercial contracts or private agreements of technical support amongst one another,
+# each relationship according to each's own needs and means. Examples here include -b '' wherever
+# this variable is applicable, which entirely omits all such facilities and capabilities from the
+# software installation.
+
+
+### WARNING ###
+# Entering the twilight zone. Commands below this line have not been reviewed. Thar be dragons hyar
+# matey, arrrggg!
+
+
+nu_exodus local
+cp -anv nuos_site_exodus/local/root/.*history `echo /tmp/nu_sys.*.ALT_MNT.*`/root/
+cp -anv nuos_site_exodus `echo /tmp/nu_sys.*.ALT_MNT.*`/root/nuos_deliverance
+
+shutdown -r now
+
+patch -N -V none /etc/nuos/exodus.local < ~/nuos_deliverance/exodus.local.diff
+
+patch -N -V none /etc/nuos/backup < ~/nuos_deliverance/local/backup.diff
+
+patch -N -V none /usr/local/etc/wifibox/bhyve.conf < ~/nuos_deliverance/local/wifibox/bhyve.conf.diff
+patch -N -V none /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf < ~/nuos_deliverance/local/wifibox/wpa_supplicant.conf.diff
+enable_svc wifibox
+cat >> /etc/rc.conf.local <<EOF
+ifconfig_wifibox0="SYNCDHCP"
+background_dhclient_wifibox0="YES"
+defaultroute_delay="0"
+EOF
+
+
+nu_build -q
+
+env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a1 -h spore.nuos.org -l @activate_gui
+
+zfs destroy -r tty/img/spore
+nu_img -C spore
+
+zpool import -R /spore spore
+nu_os_install -P spore -p tty -q
