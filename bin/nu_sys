@@ -156,12 +156,11 @@ EOF
 sed -i '' -e "s/\.my\.domain\$/.${NEW_HOST#*.} $NEW_HOST ${NEW_HOST%%.*}/;s/\<warden.myname.my.domain\>/warden.$NEW_HOST/" $POOL_MNT/etc/hosts
 
 if ! srsly ${OPT_BASE_OS-}; then
-	cat >> $POOL_MNT/etc/nuos/backup <<EOF
+	tee -a $POOL_MNT/etc/nuos/backup.sample >> $POOL_MNT/etc/nuos/backup <<EOF
 sys/$NEW_HOST/(org.nuos:active_revision)/etc
 sys/$NEW_HOST/(org.nuos:active_revision)/var
 EOF
 fi
-
 
 zfs inherit org.nuos:origin_readonly $new_host_ds
 freeze -r $new_host_ds

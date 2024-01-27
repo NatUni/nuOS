@@ -246,7 +246,7 @@ collection_vars_init () {
 		net-p2p/bitcoinsv-daemon
 		net-p2p/bitcoinsv-utils
 		net-p2p/monero-cli
-		finance/vanitysearch
+		finance/vanitygen++
 		security/solana
 		security/openfhe
 	'

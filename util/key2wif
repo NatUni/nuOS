@@ -1,0 +1,40 @@
+#!/bin/sh
+set -e; set -C; set -u
+
+# WARNING: Key material passed via (sub)command(s) argv. Know your attack surface.
+KEY=${1#0[xX]}
+
+symbols="`{ jot - 1 9; jot -c - A H; jot -c - J N; jot -c - P Z; jot -c - a k; jot -c - m z; } | tr -d '\n'`"
+
+typed_key="80${KEY}01"
+csum=`echo $typed_key | xxd -r -p | sha256 | xxd -r -p | sha256 | head -c 8`
+wrapped_key=$typed_key$csum
+
+# echo $wrapped_key
+
+while [ -n "$wrapped_key" ]; do
+	key_right=${wrapped_key#?}
+# 	echo $key_right
+	digit=`echo -n $wrapped_key | head -c 1`
+	case $digit in
+		[aA]) digit=10;;
+		[bB]) digit=11;;
+		[cC]) digit=12;;
+		[dD]) digit=13;;
+		[eE]) digit=14;;
+		[fF]) digit=15;;
+	esac
+	total=`echo "${total:=0} * 16 + $digit" | bc | tr -dc '[0-9]'`
+# 	echo $total
+	wrapped_key=$key_right
+done
+
+while
+	div=`echo $total / ${#symbols} | bc | tr -dc '[0-9]'`
+	rem=`echo $total % ${#symbols} | bc`
+	echo $rem
+	total=$div
+	[ x$total != x0 ]
+do :; done | tail -r | while read n; do
+	echo -n $symbols | tail -c $((${#symbols} - $n)) | head -c 1
+done; echo
