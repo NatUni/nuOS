@@ -565,13 +565,26 @@ nuos_ssl_init () {
 }
 
 nuos_ssh_init () {
+	! srsly ${nuos_lib_system_ssh_inited-} || return 0
 	if [ -x /usr/local/bin/ssh ]; then
 		SSH_CMD=/usr/local/bin/ssh
 		SSH_SUITE=openssh-port
+		SSH_ASKPASS=/usr/local/bin/ssh-askpass
 	else
 		SSH_CMD=/usr/bin/ssh
 		SSH_SUITE=openssh-freebsd-base
+		SSH_ASKPASS=/usr/bin/ssh-askpass
 	fi
+	nuos_lib_system_ssh_inited=y
+}
+
+grab_admin_display_auth () {
+	: ${DISPLAY:=:0}
+	export DISPLAY
+	! canhas ${XAUTHORITY-} || return 0
+	! srsly ${nuos_lib_system_display_grabbed-} || return 0
+	su -f -l `pw user show 1001 | cut -d : -f 1` -c 'xauth list' | xargs -L 1 xauth add
+	nuos_lib_system_display_grabbed=y
 }
 
 nuos_sha_fngr () {

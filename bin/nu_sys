@@ -55,6 +55,28 @@ collection_vars_init
 install_vars_init
 admin_init
 
+
+while read -r var label; do
+	eval acct=\$${var}_ACCT
+	canhas $acct || continue
+	if eval [ "'x?'" = "\"x\$${var}_PASS\"" ]; then
+		nuos_ssh_init
+		grab_admin_display_auth
+		while
+			setvar ${var}_PASS $($SSH_ASKPASS "Set $label ($acct) password:")
+			new_pass_conf=`$SSH_ASKPASS "Repeat $label ($acct) password:"`
+			eval [ "\"x\$${var}_PASS\"" != "\"x$new_pass_conf\"" ]
+		do
+			warn 'Entered passwords did not match. Try again.'
+		done
+	fi
+done <<'EOF'
+ADMIN administrator
+USER user/owner
+BD vendor/backdoor
+EOF
+
+
 maybe_pause
 maybe_yell
 

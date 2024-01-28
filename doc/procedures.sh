@@ -143,27 +143,31 @@ gpart show da0
 #          63       1985       - free -  (993K)
 #        2048  244455424    1  ntfs  (117G)
 
-# TODO: Include example output from the same drive after it contains a nuOS system on it.
+# TODO: Include example output from a few other common drive formats.
 
 # If the output from the preceding command does not appear meaningful to you, don't worry; if you
 # are certain you're ready to totally wipe the drive clean then you may ignore any output or error
-# the previous command produced.
+# the previous command may have produced.
 
-# Become the "root" user. Commands from here will require total access and authority to replace the
-# operating system with one 
+# Become the "root" user. Commands from here will require total access and authority in order to
+# change the on disk format of a disk and/or install a totally different operating system. Working
+# with your system's root account must be done carefully and meticulously. You have been warned.
+su -l
 
 ###################################################################################################
 # WARNING: The following commands will OBLITERATE any data you might have on drive "da0" (for all #
 #          intents and purposes). Note that if your actual intention *is* to obliterate the data  #
-#          on the drive, this is not the proper and secure way to do that effectively.            #
+#          on the drive, this is not the proper and secure way to do that effectively. Again, be  #
+#          very certain you are dealing with the correct drive that you intend to erase and use.  #
 ###################################################################################################
 
+# NOTE: Effectively wiping a drive clean for purposes of confidentiality is beyond the scope of
+#       this document. These commands would simply make it highly inconvenient to recover prior
+#       data, although not very difficult for a truly motivated adversary. Data destruction or
+#       recovery will not be covered in this guide.
 
-          drive for purposes of confidentiality is beyond the scope of this document; this command
-          would simply make it highly inconvenient to recover prior data, although not difficult
-          for a truly motivated adversary. Recovery from this command will not be covered here.
 # NOTE: Only if you are using a drive that has already been formatted for nuOS in the past, there
-#       is the following additional step. This is necessary because the step after that only erases
+#       is the following extra step. This is necessary because the step after that only erases
 #       the layout information on the drive, and later steps may replace an identical layout, after
 #       which a further step may refuse to overwrite the data contained at areas referenced by the
 #       disk layout. If you're unsure whether or not this step is applicable to you and you're very
@@ -175,7 +179,6 @@ gpart show da0
 #       for storing data.) The key element to realize is that the proper number is found beside and
 #       on the same line with the information including the type "freebsd-zfs".
 
-
 # Clean the partition on the drive of any vestigial nuOS, FreeBSD or ZFS data structures which may
 # interfere with the fresh installation.
 zpool labelclear -f /dev/da0p3
@@ -183,7 +186,7 @@ zpool labelclear -f /dev/da0p3
 # Wipe the drive in preparation of installation.
 gpart destroy -F da0
 
-# Simultaneously decompress and write the installation 
+# Simultaneously decompress and write the boot/installation image to our blank drive.
 xzcat -T0 /home/jedi/nuOS-v12.99a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=fullblock obs=128K conv=sparse,osync status=progress
 
 
@@ -227,7 +230,7 @@ env ADMIN_PASS='?' \
 
 # "joe" is the default user/owner account without administrator privileges. Some examples leave
 # this user to be implied by the software while others eliminate this user through use of the empty
-# string.
+# string. An account for "joe" will be included by the preceding command.
 
 # "sumyungai" is the default vendor backdoor administrator account name. As this is a facility for
 # vendors and value added resellers to offer bespoke services and customer support (upstream of
@@ -235,16 +238,17 @@ env ADMIN_PASS='?' \
 # and should be disabled by any end users not acquiring a commercial contract for support services.
 # Nonetheless, we want this facility to remain robust, secure and well tested. You are encouraged
 # to consider commercial contracts or private agreements of technical support amongst one another,
-# each relationship according to each's own needs and means. Examples here include -b '' wherever
+# building relationships according to each's needs and means. Examples here include "-b ''" where
 # this variable is applicable, which entirely omits all such facilities and capabilities from the
 # software installation.
+
 
 
 ### WARNING ###
 # Entering the twilight zone. Commands below this line have not been reviewed. Thar be dragons hyar
 # matey, arrrggg!
 
-
+history -S +
 nu_exodus local
 cp -anv nuos_site_exodus/local/root/.*history `echo /tmp/nu_sys.*.ALT_MNT.*`/root/
 cp -anv nuos_site_exodus `echo /tmp/nu_sys.*.ALT_MNT.*`/root/nuos_deliverance
@@ -268,9 +272,26 @@ EOF
 nu_build -q
 
 env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a1 -h spore.nuos.org -l @activate_gui
+cp -v /root/nuOS-v12.99a0+a1-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
 
 zfs destroy -r tty/img/spore
 nu_img -C spore
 
 zpool import -R /spore spore
 nu_os_install -P spore -p tty -q
+
+
+
+rsync -avP --delete ~/nuOS cargobay.net:
+
+
+
+(cd /usr/obj/usr/src/amd64.amd64 && umask 27 && find . -not -perm +o+r | xargs tar -cv --lz4 -f special_permissions.tlz)
+
+chown -Rv jedi:jedi /usr/{src,obj,ports}
+
+rsync -avP --delete --exclude ports/distfiles cargobay.net:/usr/{src,obj,ports} /usr/
+
+chown -Rv root:wheel /usr/{src,obj,ports}
+
+(cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)

@@ -200,6 +200,22 @@ else
 	
 	mv $POOL_MNT/usr/bin/openssl $POOL_MNT/usr/bin/openssl.fbsd
 	
+	patch -N -V none $POOL_MNT/usr/share/skel/dot.cshrc <<'EOF'
+--- /usr/share/skel/dot.cshrc.orig	2024-01-24 06:41:24.067770000 -0500
++++ /usr/share/skel/dot.cshrc	2024-01-27 13:32:13.788139000 -0500
+@@ -27,8 +27,8 @@
+ 	set promptchars = "%#"
+ 
+ 	set filec
+-	set history = 1000
+-	set savehist = (1000 merge)
++	set history = 10000
++	set savehist = (10000 merge lock)
+ 	set autolist = ambiguous
+ 	# Use history to aid expansion
+ 	set autoexpand
+EOF
+	
 	cat > $POOL_MNT/usr/local/etc/beadm.conf <<'EOF'
 echo beadm is incompatible with nuOS >&2
 exit 79
