@@ -315,6 +315,7 @@ collection_vars_init () {
 		x11/wshowkeys
 		x11/gnome
 		x11/kde5
+		security/kleopatra
 		x11/sddm
 		x11/lightdm
 		x11/lightdm-gtk-greeter

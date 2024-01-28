@@ -292,6 +292,6 @@ chown -Rv jedi:jedi /usr/{src,obj,ports}
 
 rsync -avP --delete --exclude ports/distfiles cargobay.net:/usr/{src,obj,ports} /usr/
 
-chown -Rv root:wheel /usr/{src,obj,ports}
-
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
+
+chown -Rv root:wheel /usr/{src,obj,ports}

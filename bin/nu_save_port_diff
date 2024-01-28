@@ -50,6 +50,6 @@ done
 
 retire_tmp diff
 
-echo '[ `find * -type f -not -path 'work*' | sort | xargs md5 | md5` =' `cd ../$port.orig; find * -type f -not -path 'work*' | sort | xargs md5 | md5` ] > "$pkgdir/${category}_$port.diff.test"
+echo "[ \`find * -type f -not -path 'work*' | sort | xargs md5 | md5\` =" `cd ../$port.orig; find * -type f -not -path 'work*' | sort | xargs md5 | md5` ] > "$pkgdir/${category}_$port.diff.test"
 chown $user "$pkgdir/${category}_$port.diff.test"
 
