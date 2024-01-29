@@ -109,7 +109,7 @@ fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.xz
 # powerless in defense against preexisting malware of all but the most rudimentary types. Consider
 # a brand new computer for running nuOS offered by a trustworthy vendor of hardware and consulting
 # services specializing in security.
-fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.xz.sum
+fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.sum
 
 # List suitable devices recognized by the system.
 geom disk list | grep -wiF -e name: -e descr: -e mediasize: -e ident:
@@ -190,7 +190,7 @@ gpart destroy -F da0
 xzcat -T0 /home/jedi/nuOS-v12.99a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=fullblock obs=128K conv=sparse,osync status=progress
 
 
-...more to come...
+# ...more to come...
 
 
 # Your shell is (t)csh and you want to use the nuOS version your system came with:
@@ -269,13 +269,23 @@ defaultroute_delay="0"
 EOF
 
 
+
+nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q
+
 nu_build -q
 
-env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a1 -h spore.nuos.org -l @activate_gui
-cp -v /root/nuOS-v12.99a0+a1-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
+zfs destroy -r nebu/img/spore
 
+env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a2 -h spore.nuos.org -l @activate_gui
+cp -v /root/nuOS-v12.99a0+a2-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
+
+zpool export spore
+nu_img -d spore
 zfs destroy -r tty/img/spore
+
 nu_img -C spore
+
+# same `xzcat ... | dd ...` as above
 
 zpool import -R /spore spore
 nu_os_install -P spore -p tty -q
@@ -286,7 +296,7 @@ rsync -avP --delete ~/nuOS cargobay.net:
 
 
 
-(cd /usr/obj/usr/src/amd64.amd64 && umask 27 && find . -not -perm +o+r | xargs tar -cv --lz4 -f special_permissions.tlz)
+(cd /usr/obj/usr/src/amd64.amd64 && umask 27 && find . -not -perm +go+r | xargs tar -cv --lz4 -f special_permissions.tlz)
 
 chown -Rv jedi:jedi /usr/{src,obj,ports}
 
