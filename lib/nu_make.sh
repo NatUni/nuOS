@@ -117,19 +117,22 @@ prepare_src_conf () {
 		local srcconf=
 		require_tmp srcconf
 		cat >| "$srcconf" <<EOF
-WITHOUT_FREEBSD_UPDATE=1
-WITHOUT_PKGBOOTSTRAP=1
-
 WITH_EXTRA_TCP_STACKS=1
 WITH_BHYVE_SNAPSHOT=1
 WITH_ZONEINFO_LEAPSECONDS_SUPPORT=1
-
-WITHOUT_NTP=1
-WITHOUT_OPENSSH=1
-WITHOUT_UNBOUND=1
-WITHOUT_WIRELESS=1
-WITH_WIRELESS_SUPPORT=1
 EOF
+
+# NOTE: For EVERY significant FreeBSD upgrade we need to regenerate the file
+#       "$NUOS_CODE/share/fbsd-divergence/omitted" according to the inclusion
+#       of these src.conf knobs:
+# WITHOUT_FREEBSD_UPDATE=1
+# WITHOUT_PKGBOOTSTRAP=1
+# WITHOUT_NTP=1
+# WITHOUT_OPENSSH=1
+# WITHOUT_UNBOUND=1
+# WITHOUT_WIRELESS=1
+# WITH_WIRELESS_SUPPORT=1
+
 		setvar $ret_file_var "$srcconf"
 		setvar $ret_cmd_var retire_tmp
 	fi

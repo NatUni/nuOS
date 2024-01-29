@@ -198,6 +198,14 @@ else
 	
 	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
 	
+	tail -r "$NUOS_CODE/share/fbsd-divergence/omitted" | grep ^/ | (
+		cd $POOL_MNT
+		while read -r f; do
+			rm -dfv "${f#/}"
+		done
+	)
+	
+	# TODO: handle this programmatically using "$NUOS_CODE/share/fbsd-divergence/renamed"
 	mv $POOL_MNT/usr/bin/openssl $POOL_MNT/usr/bin/openssl.fbsd
 	
 	patch -N -V none $POOL_MNT/usr/share/skel/dot.cshrc <<'EOF'

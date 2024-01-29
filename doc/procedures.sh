@@ -305,3 +305,8 @@ rsync -avP --delete --exclude ports/distfiles cargobay.net:/usr/{src,obj,ports} 
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
 
 chown -Rv root:wheel /usr/{src,obj,ports}
+
+
+
+
+zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.2-RELEASE-p9/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done
