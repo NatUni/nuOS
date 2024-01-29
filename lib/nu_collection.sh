@@ -129,6 +129,7 @@ collection_vars_init () {
 		finance/ledger
 		irc/irssi
 		net-im/tut
+		textproc/en-aspell
 	'
 	
 	COLL_miniserver='

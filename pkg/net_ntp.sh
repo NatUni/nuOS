@@ -1,0 +1,28 @@
+#!/usr/bin/false
+set -e; set -u; set -C
+
+# nuOS 0.0.12.99a0 - pkg/net_ntp.sh
+#
+# Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+[ $NUOS_VER = 0.0.12.99a0 ]
+
+case $pkg_step in
+	post-build|post-install)
+		cat >> "${destdir-}/etc/rc.conf" <<'EOF'
+ntpd_program="/usr/local/sbin/ntpd"
+EOF
+		;;
+	post-delete)
+		sed -i '' -e '\|^ntpd_program="/usr/local/sbin/ntpd"|d' "${destdir-}/etc/rc.conf"
+		;;
+esac
