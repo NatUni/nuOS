@@ -244,13 +244,35 @@ EOF
 	
 	cat >> $POOL_MNT/boot/loader.conf <<'EOF'
 autoboot_delay="5"
-kern.ipc.shmseg="1024"
-kern.ipc.shmmni="1536"
-kern.ipc.semmnu="3000"
-kern.ipc.semmns="7500"
-kern.ipc.semmni="1000"
 kern.racct.enable="1"
 hw.vmm.amdvi.enable="1"
+
+# Documented FreeBSD defaults below are pulled from a developer system with
+# the following properties:
+# kern.smp.cores: 4
+# kern.smp.cpus: 8
+# vm.kmem_size: 7496478720
+
+# Number of segments per process
+# FreeBSD 13.2 default: 128
+kern.ipc.shmseg="1024"
+
+# Number of shared memory identifiers
+# FreeBSD 13.2 default: 192
+kern.ipc.shmmni="1536"
+
+# Maximum number of undo structures in the system
+# FreeBSD 13.2 default: 150
+kern.ipc.semmnu="3000"
+
+# Maximum number of semaphores in the system
+# FreeBSD 13.2 default: 340
+kern.ipc.semmns="7500"
+
+# Number of semaphore identifiers
+# FreeBSD 13.2 default: 50
+kern.ipc.semmni="1000"
+
 EOF
 	
 	cat >> $POOL_MNT/etc/rc.conf <<'EOF'
@@ -304,97 +326,92 @@ EOF
 	
 	cat >> $POOL_MNT/etc/sysctl.conf <<'EOF'
 
+# Documented FreeBSD defaults below are pulled from a developer system with
+# the following properties:
+# kern.smp.cores: 4
+# kern.smp.cpus: 8
+# vm.kmem_size: 7496478720
+
 # Maximum number of IPv4 fragment reassembly queue entries
-# FreeBSD 11.2 default: 31311
+# FreeBSD 13.2 default: 14298
 net.inet.ip.maxfragpackets=0
 
 # Maximum number of IPv4 fragments allowed per packet
-# FreeBSD 11.2 default: 16
+# FreeBSD 13.2 default: 16
 net.inet.ip.maxfragsperpacket=0
 
-# Incrementor step size of automatic receive buffer
-# FreeBSD 11.2 default: 16384
-net.inet.tcp.recvbuf_inc=65536
-
 # Max size of automatic receive buffer
-# FreeBSD 11.2 default: 2097152
+# FreeBSD 13.2 default: 2097152
 net.inet.tcp.recvbuf_max=16777216
 
 # Initial receive socket buffer size
-# FreeBSD 11.2 default: 65536
+# FreeBSD 13.2 default: 65536
 net.inet.tcp.recvspace=131072
 
 # Incrementor step size of automatic send buffer
-# FreeBSD 11.2 default: 8192
+# FreeBSD 13.2 default: 8192
 net.inet.tcp.sendbuf_inc=65536
 
 # Max size of automatic send buffer
-# FreeBSD 11.2 default: 2097152
+# FreeBSD 13.2 default: 2097152
 net.inet.tcp.sendbuf_max=16777216
 
 # Initial send socket buffer size
-# FreeBSD 11.2 default: 32768
+# FreeBSD 13.2 default: 32768
 net.inet.tcp.sendspace=131072
 
 # Default congestion control algorithm
-# FreeBSD 11.2 default: newreno
+# FreeBSD 13.2 default: newreno
 net.inet.tcp.cc.algorithm=cdg
 
 # Increment the window increase factor alpha by 1 MSS segment every alpha_inc RTTs during congestion avoidance mode
-# FreeBSD 11.2 default: 0
+# FreeBSD 13.2 default: 0
 net.inet.tcp.cc.cdg.alpha_inc=1
 
 # Enable/disable TCP Fast Open server functionality
-# FreeBSD 13.1 default: 0
+# FreeBSD 13.2 default: 0
 net.inet.tcp.fastopen.server_enable=1
 
 # Default TCP Maximum Segment Size
-# FreeBSD 11.2 default: 536
+# FreeBSD 13.2 default: 536
 net.inet.tcp.mssdflt=1240
 
 # Minimum TCP Maximum Segment Size
-# FreeBSD 11.2 default: 216
+# FreeBSD 13.2 default: 216
 net.inet.tcp.minmss=536
 
 # Use calculated pipe/in-flight bytes per RFC 6675
-# FreeBSD 11.2 default: 0
+# FreeBSD 13.2 default: 0
 net.inet.tcp.rfc6675_pipe=1
 
 # Limit on SYN/ACK retransmissions
-# FreeBSD 11.2 default: 3
+# FreeBSD 13.2 default: 3
 net.inet.tcp.syncache.rexmtlimit=0
 
 # Cap the max cwnd increment during slow-start to this number of segments
-# FreeBSD 11.2 default: 2
+# FreeBSD 13.2 default: 2
 net.inet.tcp.abc_l_var=50
 
 # Slow-start flight size (initial congestion window) in number of segments
-# FreeBSD 11.2 default: 10
+# FreeBSD 13.2 default: 10
 net.inet.tcp.initcwnd_segments=50
 
 # Max ZFS L2ARC write size
-# FreeBSD 11.2 default: 8388608
+# FreeBSD 13.2 default: 8388608
 vfs.zfs.l2arc_write_max=419430400
 
 # Extra write during ZFS L2ARC warmup
-# FreeBSD 11.2 default: 8388608
+# FreeBSD 13.2 default: 8388608
 vfs.zfs.l2arc_write_boost=419430400
 
 # Number of ZFS L2ARC dev writes
-# FreeBSD 11.2 default: 2
+# FreeBSD 13.2 default: 2
 vfs.zfs.l2arc_headroom=8
 
-# No ZFS L2ARC reads during writes
-# FreeBSD 11.2 default: 1
-vfs.zfs.l2arc_norw=0
-
-# I/O requests are aggregated up to this size
-# FreeBSD 11.2 default: 131072
-vfs.zfs.vdev.aggregation_limit=1048576
-
 # Use crypto operations batching
-# FreeBSD 11.4 default: 0
+# FreeBSD 13.2 default: 0
 kern.geom.eli.batch=1
+
 EOF
 	
 	cat > $POOL_MNT/etc/periodic.conf <<'EOF'
