@@ -261,13 +261,17 @@ patch -N -V none /etc/nuos/backup < ~/nuos_deliverance/local/backup.diff
 
 patch -N -V none /usr/local/etc/wifibox/bhyve.conf < ~/nuos_deliverance/local/wifibox/bhyve.conf.diff
 patch -N -V none /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf < ~/nuos_deliverance/local/wifibox/wpa_supplicant.conf.diff
+
+wpa_passphrase 'My WiFi Network Name' 'theWiFiPa$$w0rd' >> /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf
+
 enable_svc wifibox
 cat >> /etc/rc.conf.local <<EOF
 ifconfig_wifibox0="SYNCDHCP"
 background_dhclient_wifibox0="YES"
 defaultroute_delay="0"
 EOF
-
+service wifibox start
+service netif restart wifibox0
 
 
 nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q
@@ -276,8 +280,8 @@ nu_build -q
 
 zfs destroy -r nebu/img/spore
 
-env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a2 -h spore.nuos.org -l @activate_gui
-cp -v /root/nuOS-v12.99a0+a2-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
+env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a3 -h spore.nuos.org -l @activate_gui
+cp -v /root/nuOS-v12.99a0+a3-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
 
 zpool export spore
 nu_img -d spore
