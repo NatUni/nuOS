@@ -1,6 +1,6 @@
 SITE=		nuOS.org
 SERVER=		CargoBay.net
-ADMIN=		boba
+ADMIN=		jedi
 RSYNC=		${ADMIN}@${SERVER:tl}:/var/jail/www/home/${ADMIN}/${SITE:tl}/www/public
 
 .SUFFIXES:
