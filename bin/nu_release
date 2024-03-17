@@ -109,7 +109,7 @@ else
 fi
 
 output_zvdev=`sister nu_img -i $OUTPUT_POOL_NAME`
-sister nu_hdd -b -u 100 -a 128 -q -p $OUTPUT_POOL_NAME $output_zvdev
+sister nu_hdd -b -u 100 -a 2048 -q -p $OUTPUT_POOL_NAME $output_zvdev
 sister nu_os_install -P $WORK_POOL_NAME -p $OUTPUT_POOL_NAME -c $PKG_COLLECTION -q
 [ ${KEEP_ONLINE-0} -ge 2 -o -z "${work_zvdev-}" ] || zpool export $WORK_POOL_NAME
 [ ${KEEP_ONLINE-0} -ge 2 -o -z "${work_zvdev-}" ] || sister nu_img -d $WORK_POOL_NAME
