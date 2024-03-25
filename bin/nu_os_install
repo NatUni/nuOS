@@ -18,10 +18,11 @@ NUOS_VER=0.0.12.99a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts c:di:o:p:P:qv OPT; do case $OPT in
+while getopts c:di:no:p:P:qv OPT; do case $OPT in
 	c) PKG_COLLECTION=$OPTARG;;
 	d) OPT_DEVELOPER=y;;
 	i) INPUT=$OPTARG;;
+	n) OPT_DO_NOTHING=y;;
 	o) OUTPUT=$OPTARG;;
 	p) POOL_NAME=$OPTARG;;
 	P) SOURCE_POOL=$OPTARG;;
@@ -47,17 +48,18 @@ fi
 if canhas ${OUTPUT-}; then
 	echo 'output file     -o OUTPUT         ' $OUTPUT
 else
-	echo 'target pool     -p POOL_NAME      ' $POOL_NAME
+	echo 'target pool     -p POOL_NAME      ' ${POOL_NAME:=_null}
 fi
 
 [ "${SOURCE_POOL-}" != "${POOL_NAME-}" ] || error 11 'source and destination cannot be the same'
 
-maybe_pause
+srsly ${OPT_DO_NOTHING-} || maybe_pause
 maybe_yell
 
 set_std_ds
 
 if canhas ${INPUT-}; then
+	! srsly "${OPT_DO_NOTHING-}" || error 43 'merely to inspect an input file is a functionality not yet supported'
 	require_tmp restore_log
 	sister nu_restore -t $POOL_NAME < "$INPUT" | tee -a "$restore_log"
 	{
@@ -70,7 +72,7 @@ if canhas ${INPUT-}; then
 	} <<EOF
 $(awk "\$1 ~ /^$POOL_NAME\/$os_software_ds\// && \$2 == \"->\" {print \$0; exit}" < "$restore_log" | cut -d / -f 3,4,5,9,11 | tr / '\n')
 EOF
-		set_std_ds
+	set_std_ds
 else
 	rev=`zfs get -H -p -o value org.nuos:active_revision $SOURCE_POOL/$nuos_bin_ds`
 fi
@@ -79,10 +81,18 @@ nuos_sysroot_source_ds=$nuos_bin_ds/$rev
 
 spill BASEOS_TYPE BASEOS_VER TRGT NUOS_VER nuos_sysroot_source_ds
 
-push DATASETS $nuos_sysroot_source_ds@$PKG_COLLECTION \
-	${OPT_DEVELOPER:+$fbsd_proj_ds/src} \
-	${OPT_DEVELOPER:+$fbsd_proj_ds/ports/src} \
-	${OPT_DEVELOPER:+$nuos_bin_ds/pkg}
+sys_datasets=$nuos_sysroot_source_ds@$PKG_COLLECTION
+
+if srsly "${OPT_DEVELOPER-}"; then
+	dev_datasets="$fbsd_proj_ds/src $fbsd_proj_ds/ports/src $nuos_bin_ds/pkg"
+fi
+
+push DATASETS $sys_datasets ${dev_datasets-}
+
+spill sys_datasets dev_datasets DATASETS
+
+! srsly "${OPT_DO_NOTHING-}" || exit
+
 
 if canhas ${OUTPUT-}; then
 	sister nu_backup -p $SOURCE_POOL $DATASETS > "$OUTPUT"
