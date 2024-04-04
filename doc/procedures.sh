@@ -214,9 +214,8 @@ env ADMIN_PASS='?' \
     USER_PASS='?' \
     DISPLAY_MANAGER=light \
     TZ=America/Detroit \
-    nu_sys -q \
+    nu_sys -p tty \
         -es 6G \
-        -p tty \
         -h tty.zion.top \
         -b '' \
         -a jedi \
@@ -226,7 +225,8 @@ env ADMIN_PASS='?' \
         -l @enable_dynamic_network \
         -l @cache_dns \
         -l @harden_remote_login \
-        -l @activate_gui
+        -l @activate_gui \
+        -q
 
 # "joe" is the default user/owner account without administrator privileges. Some examples leave
 # this user to be implied by the software while others eliminate this user through use of the empty
@@ -314,3 +314,107 @@ chown -Rv root:wheel /usr/{src,obj,ports}
 
 
 zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.2-RELEASE-p9/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done
+
+
+zpool labelclear -f gpt/bstd0
+gpart destroy -F da0
+nu_hdd -b -u 100 -p bstd -q da0
+nu_os_install -p bstd -c base -q
+nu_sys -a '' -u '' -b '' -s 4G -p bstd -c base -h bstd.nuos.org -q
+
+zpool labelclear -f gpt/day0
+gpart destroy -F mfid0
+nu_hdd -b -u 100 -p day -q mfid0
+nu_os_install -p day -q
+
+env ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    TZ=America/Detroit \
+    nu_sys -p day \
+        -es 160G \
+        -h mohi.zion.top \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c desktop \
+        -l @set_timezone \
+        -l @harden_remote_login \
+        -q
+
+echo 'vfs.root.mountfrom="zfs:'`zpool get -Hpovalue bootfs day`'"' >> /bstd/boot/loader.conf.local
+zpool export bstd
+
+zpool labelclear -f gpt/rest0
+zpool labelclear -f gpt/rest1
+zpool labelclear -f gpt/rest2
+zpool labelclear -f gpt/rest3
+zpool labelclear -f gpt/rest4
+zpool labelclear -f gpt/rest5
+gpart destroy -F mfid1
+gpart destroy -F mfid2
+gpart destroy -F mfid3
+gpart destroy -F mfid4
+gpart destroy -F mfid5
+gpart destroy -F mfid6
+nu_hdd -t 5 -p rest -q mfid1 mfid2 mfid3 mfid4 mfid5 mfid6
+
+zpool import -R /spore spore
+nu_os_install -P spore -p epic -q
+env ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    TZ=America/Detroit \
+    nu_sys -p epic \
+        -s 24G \
+        -h artu.bofh.vip \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c desktop \
+        -l @set_timezone \
+        -l @keep_time \
+        -l @cache_dns \
+        -l @enable_dynamic_network \
+        -l @soho_mdns \
+        -l @harden_remote_login \
+        -l @allow_remote_login \
+        -l @../examples/install/allow_wookiee_in \
+        -q
+
+zpool labelclear -f gpt/dusk0
+gpart destroy -F da0x007
+nu_hdd -b -p dusk -q da0x007
+nu_os_install -c desktop -p dusk -q
+
+zpool labelclear -f gpt/dawn0
+gpart destroy -F da1x007
+nu_hdd -b -p dawn -q da1x007
+nu_os_install -d -c desktop -p dawn -q
+env ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    nu_sys -p dawn \
+        -s 48G \
+        -h dawn.zion.top \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c desktop \
+        -l @keep_time \
+        -l @cache_dns \
+        -l @enable_dynamic_network \
+        -l @soho_mdns \
+        -l @harden_remote_login \
+        -l @allow_remote_login \
+        -l @../examples/install/allow_wookiee_in \
+        -q
+
+
+env ADMIN_ACCT=jedi ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    nu_release -Hr a5 -o pixy \
+        -h pixy.bofh.vip \
+        -c desktop \
+        -l @ipxe_boot \
+        -l @harden_remote_login \
+        -l @allow_remote_login \
+        -l @../examples/install/allow_wookiee_in \
+        -q
