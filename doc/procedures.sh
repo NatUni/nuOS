@@ -418,3 +418,28 @@ env ADMIN_ACCT=jedi ADMIN_PASS= \
         -l @allow_remote_login \
         -l @../examples/install/allow_wookiee_in \
         -q
+
+
+zpool labelclear -f gpt/coin0
+zpool labelclear -f gpt/luke0
+gpart destroy -F ada0x007
+gpart destroy -F nvd0x007
+nu_hdd -p coin -q ada0x007
+nu_hdd -b -p luke -q nvd0x007
+nu_os_install -c desktop -p luke -q
+env ADMIN_PASS= \
+    TZ=America/Detroit \
+    DISPLAY_MANAGER=light \
+    nu_sys -p luke \
+        -es 16G \
+        -h luke.mib.wtf \
+        -b '' \
+        -u '' \
+        -c desktop \
+        -l @set_timezone \
+        -l @keep_time \
+        -l @cache_dns \
+        -l @enable_dynamic_network \
+        -l @harden_remote_login \
+        -l @activate_gui \
+        -q
