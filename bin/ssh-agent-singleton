@@ -1,0 +1,77 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.99a0 - bin/ssh-agent-singleton
+#
+# Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.99a0
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+while getopts cs OPT; do case $OPT in
+	c) OPT_CSH=y; OPT_SH=;;
+	s) OPT_SH=y; OPT_CSH=;;
+esac; done; shift $(($OPTIND-1))
+
+if ! canhas ${OPT_CSH-}${OPT_SH-}; then
+	shell=`ps -o command= -p $PPID`
+	case "`basename ${shell:-${SHELL:-/bin/sh}}`" in
+		*csh) OPT_CSH=y; OPT_SH=;;
+		*) OPT_SH=y; OPT_CSH=;;
+	esac
+fi
+
+: ${USER:=`id -n -u`}
+: ${HOME:=/home/$USER}
+: ${TMPDIR:=/tmp}
+
+user_agent_conf_file="$HOME/.ssh-agent.${OPT_CSH:+c}sh"
+
+run_only_one_agent () {
+	nuos_ssh_init
+	SSH_AUTH_SOCK=%%sock%%
+	SSH_AGENT_PID=%%pid%%
+	conf=`output_agent_conf`
+	lockf -k "$TMPDIR/ssh-agent-singleton.$USER.lock" sh -e -u -C -c "
+		pid=\$(pgrep -x -u '$USER' `basename \"$SSH_AGENT\"` || true)
+		if [ \"\$pid\" != \"\$pid\" ]; then
+			echo ERROR: ssh-agent-singleton found multiple instances of ssh-agent already running. 2>&1
+			exit 97
+		fi
+		if [ -n \"\$pid\" ]; then
+			while
+				sock=\"$TMPDIR/\$(cd '$TMPDIR' && find ssh-* '(' -depth 0 -not -user '$USER' -prune ')' -or '(' -depth 1 -user '$USER' -type s -name 'agent.*' -print ')')\"
+				[ -z \"\$sock\" ]
+			do sleep 0.1; done
+			echo \"$conf\" | sed -e \"s/%%pid%%/\$pid/;s|%%sock%%|\$sock|\"
+		else
+			\"$SSH_AGENT\" ${OPT_SH:+-s} ${OPT_CSH:+-c}
+		fi
+"
+}
+
+output_agent_conf () {
+	cat <<EOF
+${OPT_CSH:+setenv }SSH_AUTH_SOCK${OPT_SH:+=}${OPT_CSH:+ }$SSH_AUTH_SOCK;${OPT_SH:+ export SSH_AUTH_SOCK;}
+${OPT_CSH:+setenv }SSH_AGENT_PID${OPT_SH:+=}${OPT_CSH:+ }$SSH_AGENT_PID;${OPT_SH:+ export SSH_AGENT_PID;}
+echo Agent pid $SSH_AGENT_PID;
+EOF
+}
+
+umask 77
+
+if canhas ${SSH_AGENT_PID-} && [ -S "${SSH_AUTH_SOCK}" ]; then
+	output_agent_conf
+else
+	run_only_one_agent
+fi
