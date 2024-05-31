@@ -570,10 +570,12 @@ nuos_ssh_init () {
 		SSH_CMD=/usr/local/bin/ssh
 		SSH_SUITE=openssh-port
 		SSH_ASKPASS=/usr/local/bin/ssh-askpass
+		SSH_AGENT=/usr/local/bin/ssh-agent
 	else
 		SSH_CMD=/usr/bin/ssh
 		SSH_SUITE=openssh-freebsd-base
 		SSH_ASKPASS=/usr/bin/ssh-askpass
+		SSH_AGENT=/usr/bin/ssh-agent
 	fi
 	nuos_lib_system_ssh_inited=y
 }
