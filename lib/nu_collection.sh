@@ -272,6 +272,7 @@ collection_vars_init () {
 		net-im/jitsi-videobridge
 		www/jitsi-meet
 		print/gutenprint
+		print/brlaser
 	'
 	
 	COLL_desktop='
