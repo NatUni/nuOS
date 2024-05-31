@@ -43,8 +43,8 @@ run_only_one_agent () {
 	SSH_AGENT_PID=%%pid%%
 	conf=`output_agent_conf`
 	lockf -k "$TMPDIR/ssh-agent-singleton.$USER.lock" sh -e -u -C -c "
-		pid=\$(pgrep -x -u '$USER' `basename \"$SSH_AGENT\"` || true)
-		if [ \"\$pid\" != \"\$pid\" ]; then
+		pid=\$(pgrep -x -u '$USER' `basename \"$SSH_AGENT\"` | xargs)
+		if [ \"\$pid\" != \"\${pid% *}\" ]; then
 			echo ERROR: ssh-agent-singleton found multiple instances of ssh-agent already running. 2>&1
 			exit 97
 		fi
