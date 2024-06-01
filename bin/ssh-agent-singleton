@@ -50,7 +50,7 @@ run_only_one_agent () {
 		fi
 		if [ -n \"\$pid\" ]; then
 			while
-				sock=\"$TMPDIR/\$(cd '$TMPDIR' && find ssh-* '(' -depth 0 -not -user '$USER' -prune ')' -or '(' -depth 1 -user '$USER' -type s -name 'agent.*' -print ')')\"
+				sock=\"$TMPDIR/\$(cd '$TMPDIR' && find ssh-* '(' -depth 0 -not -user '$USER' -prune ')' -or '(' -depth 1 -user '$USER' -type s -name 'agent.*' -print -quit ')')\"
 				[ -z \"\$sock\" ]
 			do sleep 0.1; done
 			echo \"$conf\" | sed -e \"s/%%pid%%/\$pid/;s|%%sock%%|\$sock|\"
