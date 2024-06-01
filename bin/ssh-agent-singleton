@@ -16,6 +16,12 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
+# recommended to add to ~/.cshrc
+# if ($?prompt) eval `/usr/nuos/bin/ssh-agent-singleton -c` > /dev/null
+
+# recommended to add to ~/.shrc
+# eval `/usr/nuos/bin/ssh-agent-singleton -s` > /dev/null
+
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
 while getopts cs OPT; do case $OPT in
