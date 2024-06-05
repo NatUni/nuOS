@@ -92,6 +92,7 @@ collection_vars_init () {
 	
 	COLL_developer='
 		lite
+		sysutils/hw-probe
 		devel/bsddialog
 		ports-mgmt/portconfig
 		graphics/jp2a
