@@ -197,25 +197,25 @@ xzcat -T0 /home/jedi/nuOS-v12.99a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=f
 setenv PATH ${PATH}:/usr/nuos/bin
 
 # Your shell is (t)csh and you want to use the nuOS version you're developing:
-setenv PATH ${PATH}:/home/jedi/nuOS/bin
+setenv PATH ${PATH}:/home/$USER/nuOS/bin
 
 # Your shell is (ba)sh and you want to use the nuOS version your system came with:
 PATH=$PATH:/usr/nuos/bin
 
 # Your shell is (ba)sh and you want to use the nuOS version you're developing:
-PATH=$PATH:/home/jedi/nuOS/bin
+PATH=$PATH:/home/$USER/nuOS/bin
 
 # WARNING: Passing secrets via the environment or command line is insecure on any multiuser system
 #          and any secrets landing in your shell's command history log are hard to keep private.
 #          The ADMIN_PASS, USER_PASS and BD_PASS variables support one special value, '?' which
 #          will prompt you to enter the password interactively and securely.
-env ADMIN_PASS='?' \
-    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    ADMIN_PASS='?' \
     USER_PASS='?' \
     DISPLAY_MANAGER=light \
     TZ=America/Detroit \
     nu_sys -p tty \
-        -es 6G \
+        -es 16G \
         -h tty.zion.top \
         -b '' \
         -a jedi \
@@ -332,7 +332,7 @@ env ADMIN_PASS= \
     TZ=America/Detroit \
     nu_sys -p day \
         -es 160G \
-        -h mohi.zion.top \
+        -h mohican.zion.top \
         -b '' \
         -a jedi \
         -u '' \
@@ -377,7 +377,7 @@ env ADMIN_PASS= \
         -l @soho_mdns \
         -l @harden_remote_login \
         -l @allow_remote_login \
-        -l @../examples/install/allow_wookiee_in \
+        -l @../examples/install/allow_jedi_in \
         -q
 
 zpool labelclear -f gpt/dusk0
@@ -404,7 +404,7 @@ env ADMIN_PASS= \
         -l @soho_mdns \
         -l @harden_remote_login \
         -l @allow_remote_login \
-        -l @../examples/install/allow_wookiee_in \
+        -l @../examples/install/allow_jedi_in \
         -q
 
 
@@ -416,7 +416,7 @@ env ADMIN_ACCT=jedi ADMIN_PASS= \
         -l @ipxe_boot \
         -l @harden_remote_login \
         -l @allow_remote_login \
-        -l @../examples/install/allow_wookiee_in \
+        -l @../examples/install/allow_jedi_in \
         -q
 
 
