@@ -16,7 +16,8 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts f:l:np:sS:t:v OPT; do case $OPT in
+while getopts Ef:l:np:sS:t:vZ OPT; do case $OPT in
+	E) OPT_DECRYPT=y;;
 	f) FROM_SNAP=$OPTARG;;
 	l) SNAP_LABEL=$OPTARG;;
 	n) OPT_BACKUP_NULL=y;;
@@ -25,6 +26,7 @@ while getopts f:l:np:sS:t:v OPT; do case $OPT in
 	S) SNAPSHOT=$OPTARG;;
 	t) TOKEN=$OPTARG;;
 	v) OPT_VERBOSE=y;;
+	Z) OPT_DECOMPRESS=y;;
 esac; done; shift $(($OPTIND-1))
 [ $# -ge 1 -o -f /etc/nuos/backup ]
 
@@ -34,6 +36,13 @@ esac; done; shift $(($OPTIND-1))
 nuos_init -q
 
 : ${POOL_NAME:=$POOL_BOOT_NAME}
+
+srsly ${OPT_DECRYPT-} || send_raw=y
+srsly ${OPT_DECOMPRESS-} || send_compact=y
+
+if srsly ${send_raw-} && srsly ${OPT_DECOMPRESS-}; then
+	err 22 Cannot decompress encrypted data
+fi
 
 elim_dup_snaps () {
 	local d= s= r= l= guid=
@@ -195,7 +204,7 @@ if [ -z "${OPT_ONLY_SNAP-}" ]; then
 				unset TOKEN
 			fi
 		else
-			${OPT_BACKUP_NULL:+echo} zfs send -L -e -c -p ${FROM_SNAP:+-R -I @$FROM_SNAP} $args
+			${OPT_BACKUP_NULL:+echo} zfs send -L -e ${send_compact:+-c} ${send_raw:+-w} -p ${FROM_SNAP:+-R -I @$FROM_SNAP} $args
 		fi
 	done
 fi
