@@ -1,0 +1,36 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.99a0 - bin/nu_dns_chk_reg
+#
+# Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.99a0
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+# while getopts cs OPT; do case $OPT in
+# 	c) OPT_CSH=y; OPT_SH=;;
+# 	s) OPT_SH=y; OPT_CSH=;;
+# esac; done; shift $(($OPTIND-1))
+
+nuos_init
+load_lib nu_genesis
+
+set_infras -v
+
+for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
+	eko
+	for z in $zones_lc; do
+		eko $z
+	done
+done
