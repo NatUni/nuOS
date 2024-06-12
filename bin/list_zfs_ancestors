@@ -22,6 +22,8 @@ case $# in
 	*) exit 22;;
 esac
 
+zfs list -H -o name $ds > /dev/null
+
 while
 	echo ${o:=$ds}
 	o=`zfs list -H -o origin ${o%@*}`
