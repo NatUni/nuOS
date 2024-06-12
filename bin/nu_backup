@@ -193,6 +193,14 @@ if [ -z "${OPT_ONLY_SNAP-}" ]; then
 		unset dsps
 		if ! srsly ${OPT_BACKUP_NULL-}; then
 			eko nu_backup.zstream v0
+# Attempt that fails upon restore. Might be better suited by a future version of OpenZFS than the current measures taken.
+# 			er=`zfs get -Ho value encryptionroot $ds`
+# 			if [ x$ds = x$er ]; then
+# 				eko nu_backup.zfs_encryptionroot @
+# 			elif [ x$er != ${er#$ds/} ]; then
+# 				eko nu_backup.zfs_encryptionroot ${er#$POOL_NAME/}
+# 			fi
+# Attempt:end
 			eko nu_backup.num_custom_props `wc -l "$custom_props" | xargs | cut -wf1`
 			cat "$custom_props"
 			eko nu_backup.zstream_begin v0
