@@ -107,17 +107,9 @@ while {
 					v0) :;;
 					*) error 89;;
 				esac
-# 				er_override=
 				while read -r var val; do
 					case $var in
 						nu_backup.zstream_begin) break;;
-# 						nu_backup.zfs_encryptionroot)
-# 							case $val in
-# 								@) :;;
-# 								*) er_override=$val;;
-# 							esac
-# 							eko $val >> /tmp/DEBUGFOO
-# 						;;
 						nu_backup.num_custom_props)
 							while [ 1 -le $val ]; do
 								read -r line
@@ -127,11 +119,7 @@ while {
 						;;
 					esac
 				done
-# Attempt that fails upon restore. Might be better suited by a future version of OpenZFS than the current measures taken. Includes commented lines above from same commit.
-# 				zfs receive -s -d -u ${OPT_FORCE_OVERWRITE:+-F} ${er_override:+-o encryptionroot=$TARGET_DS/$er_override} -v $TARGET_DS > "$pipes/recv_out" 2>| "$err_out" &
-# Attempt:else
 				zfs receive -s -d -u ${OPT_FORCE_OVERWRITE:+-F} -v $TARGET_DS > "$pipes/recv_out" 2>| "$err_out" &
-# Attempt:end
 			else
 				false >| "$err_out" &
 			fi
