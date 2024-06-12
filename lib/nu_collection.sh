@@ -62,6 +62,8 @@ collection_vars_init () {
 		net/hostapd
 		security/wpa_supplicant
 		security/gnupg
+		dns/libidn2
+		dns/libpsl
 	'
 	
 	COLL_lite='

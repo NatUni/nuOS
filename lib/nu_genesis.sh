@@ -19,6 +19,10 @@ nuos_lib_ver=0.0.12.99a0
 [ -z "${nuos_lib_genesis_loaded-}" ]
 nuos_lib_genesis_loaded=y
 
+get_psl () {
+	grep -v -e '^//' -e '^$' -e '^!' /usr/local/share/public_suffix_list/public_suffix_list.dat | idn2 | awk -F . '{print NF, $0}' | sort -r -n -k 1 | cut -w -f 2
+}
+
 require_domain_metadata () {
 	[ -r ${ZONE_DIR:=$CONF_DIR}/domain.csv ] || error 6 'no servicable domains, check configuration'
 }
