@@ -526,6 +526,10 @@ nuos_init () {
 		echo "host pkg collec'n                 " ${HOSTOS_PKG_COLLECTION-<n/a>}
 		echo "host pkg db dir                   " ${PKG_DBDIR-<none>}
 	fi
+
+	if srsly ${OPT_DEBUG-}; then
+		load_lib nu_debug
+	fi
 }
 
 set_pool_root_mnt_vars () {
