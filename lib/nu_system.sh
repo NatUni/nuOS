@@ -375,14 +375,14 @@ retire_tmp () {
 		if [ -n "${OPT_DEBUG-}" ]; then
 			require_tmp -d -l debug_out _retire_tmp_debug_out
 			if eval [ -e \"\$_retire_tmp_debug_out\/\$1\" ]; then
-				eval mv -n \"\$_retire_tmp_debug_out\/\$1\" \"\$_retire_tmp_debug_out\/0.\$1\"
+				eval mv -n \"\$_retire_tmp_debug_out\/\$1\" \"\$_retire_tmp_debug_out\/\$1-0\"
 			fi
 			local i; unset i
-			while eval [ -e \"\$_retire_tmp_debug_out\/${i:-0}.\$1\" ]; do
+			while eval [ -e \"\$_retire_tmp_debug_out\/\$1-${i:-0}\" ]; do
 				: ${i:=0}
 				i=$(($i+1))
 			done
-			eval mv -n \"\$$1\" \"\$_retire_tmp_debug_out\/${i:+$i.}\$1\"
+			eval mv -n \"\$$1\" \"\$_retire_tmp_debug_out\/\$1${i:+-$i}\"
 		else
 			eval rm -r \"\$$1\"
 		fi
