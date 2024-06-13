@@ -16,7 +16,8 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.99a0
 
-while getopts Ef:l:np:sS:t:vZ OPT; do case $OPT in
+while getopts dEf:l:np:sS:t:vZ OPT; do case $OPT in
+	d) OPT_DEBUG=y;;
 	E) OPT_DECRYPT=y;;
 	f) FROM_SNAP=$OPTARG;;
 	l) SNAP_LABEL=$OPTARG;;
@@ -31,7 +32,7 @@ esac; done; shift $(($OPTIND-1))
 [ $# -ge 1 -o -f /etc/nuos/backup ]
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_backup.sh"
+load_lib nu_backup
 
 nuos_init -q
 
@@ -167,6 +168,9 @@ if srsly ${new_snap-}; then
 	grep -v @ < "$output_list" | sed -e "s/\$/@$SNAPSHOT/" | xargs zfs snapshot -r
 fi
 
+if srsly ${OPT_DEBUG-}; then
+	debug_wrap all_origins all_descendant_snaps all_prior_snaps elim_dup_snaps
+fi
 if [ -z "${OPT_ONLY_SNAP-}" ]; then
 	while IFS=@ read ds snap; do
 		: ${snap:=$SNAPSHOT}
