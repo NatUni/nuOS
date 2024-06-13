@@ -20,6 +20,14 @@ nuos_lib_ver=0.0.12.99a0
 nuos_lib_debug_loaded=y
 
 debug_wrap () {
+# WARNING from `man sh`:
+#   Using aliases in scripts is discouraged because the command that defines them must be
+#   executed before the code that uses them is parsed. This is fragile and not portable.
+# NOTE:
+#   The script parser will not activate the alias needed to make this feature work until
+#   backing all the way out of any control flow keywords, to the "root" context of the file
+#   calling this library function.
+
     test -n "$1"
     local cmd=$1 f=_nu_`jot -r -c -s '' 16 A Z`_wrapped
     shift
