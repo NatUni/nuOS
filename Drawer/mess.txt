@@ -1,0 +1,966 @@
+case `hostname -d | tr [[:upper:]] [[:lower:]]` in
+	nuos.org|ccsys.com)
+		app_iqn=$
+        code=nuOS.org
+        auth=nuOS.net
+        clan_url=https://nu.Zone
+        team_url=https://nu.Team
+        disk_url=https://nu.Place
+        mail_url=https://nu.Email
+        ware_url=https://nu.Software
+        chat_url=https://nu.Chat
+        feed_url=https://nu.LOL
+        show_url=https://nu.Show
+        live_url=https://nu.Live
+        book_url=https://nu.School
+        part_url=https://nu.Parts
+        tick_url=https://nu.Click
+        mine_url=https://nu.Gold
+        bank_url=https://nu.Cash
+        wall_url=https://nu.Money
+        coal_url=https://Wallet.nu.Money/Coal
+        iron_url=https://Wallet.nu.Money/Iron
+        name_url=https://Wallet.nu.Money/Copper
+        lite_url=https://Wallet.nu.Money/Silver
+        gold_url=https://Wallet.nu.Money/Gold
+        roll_url=https://StrangerThanFiction.Games
+        larp_url=https://LARP.Quest
+        game_url=https://Spy.Football
+		chef_url=
+		#dick_url=
+		#hold_url=
+		#prod_url=
+		
+		yooj_url=http://yooj.tube
+
+    ;;
+	uglybagsofmostlywater.club) boot_iqn=2020-04.club.uglybagsofmostlywater.`hostname -s`;;
+	macleod.host) boot_iqn=2020-04.host.macleod.`hostname -s`;;
+	woneye.site)
+        boot_iqn=2020-04.site.woneye.`hostname -s`
+        SOLO_HOST=nuOS.xyz
+    ;&
+    
+	bedlam.city)
+        boot_iqn=2020-10.city.bedlam
+        SOLO_HOST=Bedlam.City
+    ;&
+    _)
+        code_url=https://$SOLO_HOST
+        auth_url=https://$SOLO_HOST/id
+        clan_url=https://$SOLO_HOST/clan
+        team_url=https://$SOLO_HOST/team
+        disk_url=https://$SOLO_HOST/disk
+        mail_url=https://$SOLO_HOST/mail
+        ware_url=https://$SOLO_HOST/ware
+        chat_url=https://$SOLO_HOST/chat
+        feed_url=https://$SOLO_HOST/feed
+        show_url=https://$SOLO_HOST/show
+        live_url=https://$SOLO_HOST/live
+        book_url=https://$SOLO_HOST/book
+        part_url=https://$SOLO_HOST/part
+        tick_url=https://$SOLO_HOST/tick
+        mine_url=https://$SOLO_HOST/mine
+        bank_url=https://$SOLO_HOST/bank
+        wall_url=https://$SOLO_HOST/wall
+    ;;
+    
+	*) exit 2;;
+esac
+
+
+
+
+
+
+
+
+
+PATH=$PATH:/home/ninja/nuOS/bin
+setenv PATH ${PATH}:/home/ninja/nuOS/bin
+setenv PATH ${PATH}:/home/jedi/nuOS/bin
+setenv PATH ${PATH}:/home/boba/nuOS/bin
+setenv PATH ${PATH}:/usr/nuos/bin
+
+alias bell "sh -c 'echo -e \\a'"
+
+zones=`cd /etc/ssl/certs; for c in *.ca.crt; do z=${c%.ca.crt}; echo $z; done`
+
+(umask 77; cd /etc/ssl; tar -cJvf ~/ssl.txz `cd certs && for c in *.ca.crt; do z=${c%.ca.crt}; echo certs/$z.ca.crt certs/$z.crt private/$z.key; done`)
+chown boba ~/ssl.txz
+
+
+
+env ADMIN_PASS= KEYS_FROM_ADMIN_ACCT=ninja nu_install -t '' -d adaN -s 24G -FDD -c desktop -p yoda -a jedi -u '' -b '' -k -l share/install/activate_gui.sh
+
+# 	bootstrap_pool=beast
+# 	bootstrap_img_size=61504M
+# 	echo zfs create -o compression=off -o checksum=off -V $bootstrap_img_size -b 64K -s $POOL/$bootstrap_pool
+# 	echo env ADMIN_PASS= KEYS_FROM_ADMIN_ACCT=${USER:-ninja} nu_install -t '' -d zvol/$POOL/$bootstrap_pool -FDD -c blank -p $bootstrap_pool -u '' -b '' -k
+
+nu_install_pkg -BfFRSt www/youtube_dl
+# does only the step:
+/usr/ports/packages/All/youtube_dl-2020.05.03.txz -> /usr/ports/packages/Index.nuOS/FreeBSD-11.3-amd64/youtube_dl-2020.05.03.r533592.Y2opNEFgDEha595qtUWKLtz1.txz
+
+# zfs create -o compression=off -o checksum=off -V 90G -b 64K -s yoda/iron
+# env ADMIN_PASS=balz KEYS_FROM_ADMIN_ACCT=jedi nu_install -a boba -t '' -d zvol/yoda/iron -s 2G -c server -p iron -u '' -b '' -k -l ~ninja/cargobay_init.sh
+# 
+# zfs create -o compression=off -o checksum=off -V 20G -b 64K -s yoda/mcfly
+# env ADMIN_PASS=balz KEYS_FROM_ADMIN_ACCT=jedi nu_install -a boba -t '' -d zvol/yoda/mcfly -s 2G -c server -p mcfly -u '' -b '' -k -l ~ninja/cargobay_init.sh
+# 
+# zfs create -o compression=off -o checksum=off -V 61504M -b 64K -s yoda/r2d2
+# env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_install -a jedi -t '' -d zvol/yoda/r2d2 -s 2G -c desktop -p r2d2 -u '' -b '' -k -FDD -l ~jedi/nuOS/share/examples/install/activate_gui.sh
+# 
+# zfs create -o compression=off -o checksum=off -V 468851544K -b 8K -s r2d2/chol
+# env ADMIN_PASS=balz ADMIN_NAME='Boba Fett' KEYS_FROM_ADMIN_ACCT=jedi ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_install -a boba -t '' -d zvol/r2d2/chol -s 16G -c bare -p chol -u '' -b '' -k
+# 
+# zfs create -o compression=off -o checksum=off -V 468851544K -b 8K -s chol/jack
+# env ADMIN_PASS=balz ADMIN_NAME='Boba Fett' ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_install -a boba -t '' -d zvol/chol/jack -s 48G -c desktop -p jack -u '' -b '' -K ninja@chappie.local -FDD -l ~boba/nuOS/share/examples/install/cargobay_init.sh
+# 
+# 
+# zfs create -o compression=off -o checksum=off -V 468851544K -b 8K -s jack/chol
+# env ADMIN_PASS=balz ADMIN_NAME='Boba Fett' ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_install -a boba -t '' -d zvol/jack/chol -s 16G -c desktop -p chol -u '' -b '' -K ninja@chappie.local -FDD -l ~boba/nuOS/share/examples/install/cargobay_init.sh
+
+# zfs create -o compression=off -o checksum=off -V 30000000K -b 4K -s jack/thumb
+# nu_install -t '' -d zvol/jack/thumb -h thumb.nuos.org -c desktop -F -l share/install/activate_gui.sh -q
+# nu_install -t '' -d zvol/jack/thumb -h thumb.nuos.org -c server -F -q
+# nu_install -t '' -d zvol/jack/thumb -h thumb.nuos.org -c bare -F -q
+# nu_install -t '' -d zvol/jack/thumb -h thumb.nuos.org -c blank -F -q
+# nu_install -t '' -d zvol/jack/thumb -h thumb.nuos.org -c debug -F -q
+
+nu_hdd -b -p naruto -q da5 da6
+nu_build -p naruto -q
+nu_sys -p naruto -s 32G -b '' -u '' -q
+
+nu_hdd -b -p pakkun -u 100 -a 128 -q da1
+nu_build -p pakkun -q
+nu_sys -p pakkun -s 8G -b '' -u '' -q
+
+nu_ns_cache -C /pakkun -s
+enable_svc -C /pakkun openssh ntpd dhcpcd
+
+simport=`ctladm portlist -f camsim -q | cut -w -f 1`
+
+zfs create -o compression=off -o checksum=off -o volmode=dev -V 30000000K -b 4K -s r2d2/tom
+ctladm create -b block -o pblocksize=4096 -o ublocksize=4096 -o file=/dev/zvol/r2d2/tom
+
+
+zfs create -o compression=off -o checksum=off -o volmode=dev -V 30000000K -b 4K -s yoda/thumb
+ctladm create -b block -o pblocksize=4096 -o ublocksize=4096 -o file=/dev/zvol/yoda/thumb
+
+ctladm reqsense 0
+ctladm start 0
+ctladm lunmap -p 0 -l 0 -L 0
+ctladm port -p 0 -o on
+
+nu_hdd -b -u 100 -a 128 -p thumb -q da1
+nu_build -p thumb -q
+nu_sys -h thumb.nuos.org -s 2G -p thumb -q
+
+nu_hdd -b -p han -q ada1
+nu_build -p han -c mediaserver -q
+
+env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_sys -s 16G -p epic -h artu.ccsys.com -u '' -b '' -a jedi -c desktop -l ~jedi/nuOS/share/examples/install/soho_fileserver.sh -q
+
+env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_sys -es 32G -p yoda -u '' -b '' -a jedi -c desktop -l ~jedi/nuOS/share/install/activate_gui.sh -l ~jedi/nuOS/share/examples/install/soho_fileserver.sh -q
+
+env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_sys -es 32G -p solo -u '' -b '' -a jedi -c desktop -l ~jedi/nuOS/share/install/activate_gui.sh -l ~jedi/nuOS/share/examples/install/soho_fileserver.sh -q
+
+env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_sys -es 32G -p solo -u '' -b '' -a jedi -c commonserver -l ~jedi/nuOS/share/examples/install/soho_fileserver.sh -q
+env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_sys -es 32G -p solo -u '' -b '' -a jedi -c commonserver -l ~jedi/webber_fileserver.sh -q
+
+env ADMIN_PASS=QUICKenin9 ADMIN_NAME='Only One' ADMIN_CPNY='Highlander' nu_sys -s 4G -p spore -h spore.macleod.host -u '' -b '' -a one -c desktop -l ~jedi/nuOS/share/install/activate_gui.sh -l ~jedi/nuOS/share/examples/install/soho_fileserver.sh -q
+
+nu_sys -s 4G -p thumb -u '' -b '' -c pkg -q
+
+
+glabel status -s | awk '$1 == "gpt/chewy0" {print $3}'
+gpart status -s | awk '$1 == "ada1p2" {print $3}'
+
+camcontrol security da99 -U user -s MyPass
+camcontrol security da99 -U user -e MyPass
+:> /dev/da99
+
+camcontrol security da99 -d MyPass
+
+
+
+zpool destroy chewy
+zpool labelclear -f /dev/gpt/chewy0
+gpart destroy -F ada1
+
+
+
+
+
+nu_hdd -b -p chewy -q ada1
+nu_build -p chewy -c mediaserver -q
+env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    nu_sys -s 24G -p chewy -u '' -b '' -a jedi -c mediaserver -l /usr/nuos/share/examples/install/soho_fileserver.sh -q
+
+zfs mount chewy/os/FreeBSD/src/11.3-RELEASE-p7
+zfs mount chewy/os/FreeBSD/src/obj/amd64/11.3-RELEASE-p7
+zfs mount chewy/os/FreeBSD/ports/src
+zfs mount chewy/os/nuOS/0.0.11.3a0/amd64/pkg
+
+zfs mount chewy/os/FreeBSD/ports/distfiles
+
+tar -cf - -C /usr src obj | tar -xvf - -C /chewy/usr
+tar -cf - --one-file-system -C /usr ports | tar -xvf - -C /chewy/usr
+tar -cf - -C /usr/ports packages | tar -xvf - -C /chewy/usr/ports
+
+tar -cf - -C /usr/ports distfiles | tar -xvf - -C /chewy/usr/ports
+
+mount -p | awk '$2 ~ /^\/chewy\// {print $2}' | tail -r | xargs -n 1 umount
+
+
+nu_release -q
+
+case `hostname -d | tr [[:upper:]] [[:lower:]]` in
+	uglybagsofmostlywater.club) boot_iqn=2020-04.club.uglybagsofmostlywater.`hostname -s`;;
+	macleod.host) boot_iqn=2020-04.host.macleod.`hostname -s`;;
+	woneye.site) boot_iqn=2020-04.site.woneye.`hostname -s`;;
+	nuos.org) boot_iqn=2011-11.org.nuos;;
+	ccsys.com) boot_iqn=1999-10.com.ccsys.`hostname -s`;;
+	bedlam.city) boot_iqn=2020-10.city.bedlam;;
+	*) exit 2;;
+esac
+
+cat <<EOF
+auth-group ag0 {
+	chap joe mamatitzbitz
+}
+
+portal-group pg0 {
+	listen 0.0.0.0
+}
+
+target iqn.$boot_iqn:tgt0 {
+	auth-group ag0
+	portal-group pg0
+	lun 0 {
+		path /dev/zvol/$boot_pool/img/$output_pool
+		size $zvsz
+	}
+}
+EOF
+
+
+
+
+
+mount -p | awk '$2 ~ /^\/chewy\// {print $2}' | tail -r | xargs -n 1 umount
+zpool export chewy
+
+
+
+
+
+
+
+
+
+env ADMIN_PASS= ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_sys -s 24G -p han -u '' -b '' -a jedi -c commonserver -l ~jedi/nuOS/share/examples/install/soho_fileserver.sh -q
+
+env ADMIN_PASS=jizz ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' nu_sys -s 8G -p r2d2 -u '' -b '' -a jedi -c desktop -l ~jedi/nuOS/share/install/activate_gui.sh -l ~jedi/nuOS/share/examples/install/soho_fileserver.sh -q
+
+
+zfs create -o compression=off -o checksum=off -o volmode=dev -V 30000000K -b 4K -s yoda/tom
+ctladm create -b block -o pblocksize=4096 -o ublocksize=4096 -o file=/dev/zvol/yoda/tom
+ctladm reqsense 1
+ctladm start 1
+ctladm lunmap -p 0 -l 1 -L 1
+ctladm port -p 0 -o on
+
+nu_hdd -b -u 100 -a 128 -q -p tom da5
+nu_build -p tom -c mediaserver -q
+nu_sys -s 2G -p tom -c mediaserver -l ~jedi/nuOS/share/examples/install/ipxe_boot.sh -q
+
+zpool export tom
+
+ctladm lunmap -p 0 -l 1
+ctladm port -p 0 -o on
+ctladm remove -b block -l 1
+
+zfs snapshot yoda/tom@genesis
+
+zfs destroy yoda/tom
+
+
+enable_svc dbus avahi_daemon netatalk
+
+
+# zfs create -o compression=off -o checksum=off -o recordsize=4K naruto/sys/naruto.ccsys.com/v0/var/rawblk
+# 
+# truncate -s 30000000K /var/rawblk/thumb
+# mdconfig -a -t vnode -f /var/rawblk/thumb
+
+
+zpool export thumb
+xz -9 < /dev/zvol/jack/thumb > ~boba/nuos.org/www/public/static/nuOS-nightly-`date +%Y-%m-%d-%H%M`-thumb-desktop.img.xz
+xz -9 < /dev/zvol/jack/thumb > ~boba/nuos.org/www/public/static/nuOS-nightly-`date +%Y-%m-%d-%H%M`-thumb-server.img.xz
+
+xz -9 < /dev/zvol/yoda/tom > ~/nuOS-custom-`date +%Y-%m-%d-%H%M`-tom-desktop.img.xz
+xz -9 < /dev/zvol/yoda/tom > ~/nuOS-custom-`date +%Y-%m-%d-%H%M`-tom-mediaserver.img.xz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mount -p | cut -wf 2 | grep ^/tmp/nu_build\\. | tail -r | xargs -n1 umount
+
+
+nu_build -q
+# or
+nu_build -Sq
+nu_build -FNq
+
+service jail stop
+nu_exodus
+
+zfs list -r -H -o name,mounted,mountpoint -S mountpoint willy/svc | awk '$2 == "yes" && $3 != "-" && $3 != "none" {print $1}' | xargs -n 1 zfs unmount
+zfs list -r -H -o name,mounted,mountpoint -S mountpoint mama/svc | awk '$2 == "yes" && $3 != "-" && $3 != "none" {print $1}' | xargs -n 1 zfs unmount
+
+nu_backup -p willy svc > ~/svc.zstream
+nu_backup -p willy jail > ~/jail.zstream
+zfs destroy -r willy/svc
+
+nu_backup -p mama svc > ~/svc.zstream
+nu_backup -p mama jail > ~/jail.zstream
+zfs destroy -r mama/svc
+
+nu_jail -dfqj vlab3
+nu_jail -dfqj vlab2
+nu_jail -dfqj vlab1
+nu_jail -dfqj vlab0
+nu_jail -dfqj lab0
+nu_jail -dfqj nuos-lab0
+nu_jail -dfqj base-lab0
+nu_jail -dfqj lab1
+nu_jail -dfqj nuos-lab1
+nu_jail -dfqj base-lab1
+
+nu_jail -dfqj b.ns
+nu_jail -dfqj a.ns
+nu_jail -dfqj ns
+nu_jail -dfqj resolv; rm -v /etc/resolv.conf /etc/resolvconf.conf
+nu_jail -dfqj postmaster
+nu_jail -dfqj postoffice
+nu_jail -dfqj www
+
+nu_jail -dfqj nemesis
+
+
+zfs destroy -fr willy/jail
+zfs destroy -fr mama/jail
+
+
+
+
+
+
+env ADMIN_PASS= ADMIN_NAME='Boba Fett' ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_sys -s 24G -a boba -u '' -b '' -l /usr/nuos/share/examples/install/cargobay_init.sh -q
+# or
+env ADMIN_PASS= ADMIN_NAME='Boba Fett' ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_sys -s 24G -a boba -u '' -b '' -l ~boba/nuOS/share/examples/install/cargobay_init.sh -q
+# or
+env ADMIN_PASS= ADMIN_NAME='Boba Fett' ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_sys -s 24G -h willy.woneye.site -a boba -u '' -b '' -l ~boba/nuOS/share/examples/install/cargobay_init.sh -q -c commonserver
+
+
+
+
+# cp -av ~/nuos_site_exodus /tmp/nu_sys.*.alt_mnt.*/root/nuos_deliverance
+# (umask 77 && echo mypass > /tmp/nu_sys.*.alt_mnt.*/root/owner_pass)
+#  - or -
+# cp -av ~/owner_pass /tmp/nu_sys.*.alt_mnt.*/root/
+#   -  OR  -
+# cp -av * .history /tmp/nu_sys.*.alt_mnt.*/root/
+# cp -av /usr/local/etc/ssh/ssh_host_*_key* /tmp/nu_sys.*.alt_mnt.*/usr/local/etc/ssh/
+
+# shutdown -r +30s
+# exit
+
+
+tail -n 9999999 -f /var/log/nuos_firstboot.log
+
+
+
+
+zfs destroy willy/img/spawn
+zfs destroy -R willy/img/spore
+
+nu_release -c commonserver -h spore.nuos.org -l ~boba/nuOS/share/examples/install/ipxe_boot.sh -q
+nu_release -c desktop -h spore.nuos.org -z 122368M -s 4G -l ~boba/nuOS/share/install/activate_gui.sh -q
+
+0+14779058 records in
+122166+1 records out
+128101363712 bytes transferred in 5018.753973 secs (25524535 bytes/sec)
+
+
+for d in usr/src usr/ports usr/ports/packages var/db/nuos/pkg; do rsync -avxP --delete boba@woneye.site:/$d/ /$d/; done; rm -rv /usr/obj/usr/src
+for d in usr/ports usr/ports/packages var/db/nuos/pkg; do rsync -avxP --delete boba@woneye.site:/$d/ /$d/; done
+
+
+
+(find /usr/ports -depth 3 -name work -type d | while read w; do cd ${w%/work}; make -DNOCLEANDEPENDS clean; done)
+
+
+
+nu_hdd -b -p mama -q ada0
+nu_os_install -p mama -q
+env ADMIN_PASS= ADMIN_NAME='Boba Fett' ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_sys -h mama.cargobay.net -s 24G -p mama -a boba -u '' -b '' -l /usr/nuos/share/examples/install/cargobay_init.sh -q
+
+nu_hdd -b -p willy -q ada0
+nu_os_install -p willy -q
+env ADMIN_PASS= ADMIN_NAME='Boba Fett' ADMIN_CPNY='Guild of Independent Bounty Hunters' nu_sys -h willy.woneye.site -s 24G -p willy -a boba -u '' -b '' -l ~boba/nuOS/share/examples/install/cargobay_init.sh -q
+
+
+
+
+
+
+
+sed -e 's/%%USER%%/joe/;s/%%PASSWORD%%/mamatitzbitz/' /usr/nuos/share/examples/etc/istgt/auth.conf.diff | patch /usr/local/etc/istgt/auth.conf
+sed -e 's/%%POOL%%/willy/;s/%%VOLUME%%/spore/;s/%%IQN%%/2020-04.site.woneye/' /usr/nuos/share/examples/etc/istgt/istgt.conf.diff | patch /usr/local/etc/istgt/istgt.conf
+
+
+
+cd /usr/ports/net/ipxe
+
+make clean && make -DBATCH IPXE_MAKE_ARGS='CERT=/etc/ssl/certs/nuos.org.crt TRUST=/etc/ssl/certs/nuos.org.crt EMBED=/home/jedi/script.ipxe' IPXE_BUILDCFG='general:DOWNLOAD_PROTO_FTP general:CERT_CMD general:DIGEST_CMD general:PCI_CMD' stage
+
+make clean && make -DBATCH IPXE_MAKE_ARGS='EMBED=/home/boba/nuOS/share/examples/ipxe/mama.ccys.com.ipxe' IPXE_BUILDCFG='general:DOWNLOAD_PROTO_FTP general:CERT_CMD general:DIGEST_CMD general:PCI_CMD' stage
+
+make clean && make -DBATCH IPXE_MAKE_ARGS='EMBED=/home/jedi/nuOS/share/examples/ipxe/willy.woneye.site.ipxe' IPXE_BUILDCFG='general:DOWNLOAD_PROTO_FTP general:CERT_CMD general:DIGEST_CMD general:PCI_CMD' stage
+cp -av /usr/ports/net/ipxe/work/stage/usr/local/share/ipxe ~/ipxe.mama
+
+
+
+
+
+env ADMIN_PASS=jizz ADMIN_NAME='Jonin Shinobi' ADMIN_CPNY='Foundation' nu_sys -a jonin -u '' -b '' -p konoha -h shikamaru.ccsys.com -s 24G -l ~jonin/nuOS/share/examples/install/soho_fileserver.sh -q
+
+
+
+umount /thumb/tmp
+umount /thumb/dev
+umount /thumb/usr/ports/packages
+zpool export thumb
+
+zfs create -o compression=off -o checksum=off -V 29664M -b 64K -s jack/tom
+env KEYS_FROM_ADMIN_ACCT=boba nu_install -t '' -d zvol/jack/tom -p tom -s 2G -c desktop -u '' -b '' -K ninja@chappie.local -F -l ~boba/nuOS/share/examples/install/activate_gui.sh
+zpool export tom
+xz -9 < /dev/zvol/jack/tom > /home/boba/nuos.org/www/public/nuOS-tom.img.xz
+
+zfs create -o compression=off -o volmode=dev -V 30000000K -b 4K -s jack/tom
+xz -d < tom.img.xz | dd of=/dev/zvol/jack/tom bs=4K conv=sparse
+zfs snapshot jack/tom@birth
+
+
+zfs mount yoda/os/FreeBSD/src/11.3-RELEASE-p7
+zfs mount yoda/os/FreeBSD/src/obj/amd64/11.3-RELEASE-p7
+zfs mount yoda/os/FreeBSD/ports/src
+zfs mount yoda/os/FreeBSD/ports/distfiles
+zfs mount yoda/os/nuOS/0.0.11.3a0/amd64/pkg
+
+
+
+tar -cf - -C /r2d2/usr src obj | tar -xvf - -C /usr
+tar -cf - --one-file-system -C /r2d2/usr ports | tar -xvf - -C /usr
+tar -cf - -C /r2d2/usr/ports packages | tar -xvf - -C /usr/ports
+tar -cf - -C /r2d2/usr/ports distfiles | tar -xvf - -C /usr/ports
+
+
+country=US
+province='Florida'
+locality='Sarasota'
+organization='Crop Circle Systems'
+
+nu_ssl -h chewy.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'Advanced Software Development' -S
+nu_ca -a ca.cargobay.net -h chappie.ccsys.com
+# nu_vpn_client -h chewy.ccsys.com
+
+nu_ssl -h spartacus.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'Quality Assurance' -S
+nu_ca -a ca.cargobay.net -h spartacus.ccsys.com
+nu_vpn_client -h spartacus.ccsys.com
+
+nu_ssl -h chappie.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'Software Development' -S
+nu_ca -a ca.cargobay.net -h chappie.ccsys.com
+nu_vpn_client -h chappie.ccsys.com
+
+nu_ssl -h yoda.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'Software Engineering' -S
+nu_ca -a ca.cargobay.net -h yoda.ccsys.com
+nu_vpn_client -h yoda.ccsys.com
+
+nu_ssl -h solo.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'System Architecture' -S
+nu_ca -a ca.cargobay.net -h han.ccsys.com
+nu_vpn_client -h han.ccsys.com
+
+nu_ssl -h artu.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'Advanced Development & Production' -S
+nu_ca -a ca.cargobay.net -h r2d2.ccsys.com
+nu_vpn_client -h r2d2.ccsys.com
+
+
+nu_ssl -h stark._xxxxxxxx.com -b 4096 -n US -p California -l 'Los Angeles' -o 'Xxxx Xxxxx' -u "Media Creation, Composition and Production" -S
+nu_ca -a ca.cargobay.net -h stark._xxxxxxxx.com
+nu_vpn_client -h stark._xxxxxxxx.com
+
+
+
+zpool export yoda && zpool import -R /yoda yoda
+mount -t devfs devfs /yoda/dev
+mount -t fdescfs fdescfs /yoda/dev/fd
+mount -t tmpfs tmpfs /yoda/tmp
+mount -t procfs procfs /yoda/proc
+
+cp /etc/resolv.conf /yoda/etc/
+chroot /yoda /bin/sh
+
+service ldconfig start
+
+rm -r /var/db/nuos/pkg
+nu_pkg_tree -o dir /var/db/nuos/pkg desktop && nu_pkg_chk_tree
+nu_pkg_build_cluster
+
+umount /yoda/proc
+umount /yoda/tmp
+umount /yoda/dev/fd
+umount /yoda/dev
+zpool export yoda
+
+
+
+
+
+
+env USER_PASS=balz ALIAS_IP=172.23.0.1 nu_jail -j afp -i 127.1.0.8 -AP -I afpovertcp -x -u boba -q
+
+
+
+nu_jail -t clone -w -j base-lab0 -o `uname`/`uname -r`/`uname -m` -s pkg_ready -i 127.1.255.254 -x -q
+nu_jail -t clone -w -j nuos-lab0 -s pkg -i 127.1.255.253 -x -q
+nu_jail -t clone -w -j lab0 -i 127.1.255.252 -x -q
+
+
+nu_jail -t vnet -j vlab0 -i 172.16.0.1 -x -q
+nu_jail -t vnet -j vlab1 -i 172.16.0.3 -x -q
+nu_jail -t vnet -j vlab2 -i 172.16.0.5 -x -q
+nu_jail -t vnet -j vlab3 -i 172.16.0.7 -x -q
+
+
+
+mount -p | awk '$2 ~ /^\/var\/jail\// {print $2}' | tail -r | xargs -n 1 umount
+
+
+cd /usr/src
+svn checkout https://svn.freebsd.org/base/releng/11.4 .
+svn update
+
+svn checkout https://svn.freebsd.org/base/releng/11.4 /usr/src
+svn update /usr/src
+
+svn checkout https://svn.freebsd.org/ports/head /usr/ports
+svn update /usr/ports
+
+
+cd /usr/src
+make -j6 buildworld && make -j6 buildkernel KERNCONF=NUOS
+make installkernel KERNCONF=NUOS
+make installworld
+
+
+
+
+grep / pls | while read -r p; do _p=`echo $p | tr / _`; n=`cat pdb/$_p/name`; echo $p $n; mv -v /usr/ports/packages/Index.nuOS/FreeBSD-11.4-amd64/$n.*.txz /usr/ports/packages/Index.nuOS/FreeBSD-11.4-amd64-TRASH/; rm -v /usr/ports/packages/All/$n.txz; pkg delete -fy $n; env DISABLE_VULNERABILITIES=yes nu_install_pkg -Rv $p || break; done
+
+
+grep / pls.orig | while read -r p; _p=`echo $p | tr / _`; n=`cat pdb/$_p/name`; echo $p $n; mv -v /usr/ports/packages/Index.nuOS/FreeBSD-11.4-amd64/$n.*.txz /usr/ports/packages/Index.nuOS/FreeBSD-11.4-amd64-TRASH/; rm -v /usr/ports/packages/All/$n.txz; pkg delete -fy $n; env DISABLE_VULNERABILITIES=yes nu_install_pkg -Rv $p || break; done
+
+zfs snap -r zroot/ROOT/default@birth zroot/usr@birth zroot/var@birth
+
+
+nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q
+
+nu_pkg_tree -o dir /var/db/nuos/pkg pkg
+nu_pkg_tree -o dir /var/db/nuos/pkg commonserver
+nu_pkg_tree -o dir /var/db/nuos/pkg desktop
+
+nu_pkg_chk_tree && echo yay || echo nay
+
+#(ls -d /var/db/nuos/pkg/*_*/dependencies | sed -e 's/dependencies$/name/' | xargs cat; sh -c 'for p in `pkg info -q | grep ^bootstrap- | xargs pkg info -q -o`; do (cd /usr/ports/$p; make -V PKGNAME); done') | sort -u > want
+
+
+nu_pkg_tree -pi /var/db/nuos/pkg | sort > want
+pkg info -q | sort > have
+diff have want | grep '^<' | cut -wf2 > kill
+diff have want | grep '^>' | cut -wf2 > make
+
+pkg info --dependencies -a | awk '$1 ~ /:$/{d = substr($1,1,index($1,":")-1)} $1 ~ /\(null\)/{print d}' | sort -u
+
+
+nu_pkg_tree -i /var/db/nuos/pkg | grep / | sh -c 'while IFS=@ read p f; do cd /usr/ports/$p; env PORT_DBDIR=/home/jedi/nuOS/port_opts MASTER_SITE_OVERRIDE=file:///usr/ports/distfiles/Attic/\${DIST_SUBDIR}/ ${f:+FLAVOR=$f} make checksum; done'
+
+nu_pkg_tree -fxi /var/db/nuos/pkg | sed -Ee 's/\.g............(\.................\.pkg)$/.?????????????\1/'
+
+nu_pkg_tree -fxi pkgdb | sh -c 'cd /usr/ports/packages/Index.nuOS/FreeBSD-13.2-amd64.opteron-sse3; while read -r p; do echo ${p%.*.*.pkg}; echo $p; echo ${p%.*.*.pkg}.*.*.pkg; echo; done'
+
+git reset --hard HEAD
+git clean -f -d -x
+git pull
+
+
+pkg delete -fy `cat kill` && sed -e 's,^,rm -v /usr/ports/packages/All/,;s,$,.pkg,' kill | sh && sed -e 's,^,rm -v /usr/ports/packages/Index.nuOS/FreeBSD-13.1-amd64.opteron-sse3/,;s,$,.g*.*.pkg,' kill | sh
+
+nu_pkg_build_cluster -w 3
+
+ls /usr/ports/packages/All | sed -e 's/.txz$//' > pkged
+diff pkged want | grep '^<' | cut -wf2 > oldpkgs
+
+sed -e 's,^,rm -v /usr/ports/packages/All/,;s,$,.txz,' oldpkgs | sh && sed -e 's,^,rm -v /usr/ports/packages/Index.nuOS/FreeBSD-11.4-amd64/,;s,$,.r*.*.txz,' oldpkgs | sh
+
+
+nu_backup 'os/nuOS/0.0.12.99a0/amd64.opteron-sse3/(org.nuos:active_revision)@desktop' > ~/nuOS.zstream
+nu_backup os/FreeBSD/src os/FreeBSD/ports/src os/nuOS/0.0.12.99a0/amd64.opteron-sse3/pkg > ~/nuOS-dev.zstream
+
+nu_restore -t mama < ~boba/nuOS.zstream
+
+zfs list -r -t snapshot -H -o name han/os/nuOS/0.0.11.3a0/amd64/pkg han/os/FreeBSD/ports/src
+zfs list -r -t snapshot -H -o name willy/os/nuOS/0.0.11.3a0/amd64/pkg willy/os/FreeBSD/ports/src
+
+
+
+# scp nuOS.zstream boba@23.111.168.34:
+service jail stop base-lab0 nuos-lab0 lab0
+zfs destroy -r mama/os/nuOS/0.0.12.99a0/amd64.opteron-sse3/pkg
+zfs unmount mama/os/FreeBSD/ports/distfiles
+zfs destroy -r mama/os/FreeBSD/ports/src
+zfs destroy -r mama/os/FreeBSD/src
+nu_restore -t mama < ~boba/nuOS-dev.zstream
+zfs mount mama/os/FreeBSD/src/13.2-RC1.g8534a7f045bd
+zfs mount mama/os/FreeBSD/src/obj/opteron-sse3/13.2-RC1.g8534a7f045bd
+zfs mount mama/os/FreeBSD/ports/src
+zfs mount mama/os/FreeBSD/ports/distfiles
+zfs mount mama/os/nuOS/0.0.12.99a0/amd64.opteron-sse3/pkg
+
+
+nu_backup -p willy -f t1589517697 os/FreeBSD/ports/src os/nuOS/0.0.11.3a0/amd64/pkg > ~boba/update.zstream
+# scp update.zstream boba@cargobay.net:
+nu_restore -t willy < ~boba/update.zstream
+
+
+nu_restore -t han < ~jedi/update.zstream
+
+
+
+# echo willy/os/{FreeBSD/ports/src,nuOS/0.0.11.3a0/amd64/pkg}@{t1588652532,t1588701624,t1588707796,t1588787860} | xargs -n1 zfs destroy
+
+
+
+
+
+
+
+
+zfs list -r -H -o name,mounted,mountpoint -S mountpoint willy/svc | awk '$2 == "yes" && $3 != "-" && $3 != "none" {print $1}' | xargs -n 1 zfs unmount
+
+
+
+
+
+
+slave1.cargobay.net	mama
+23.111.168.34	mikey
+23.111.168.35	mouth
+23.111.168.36	data
+23.111.168.37	chunk
+23.111.168.38	brand
+slave2.cargobay.net	willy
+66.206.20.42	jake
+66.206.20.43	francis
+66.206.20.44	sloth
+66.206.20.45	andy
+66.206.20.46	stef
+
+
+
+
+for z in $zones; do
+  whois $z | tee $z.whois
+done
+
+for z in $zones; do
+  echo +++ $z +++
+  grep -E '^[[:blank:]]*(Name Server|Registry Expiry Date|Registrar|Registrant Name|Registrant Organization):' $z.whois | tr -d '\r' | xargs -L 1 | sort -u
+  echo
+done
+
+
+Namecheap Dedi:
+//162.213.255.63/images/FreeBSD-11.2-RELEASE-amd64-bootonly.iso
+#set hw.mfi.allow_cam_disk_passthrough=1 # this seems to have bricked a kingston ssd on a PERC H330 in RAID mode
+load /boot/kernel/kernel
+load /boot/kernel/mfip.ko
+
+
+Hivelocity Dedi:
+Share Host: 10.1.0.11
+User: anon
+password: <blank>
+\ISOs\Linux\FreeBSD\FreeBSD-11.1-amd64-dvd.iso
+\ISOs\Linux\FreeBSD\FreeBSD-11.1-RELEASE-amd64-disc1.iso
+
+
+ifconfig igb0 inet 23.111.168.34 netmask 0xfffffff8
+route add default 23.111.168.33
+echo nameserver 8.8.8.8 > /etc/resolv.conf
+mkfifo /tmp/pipe
+sha256 /tmp/pipe &
+fetch -o - --no-verify-peer https://nuos.org/jack.img.gz | tee /tmp/pipe | gunzip | dd of=/dev/ada0 bs=8K conv=sparse
+
+zpool export iron
+xz -T 0 --block-size=134217728 < /dev/zvol/yoda/iron > iron.xz
+
+scp /root/iron.xz 168.235.71.47:
+
+nc -l 9997 < iron.xz
+...
+ctrl-c
+
+ifconfig vtnet0 168.235.81.21 netmask 0xffffff00
+route add default 168.235.81.1
+nc 168.235.71.47 9997 | xz -d | dd bs=128K of=/dev/vtbd0
+...
+ctrl-t
+
+zfs list -Hpr -t snap -o name yoda/os/FreeBSD/ports/src
+
+/usr/local/bin/ssh-keygen -o -N '' -t rsa -b 4096 -f ~/.ssh/id_rsa
+/usr/local/bin/ssh-keygen -o -N '' -t ecdsa -b 521 -f ~/.ssh/id_ecdsa
+/usr/local/bin/ssh-keygen -N '' -t ed25519 -f ~/.ssh/id_ed25519
+cat ~/.ssh/id_*.pub
+
+for f in *.zone; do grep -vE '\bCDNSKEY\b|\bCDS\b|\bDNSKEY\b|\bNSEC3PARAM\b|\bRRSIG\b|\bNSEC3\b|^;;|^_acme-challenge\b' $f > orig/$f; done
+
+
+sed -i '' s/199\\.188\\.207\\.210/104.219.250.194/g *.zone
+sed -i '' s/210\\.207\\.188\\.199/194.250.219.104/g *.zone
+
+mv 210.207.188.199.in-addr.arpa.zone 194.250.219.104.in-addr.arpa.zone
+mv 194.250.219.104.in-addr.arpa.zone 210.207.188.199.in-addr.arpa.zone
+
+for z in $zones; do knotc zone-sign $z; done
+for z in $zones; do keymgr $z list; done
+
+
+(umask 77; cd /etc/ssl; tar -cJvf ~/ssl.txz serials `cd certs && for c in *.ca.crt; do z=${c%.ca.crt}; echo certs/$z.ca.crt certs/$z.crt private/$z.key; done`)
+(umask 77; cd /etc/ssl; tar -cJvf ~/ssl.txz serials private)
+chown boba ~/ssl.txz
+
+scp -p /root/ssl.txz slave2.ccsys.com:
+
+(cd /etc/ssl; tar -cJvf - `cd certs && for c in *.ca.crt; do z=${c%.ca.crt}; echo certs/$z.ca.crt certs/$z.crt private/$z.key; done`) | /usr/local/bin/openssl enc -aes-256-cbc > ~/ssl.txz.aes
+
+for x in js css pdf; do for f in `ls *.$x $x/*.$x 2>/dev/null`; do mkdir -p static/$x; h=`md5 -q "$f" | head -c 20`; mv $f static/$x/`basename "${f%.$x}"`.$h.$x; done; done
+
+
+
+
+jot -rncs '' 16 | od -h | cut -s -w -f 2- | tr -d \ \\t\\n | xargs
+
+echo testingfoo | /usr/local/bin/openssl enc -aes-256-cbc -K 3d3e4d472a5f2e4f11045b055535163740394b523248482d2c175a4c0a0b170f -iv 62494533100b2a0d030316201a4d4c4c | b64encode -
+
+echo TVkW23mc0BJdXG8z2EwlDg== | b64decode -r | /usr/local/bin/openssl enc -d -aes-256-cbc -K 3d3e4d472a5f2e4f11045b055535163740394b523248482d2c175a4c0a0b170f -iv 62494533100b2a0d030316201a4d4c4c
+
+
+(umask 77 && mkdir /etc/ssl/private.pefs /etc/ssl/private)
+ln -s aes256-xts:100000 /etc/ssl/private.pefs/.pefs.conf
+pefs addchain -fZ /etc/ssl/private.pefs
+
+pefs mount /etc/ssl/private.pefs /etc/ssl/private
+pefs addkey -c /etc/ssl/private
+
+pefs unmount /etc/ssl/private
+
+
+(umask 77 && mkdir ~/Private)
+ln -s aes256-xts:100000 ~/Private/.pefs.conf
+pefs addchain -fZ ~/Private
+
+pefs mount ~ninja/Private ~ninja/Private
+
+pefs addkey -c ~/Private
+
+pefs unmount ~ninja/Private
+
+
+zones=`knotc conf-read zone.domain | cut -w -f 3 | sed -e '/\.in-addr\.arpa\./d;s/\.$//'`
+for z in $zones; do knotc zone-retransfer $z; done
+
+npm run build; rm -rv ~/nuos.org/www/public/*; cp -av ~/nuOS/www/dist/* ~/nuos.org/www/public/; rsync -avP --delete ~/nuos.org slave2.ccsys.com:./
+
+
+zpool get -H -o value cachefile naruto
+
+namecoind -rescan -reindex
+
+cd ~/jonin/Stage && rtorrent [0-9a-eA-E]*.torrent
+cd ~/jonin/Stage && rtorrent [f-lF-L]*.torrent
+cd ~/jonin/Stage && rtorrent [m-sM-S]*.torrent
+cd ~/jonin/Stage && rtorrent [t-zT-Z]*.torrent
+
+ls [0-9a-eA-E]*.torrent [f-lF-L]*.torrent [m-sM-S]*.torrent [t-zT-Z]*.torrent | wc
+ls *.torrent | wc
+
+ffmpeg -i "$f" -c:a libfdk_aac -b:a 256k -ac 2 -clev 3dB -slev -6dB -c:v copy "/tmp/${f%.*}.mp4" && ffmpeg -i "$f" "/tmp/${f%.*}.srt"
+ffmpeg -i "$f" -c:a libfdk_aac -b:a 256k -ac 2 -clev 3dB -slev -6dB -c:s mov_text -c:v copy "/tmp/${f%.*}.mp4"
+
+
+time ffmpeg -i BluRays/VS113/BDMV/STREAM/00002.m2ts -ss 00:03:09 -t 15 -filter:v crop=1440:1080:240:0,scale=960:720 -c:s copy -c:v libx265 -preset slower -tune grain -pix_fmt yuv420p -bits_per_raw_sample 8 -profile:v main -x265-params crf=18:rc-lookahead=60:ctu=32:frame-threads=1:no-sao=1:deblock=-2,-2:qcomp=0.65:aq-mode=3:ref=6:bframes=3:psy-rdoq=0:no-strong-intra-smoothing=1:max-tu-size=16:qg-size=16 -c:a aac -b:a 128k Dolemite_1975-720p-open_matte-x265-main.mkv
+
+time ffmpeg -i BluRays/VS113/BDMV/STREAM/00002.m2ts -ss 00:03:09 -t 15 -filter:v crop=1440:1080:240:0,scale=960:720 -c:s copy -c:v libx265 -preset slower -tune grain -pix_fmt yuv420p10le -bits_per_raw_sample 10 -profile:v main10 -x265-params crf=18:rc-lookahead=60:ctu=32:frame-threads=1:no-sao=1:deblock=-2,-2:qcomp=0.65:aq-mode=3:ref=6:bframes=3:psy-rdoq=0:no-strong-intra-smoothing=1:max-tu-size=16:qg-size=16 -c:a aac -b:a 128k Dolemite_1975-720p-open_matte-x265-main10.mkv
+
+time ffmpeg -i BluRays/VS113/BDMV/STREAM/00002.m2ts -ss 00:03:09 -t 15 -filter:v crop=1440:1080:240:0,scale=960:720 -c:s copy -c:v libx265 -preset slower -tune grain -pix_fmt yuv420p12le -bits_per_raw_sample 12 -profile:v main12 -x265-params crf=18:rc-lookahead=60:ctu=32:frame-threads=1:no-sao=1:deblock=-2,-2:qcomp=0.65:aq-mode=3:ref=6:bframes=3:psy-rdoq=0:no-strong-intra-smoothing=1:max-tu-size=16:qg-size=16 -c:a aac -b:a 128k Dolemite_1975-720p-open_matte-x265-main12.mkv
+
+
+
+
+time ffmpeg -i BluRays/Root.Cause.2019.DOCU.MULTi.COMPLETE.BLURAY-NEWHAM/BDMV/STREAM/00004.m2ts -filter:v scale=1280:720 -c:s copy -c:v libx265 -preset slower -pix_fmt yuv420p -bits_per_raw_sample 8 -profile:v main -map 0:v:0 -map 0:a:1 -map 0:s:0 -x265-params crf=20:rc-lookahead=60:ctu=32:frame-threads=1:deblock=-2,-2:qcomp=0.65:aq-mode=3:ref=6:bframes=8 -c:a aac -b:a 128k Documentaries/Root.Cause.2019.720p.x265-main.mkv
+
+time ffmpeg -i BluRays/Vaxxed.Die.schockierende.Wahrheit.2016.DOKU.DUAL.COMPLETE.BLURAY-iFPD/BDMV/STREAM/00004.m2ts -filter:v scale=1280:720 -c:s copy -c:v libx265 -preset slower -pix_fmt yuv420p -bits_per_raw_sample 8 -profile:v main -map 0:v:0 -map 0:a:1 -map 0:s:0 -x265-params crf=20:rc-lookahead=60:ctu=32:frame-threads=1:deblock=-2,-2:qcomp=0.65:aq-mode=3:ref=6:bframes=8 -c:a aac -b:a 128k Documentaries/Vaxxed.2016.720p.x265-main.mkv
+
+
+time ffmpeg -i mythic.quest.ravens.banquet.s01e10.2160p.web.h265\ nixon.mkv -filter:v scale=1280:720 -c:s copy -c:v libx264 -crf 18 -preset slower -pix_fmt yuv420p -bits_per_raw_sample 8 -profile:v high -level:v 4.1 -c:a copy mythic.quest.ravens.banquet.s01e10.720p.x264.webrip.mkv
+
+
+time ffmpeg -i Video/Television/Silicon.Valley.S06.720p.AMZN.WEB-DL.DDP5.1.H.264-NTb/Silicon.Valley.S06E03.Hooli.Smokes.720p.AMZN.WEB-DL.DDP5.1.H.264-NTb.mkv -ss 00:05:13 -t 1 -c:v copy -c:a copy ~/ftp.mp4
+
+
+
+
+for f in *.torrent; do torrentcheck -t "$f"|sed -ne '/^Torrent ......: /{s///;p;};/^---/,${p;}'|(read t; read d; read _; echo -n "$t "; e=; while read i s x; do if [ -n "$i" ]; then if [ $s != `stat -f %z "$d/$x"` ]; then e=1; fi; fi; done; if [ -z "$e" ]; then echo ok; else echo err; fi;); done
+
+
+
+for f in *.torrent.done; do torrentcheck -t "${f%.done}"|sed -ne '/^Torrent ......: /{s///;p;};/^---/,${p;}'|(read t; read d; read _; echo -n "$t "; while read i s x; do if [ -n "$i" ]; then : "$x"; fi; done; echo "${f%.done}" "$f" "$d";); done
+
+
+
+nu_backup -p konoha -f `nu_restore -nst ichi/home` home | nu_restore -t ichi
+
+# echo {konoha,ichi}/home{,/jonin}@t1585937719 | xargs -n1 zfs destroy
+
+
+
+
+
+for z in $zones; do if ! /usr/local/bin/drill -S $z > /dev/null; then echo FAIL $z; fi; done
+
+for z in $zones; do 
+/usr/local/bin/drill -D $z > /tmp/$z.drill;
+ans=`sed -nEe '2{s/^;; flags: (.*) ; QUERY: (.*), ANSWER: (.*), AUTHORITY: (.*), ADDITIONAL: (.*)$/\3 \1/;p;}' /tmp/$z.drill`
+if ! echo $ans | grep -qw ^3; then
+echo ERROR: $z lacks DATA
+elif ! echo $ans | grep -qw ad; then echo ERROR: $z lacks AUTHENTICITY
+fi
+done
+
+sh
+(while echo ${o:=`mount -p | awk '$2 == "/" {print $1}'`}; o=`zfs list -H -o origin ${o%@*}`; [ x- != x$o ]; do :; done)
+exit
+
+
+willy/sys/willy.woneye.site/v2
+willy/sys/factory/nuOS-0.0.11.3a0-amd64/v2@pool_registered
+willy/os/nuOS/0.0.11.3a0/amd64/v2@commonserver
+willy/os/FreeBSD/11.3-RELEASE-p9/amd64/v1@pkg_ready
+
+
+p=konoha
+i=0
+for i in `seq 0 4`; do
+#  zpool offline $p gpt/${p}$i
+  dskptn=`glabel status | tail +2 | xargs -L 1 | awk "\\$1 == \"gpt/${p}$i\" {print \\$3}"`
+  dsk=${dskptn%p[0-9]*}
+  ptn=${dskptn#${dsk}p}
+  gpart backup $dsk > /root/$dsk.gpt
+  sz=`awk "\\$1 == \"$ptn\" {print \\$4}" < /root/$dsk.gpt`
+#  gpart resize -i $ptn -s $((sz+1)) $dsk
+  dd if=/dev/random of=/root/$dsk.key bs=64 count=1
+#  geli init -P -K /root/$dsk.key -e AES-XTS -l 256 -s 4096 /dev/$dskptn
+
+done
+
+
+zfs list -rtall -o name,canmount,mounted,mountpoint,used,refer,origin willy/os/FreeBSD/src
+
+zfs get -H -p -r -t all -s local,received all | awk '$2 ~ ":"'
+
+nu_user -h cargobay.net -u blanq -n 'Louis Blanqui' -P
+nu_user -h cargobay.net -u bawb -n 'Robert Frederick Genito' -P
+
+
+
+
+env SOURCE_DATE_EPOCH=1585000000
+make REPODIR=/foo buildworld buildkernel
+# src.conf:
+WITH_REPRODUCIBLE_BUILD=YES
+
+
+
+sysctl kern.geom.eli.batch=1
+
+geli init -e AES-XTS -l 256 -s 4096 -J - da99
+# or
+geli init -g -b -e AES-XTS -l 256 -s 4096 -J - da99
+
+geli attach -d -j - da99
+geli attach -j - da99
+dd bs=1M if=/dev/random of=/dev/da99.eli
+
+
+iscsictl -An star.ham
+camcontrol devlist | awk '$1 ~ /<(Seagate|FREEBSD)/{print substr($NF,2,index($NF,",")-2)}'
+
+read p; for d in `camcontrol devlist | awk '$1 ~ /<(Seagate|FREEBSD)/{print substr($NF,2,index($NF,",")-2)}'`; do echo $p | geli attach -j - $d; done
+
+nu_hdd -b -p star -t 6 -q `camcontrol devlist | awk '$1 ~ /<(Seagate|FREEBSD)/{print substr($NF,2,index($NF,",")-2) ".eli"}'`
+
+nu_backup home/jonin | buffer -z 512k -m 512m -p 50 -u 80 | nu_restore -t star
+
+
+# root       1443
+# zfs send -L -e -c -p -i @pool_birth epic/home/jonin@t1622056985
+
+# root       1454
+# zfs receive -s -d -u -v star
+
+
+
+zpool import -NR /star star
+
+# nu_backup -n home/jonin
+# zfs send -L -e -c -p epic/home/jonin@pool_birth
+# zfs send -L -e -c -p -i @pool_birth epic/home/jonin@t1622056985
+
+
+zfs send -e -t `zfs get -Hovalue receive_resume_token star/home/jonin` | buffer -z 512k -m 512m -p 50 -u 80 | nu_restore -t star
+
+
+
+glabel status -s | xargs -L1 | awk '$1 ~ /^gpt\/kono[0-9]/{print $3}' | xargs -n1 zpool labelclear -f
+glabel status -s | xargs -L1 | awk '$1 ~ /^gpt\/kono[0-9]/{print $3}' | sed -Ee 's/p[0-9]+$//' | xargs -n1 gpart destroy -F
+
+
+
+awk '$2 == "DS" && $4 == 8 && $5 == 2 { print substr($1, 1, length($1) - 1), $3, $6}' ds.txt | while read d t h; do host -t ds $d 8.8.8.8 | grep "^$d has "; sleep 1; done | tee lookup.out
+
+awk '$2 == "DS" && $4 == 8 && $5 == 2 { print substr($1, 1, length($1) - 1), $3, $6}' ds.txt | while read d t h; do echo; sed -ne /^$d/'{s/\. /            /;p;}' ds.txt; grep "^$d has " lookup.out; echo "https://ap.www.namecheap.com/Domains/DomainControlPanel/$d/advancedns"; done

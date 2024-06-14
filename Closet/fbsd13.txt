@@ -1,0 +1,56 @@
+zfs snap -r zroot/ROOT/default@birth zroot/usr@birth zroot/var@birth
+
+mkdir /iso 
+pushd /iso
+fetch https://download.freebsd.org/ftp/releases/ISO-IMAGES/13.1/FreeBSD-13.1-RELEASE-amd64-bootonly.iso.xz
+unxz FreeBSD-13.1-RELEASE-amd64-bootonly.iso.xz
+popd
+
+pkg bootstrap -y
+pkg install -y sysutils/screen
+
+pkg install -y sysutils/bhyve-firmware
+pkg install -y sysutils/grub2-bhyve
+
+kldload nmdm vmm
+ifconfig tap0 create
+ifconfig bridge0 create
+ifconfig bridge0 addm net0 addm tap0
+ifconfig bridge0 up
+
+sysctl vfs.zfs.arc.max=1073741824
+
+zfs create -o mountpoint=none zroot/img
+zfs create -o compression=off -o volmode=dev -b 8K -s -V 120000000K zroot/img/demon13
+zfs create -o compression=off -o volmode=dev -b 8K -s -V 120000000K zroot/img/demon-spawn
+zfs create -o compression=off -o volmode=dev -b 8K -s -V 120000000K zroot/img/owl11
+
+zfs create -o compression=off -o volmode=dev -b 16K -s -V 117348M zroot/img/sandisk128
+zfs create -o compression=on -o volmode=dev -b 8K -s -V 976762584K zroot/img/evo870
+
+
+sh /usr/share/examples/bhyve/vmrun.sh -m 4096M -t tap0 -d /dev/zvol/zroot/img/demon13 -i -I /iso/FreeBSD-13.1-RELEASE-amd64-bootonly.iso demon13
+
+nu_vm -c 4 -m 25600M -t tap0 -C /dev/nmdm0A -d /dev/zvol/zroot/img/demon13 -d /dev/zvol/zroot/img/demon-spawn demon13
+cu -l /dev/nmdm0B
+
+nu_vm -c 4 -m 25600M -t tap0 -C /dev/nmdm1A -u -v -E -T -L 0.0.0.0 -d /dev/zvol/zroot/img/demon-spawn owl13
+nu_vm -c 4 -m 25600M -t tap0 -C /dev/nmdm1A -u -d /dev/zvol/zroot/img/demon-spawn owl13
+cu -l /dev/nmdm1B
+
+
+nu_hdd -qb -u 100 -p spawn vtbd1
+nu_build -qp spawn -c commonserver
+nu_sys -qp spawn -h spawn.bofh.vip -s 32G -b '' -u '' -c commonserver
+
+
+
+nu_vm -c 4 -m 16384M -t tap0 -C /dev/nmdm2A -d /dev/zvol/zroot/img/owl11 owl11
+cu -l /dev/nmdm2B
+
+
+
+nu_vm -c 4 -m 25600M -t tap0 -C /dev/nmdm0A -d /dev/ada0 -d /dev/ada1 owl13
+cu -l /dev/nmdm0B
+
+

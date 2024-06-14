@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+NUOS_VER=0.0.12.99a0
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+OPT_DEBUG=y
+nuos_init -q
+
+tizzy () {
+    echo $1
+    tr [[:lower:]] [[:upper:]]
+    echo $2
+}
+
+dizzy () {
+    tr Oo 0
+}
+
+fizzy () {
+    tr Aa @
+}
+
+if srsly ${OPT_DEBUG-}; then
+    debug_wrap tizzy dizzy fizzy
+fi
+
+printf foo\\nbar\\n | while read -r line; do
+    printf %s\\n "$line"
+done | tizzy Foo Bar | dizzy | fizzy
