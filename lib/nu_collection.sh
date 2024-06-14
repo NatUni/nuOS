@@ -90,6 +90,7 @@ collection_vars_init () {
 		net/wifi-firmware-kmod
 		net/wifibox
 		net/ntopng
+		sysutils/neofetch
 	'
 	
 	COLL_developer='
