@@ -91,7 +91,7 @@ exit 1
 # used in production primarily for our cause of spreading quality open source software to more
 # people and fostering interest in digital sovereignty and independence. Hopefully you will enjoy
 # your experience with us and participate in our growth and expansion. Thank you for taking the
-# time to explore our digital ecosystem!ZX
+# time to explore our digital ecosystem!
 
 # The current live boot and installation image is available from https://nuOS.org and retrieved as
 # follows. Note that unless you are already using nuOS you might use an alternate method to get it.
@@ -106,13 +106,13 @@ fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.xz
 # cost from https://CropCircle.Systems although it must be understood that ultimately any device we
 # use to run nuOS must still be an implicitly trusted device. nuOS may be quite robust against most
 # sorts of attack or infection once it is operational, however any software can be rendered utterly
-# powerless in defense against preexisting malware of all but the most rudimentary types. Consider
+# powerless to defend against preexisting malware of all but the most rudimentary types. Consider
 # a brand new computer for running nuOS offered by a trustworthy vendor of hardware and consulting
 # services specializing in security.
 fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.sum
 
 # List suitable devices recognized by the system.
-geom disk list | grep -wiF -e name: -e descr: -e mediasize: -e ident:
+geom disk list | grep -wiF -e 'geom name:' -e descr: -e mediasize: -e ident:
 
 # *Output* from the above command looks something like this:
 # Geom name: nvd0
@@ -278,6 +278,19 @@ nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q
 
 nu_build -q
 
+service jail stop
+
+nu_exodus
+
+zfs list -r -H -o name,mounted,mountpoint -S mountpoint nebu/svc | awk '$2 == "yes" && $3 != "-" && $3 != "none" {print $1}' | xargs -n 1 zfs unmount
+
+(umask 77 && nu_backup -p nebu svc jail > ~/nebu-backup.`date +%Y-%m-%d-%H%M%S`.zstream)
+
+zfs destroy -r nebu/svc
+
+cp -anv nuos_site_exodus `echo /tmp/nu_sys.*.ALT_MNT.*`/root/nuos_deliverance
+
+
 zfs destroy -r nebu/img/spore
 
 env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a3 -h spore.nuos.org -l @activate_gui
@@ -296,7 +309,7 @@ nu_os_install -P spore -p tty -q
 
 
 
-rsync -avP --delete ~/nuOS cargobay.net:
+rsync -avP --delete ~/nuOS zion.top:
 
 
 
@@ -304,7 +317,7 @@ rsync -avP --delete ~/nuOS cargobay.net:
 
 chown -Rv jedi:jedi /usr/{src,obj,ports}
 
-rsync -avP --delete --exclude ports/distfiles cargobay.net:/usr/{src,obj,ports} /usr/
+rsync -avP --delete --exclude ports/distfiles zion.top:/usr/{src,obj,ports} /usr/
 
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
 
