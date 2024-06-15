@@ -95,6 +95,8 @@ for img_name in $@; do
 		zv=$POOL_NAME/img/$img_name
 		spill zv >> "$image_conf"
 		if zfs create -V $ZVOL_SIZE -b $BLOCK_SIZE -s -o volmode=dev ${OPT_NO_COMPRESSION:+-o compression=off} $zv || ! canhas `get_ctlun_from_zvol $zv`; then
+			try 7 -p 0.5 [ -c /dev/zvol/$zv ]
+			try 7 -p 0.5 dd if=/dev/zvol/$zv of=/dev/null count=1
 			ctladm create -b block -o pblocksize=`dehumanize $BLOCK_SIZE` -o ublocksize=$((`dehumanize $BLOCK_SIZE` * 128)) -o file=/dev/zvol/$zv
 		fi
 		ctlun=`get_ctlun_from_zvol $zv`
