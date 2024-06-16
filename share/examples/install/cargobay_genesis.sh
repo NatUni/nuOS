@@ -294,7 +294,7 @@ EOF
 	done
 done
 
-if [ ! -d /var/jail/redmine ]; then
+if [ -d /usr/local/www/redmine -a ! -d /var/jail/redmine ]; then
 	
 	: ${RM_SITE:='nuOS.xyz'}
 	: ${RM_TITLE:=$RM_SITE}
