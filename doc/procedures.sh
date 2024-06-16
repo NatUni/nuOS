@@ -288,13 +288,56 @@ zfs list -r -H -o name,mounted,mountpoint -S mountpoint nebu/svc | awk '$2 == "y
 
 zfs destroy -r nebu/svc
 
+nu_jail -dfqj lab0
+nu_jail -dfqj nuos-lab0
+nu_jail -dfqj base-lab0
+nu_jail -dfqj lab1
+nu_jail -dfqj nuos-lab1
+nu_jail -dfqj base-lab1
+
+nu_jail -dfqj b.ns
+nu_jail -dfqj a.ns
+nu_jail -dfqj ns
+nu_jail -dfqj resolv; rm -v /etc/resolv.conf /etc/resolvconf.conf
+nu_jail -dfqj postmaster
+nu_jail -dfqj postoffice
+nu_jail -dfqj www
+nu_jail -dfqj pgsql
+nu_jail -dfqj redmine
+
+zfs destroy -r nebu/jail
+
+env ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    TZ=America/Detroit \
+    nu_sys -p nebu \
+        -es 48G \
+        -h neo.zion.top \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c desktop \
+        -l @../examples/install/cargobay_init \
+        -q
+
 cp -anv nuos_site_exodus `echo /tmp/nu_sys.*.ALT_MNT.*`/root/nuos_deliverance
+cp -anv ~/owner_pass /tmp/nu_sys.*.ALT_MNT.*/root/
+cp -anv /usr/local/etc/ssh/ssh_host_*_key* /tmp/nu_sys.*.ALT_MNT.*/usr/local/etc/ssh/
+history -S +
+cp -anv ~/.*history `echo /tmp/nu_sys.*.ALT_MNT.*`/root/
+
+shutdown -r now
 
 
 zfs destroy -r nebu/img/spore
 
-env DISPLAY_MANAGER=light nu_release -qHfxd@ -r a3 -h spore.nuos.org -l @activate_gui
-cp -v /root/nuOS-v12.99a0+a3-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
+env DISPLAY_MANAGER=light nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui
+cp -v /root/nuOS-v12.99a0-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
+
+gpg2 --local-user 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 --clear-sign nuOS-v12.99a0-amd64.dd.sum
+
+export GNUPGHOME=$(mktemp -d) && gpg2 --import /usr/nuos/share/key/root\@nuos.org.pub && gpg2 --batch --yes --command-file <(printf 'trust\n5\ny\nsave\nquit\n') --edit-key 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 && gpg2 --verify nuOS-v12.99a0-amd64.dd.sum.asc
+
 
 zpool export spore
 nu_img -d spore
