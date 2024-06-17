@@ -515,8 +515,8 @@ nuos_init () {
 		HOSTOS_MACH=$HOSTOS_ARCH.$HOSTOS_PROC
 	fi
 
-	PKG_DBLOC=/var/db/nuos/pkg
-	: ${PKG_DBDIR=$PKG_DBLOC}
+	NU_PKG_DBDIR_DEFAULT=/var/db/nuos/pkg
+	: ${NU_PKG_DBDIR=$NU_PKG_DBDIR_DEFAULT}
 	
 	if [ -q != "${1-}" ]; then
 		echo 'nuos app v#                       ' $NUOS_VER
@@ -524,7 +524,7 @@ nuos_init () {
 		echo 'host opsys                        ' "$HOSTOS_TYPE"
 		echo 'host opsys v#                     ' $HOSTOS_VER
 		echo "host pkg collec'n                 " ${HOSTOS_PKG_COLLECTION-<n/a>}
-		echo "host pkg db dir                   " ${PKG_DBDIR-<none>}
+		echo "host pkg db dir                   " ${NU_PKG_DBDIR-<none>}
 	fi
 
 	if srsly ${OPT_DEBUG-}; then

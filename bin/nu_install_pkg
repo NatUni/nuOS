@@ -21,7 +21,7 @@ while getopts ABC:d:D:fFMRStuvyY OPT; do case $OPT in
 	A) OPT_ARG_SUBPROCESS=y;;
 	B) OPT_NOBUILD=y;;
 	C) CHROOTDIR=$OPTARG;;
-	d) PKG_DBDIR=$OPTARG;;
+	d) NU_PKG_DBDIR=$OPTARG;;
 	D) PORT_DBDIR=$OPTARG;;
 	f) OPT_NOCLEAN_BEFORE=y;;
 	F) OPT_NOCLEAN_AFTER=y;;
@@ -44,7 +44,7 @@ make_vars_init
 collection_vars_init -q
 
 if [ -n "${OPT_YES-}" ]; then
-	yes | sh $0 ${OPT_ARG_SUBPROCESS:+-A} ${OPT_NOBUILD:+-B} ${PKG_DBDIR+-d $PKG_DBDIR} ${PORT_DBDIR+-D $PORT_DBDIR} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_UPGRADE:+-u} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C "$CHROOTDIR"} -Y $@
+	yes | sh $0 ${OPT_ARG_SUBPROCESS:+-A} ${OPT_NOBUILD:+-B} ${NU_PKG_DBDIR+-d $NU_PKG_DBDIR} ${PORT_DBDIR+-D $PORT_DBDIR} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_UPGRADE:+-u} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C "$CHROOTDIR"} -Y $@
 	exit $?
 fi
 
@@ -67,8 +67,8 @@ BOOT_BASEOS_VER=`uname -r`
 os_compat=$BOOT_BASEOS_TYPE-${BOOT_BASEOS_VER%%-*}
 
 require_tmp deps
-if canhas ${PKG_DBDIR-} && [ -d "${CHROOTDIR-}${PKG_DBDIR-}" ]; then
-	db=$PKG_DBDIR
+if canhas ${NU_PKG_DBDIR-} && [ -d "${CHROOTDIR-}${NU_PKG_DBDIR-}" ]; then
+	db=$NU_PKG_DBDIR
 	retire_db_cmd=:
 	[ -d "${CHROOTDIR-}$db" ]
 	[ $# -gt 0 ] || [ -f "${CHROOTDIR-}$db/root" ]

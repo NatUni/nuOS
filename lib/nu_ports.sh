@@ -38,8 +38,8 @@ ports_tag () {
 }
 
 pkg_db_tag () {
-	if [ -d "${CHROOTDIR-}$PKG_DBDIR" -a ! -L "${CHROOTDIR-}$PKG_DBDIR" -a -f "${CHROOTDIR-}$PKG_DBDIR/tag" ]; then
-		cat "${CHROOTDIR-}$PKG_DBDIR/tag"
+	if [ -d "${CHROOTDIR-}$NU_PKG_DBDIR" -a ! -L "${CHROOTDIR-}$NU_PKG_DBDIR" -a -f "${CHROOTDIR-}$NU_PKG_DBDIR/tag" ]; then
+		cat "${CHROOTDIR-}$NU_PKG_DBDIR/tag"
 	else
 		ports_tag
 	fi
@@ -138,7 +138,7 @@ pkg_name () {
 
 	port_=`echo $port | tr / _`
 	if [ -n "$opt_db" ]; then
-		cat "${CHROOTDIR-}$PKG_DBDIR/$port_/name"
+		cat "${CHROOTDIR-}$NU_PKG_DBDIR/$port_/name"
 	elif [ -n "$opt_installed" ]; then
 		exit 78
 		output=`${CHROOTDIR:+chroot "$CHROOTDIR"} pkg info -qO ${port%%@*}`
