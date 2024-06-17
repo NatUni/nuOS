@@ -759,8 +759,8 @@ EOF
 		require_tmp -c -C $POOL_MNT pkg_tree
 		mount -r -t nullfs /usr/ports $POOL_MNT/usr/ports
 		mount -r -t nullfs /var/db/portsnap $POOL_MNT/var/db/portsnap
-		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $POOL_MNT/$PKG_DBDIR $PKG_COLLECTION
-		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -i $POOL_MNT/$PKG_DBDIR $PKG_COLLECTION | tee "$pkg_tree"
+		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $POOL_MNT/$NU_PKG_DBDIR $PKG_COLLECTION
+		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -i $POOL_MNT/$NU_PKG_DBDIR $PKG_COLLECTION | tee "$pkg_tree"
 		umount $POOL_MNT/var/db/portsnap
 		umount $POOL_MNT/usr/ports
 		while read tree_node; do
@@ -770,7 +770,7 @@ EOF
 				;;
 				[^/]*)
 					if canhas ${do-}; then
-						sister nu_install_pkg -C $POOL_MNT -R -d $PKG_DBDIR $do && unset do
+						sister nu_install_pkg -C $POOL_MNT -R -d $NU_PKG_DBDIR $do && unset do
 					fi
 					if [ -f $POOL_MNT/etc/nuos/conf ]; then
 						sed -i '' -e /^HOSTOS_PKG_COLLECTION=/d $POOL_MNT/etc/nuos/conf

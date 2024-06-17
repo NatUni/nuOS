@@ -21,7 +21,7 @@ NUOS_VER=0.0.12.99a0
 while getopts aC:d:vw: OPT; do case $OPT in
 	a) incr REBUILD_ALL 1;;
 	C) CHROOTDIR=$OPTARG;;
-	d) PKG_DBDIR=$OPTARG;;
+	d) NU_PKG_DBDIR=$OPTARG;;
 	v) OPT_VERBOSE=y;;
 	w) WORKERS=$OPTARG;;
 esac; done; shift $(($OPTIND-1))
@@ -47,7 +47,7 @@ while incr i 0 $(($WORKERS-1)); do
 	mkdir "$workers/$i:localhost"
 done
 
-(cd "${CHROOTDIR-}$PKG_DBDIR" && tar -cf - */dependencies */dependants | tar -xf - -C "$data_graph")
+(cd "${CHROOTDIR-}$NU_PKG_DBDIR" && tar -cf - */dependencies */dependants | tar -xf - -C "$data_graph")
 
 getwork () {
 	local _retvar=$1 _port= _idle=
@@ -84,7 +84,7 @@ while getwork port; do
 	mv "$data_graph/$port_" "$worker/"
 	(
 		if canhas ${REBUILD_ALL-}; then
-			name=`cat ${CHROOTDIR-}$PKG_DBDIR/$port_/name`
+			name=`cat ${CHROOTDIR-}$NU_PKG_DBDIR/$port_/name`
 			if [ ${REBUILD_ALL-} -ge 2 ] || \
 				[ ! -L /usr/ports/packages/All/$name.txz ] || \
 				! readlink /usr/ports/packages/All/$name.txz | grep -q ^../Index.nuOS/$os_compat-$TRGT_MACH/
@@ -117,7 +117,7 @@ wait
 
 errors=`ls $logs/*.err 2> /dev/null | wc -l | xargs`
 echo
-echo Built packages described in $PKG_DBDIR with $errors errors.
+echo Built packages described in $NU_PKG_DBDIR with $errors errors.
 if [ $errors -gt 0 ]; then
 	ls -1 "$logs"/*.err >&2
 fi

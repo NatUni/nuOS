@@ -87,9 +87,9 @@ fi
 require_ports_tree -e
 
 
-[ -d "${CHROOTDIR-}$PKG_DBDIR" -a ! -L "${CHROOTDIR-}$PKG_DBDIR" ]
-mv "${CHROOTDIR-}$PKG_DBDIR" "${CHROOTDIR-}$PKG_DBDIR.$old_tag"
-ln -s `basename $PKG_DBDIR`.$old_tag "${CHROOTDIR-}$PKG_DBDIR"
+[ -d "${CHROOTDIR-}$NU_PKG_DBDIR" -a ! -L "${CHROOTDIR-}$NU_PKG_DBDIR" ]
+mv "${CHROOTDIR-}$NU_PKG_DBDIR" "${CHROOTDIR-}$NU_PKG_DBDIR.$old_tag"
+ln -s `basename $NU_PKG_DBDIR`.$old_tag "${CHROOTDIR-}$NU_PKG_DBDIR"
 
 if srsly ${ports_git-}; then
 	which git > /dev/null
@@ -233,18 +233,18 @@ if canhas ${OPT_FREEBSD-}; then
 	fi
 fi
 
-if canhas ${OPT_AUTO-} && [ -L $PKG_DBDIR ]; then
+if canhas ${OPT_AUTO-} && [ -L $NU_PKG_DBDIR ]; then
 	pkgs_dir=/usr/ports/packages/Index.nuOS/$BASEOS_TYPE-${BASEOS_VER%%-*}-$TRGT
-	if [ "$old_tag" = "$new_tag" ] && [ _$PKG_COLLECTION = _`cat ${CHROOTDIR-}$PKG_DBDIR/root` ]; then
-		rm "${CHROOTDIR-}$PKG_DBDIR"
-		mv "${CHROOTDIR-}$PKG_DBDIR.$old_tag" "${CHROOTDIR-}$PKG_DBDIR"
+	if [ "$old_tag" = "$new_tag" ] && [ _$PKG_COLLECTION = _`cat ${CHROOTDIR-}$NU_PKG_DBDIR/root` ]; then
+		rm "${CHROOTDIR-}$NU_PKG_DBDIR"
+		mv "${CHROOTDIR-}$NU_PKG_DBDIR.$old_tag" "${CHROOTDIR-}$NU_PKG_DBDIR"
 	else
-		sister nu_pkg_tree -o dir ${CHROOTDIR-}$PKG_DBDIR $PKG_COLLECTION
+		sister nu_pkg_tree -o dir ${CHROOTDIR-}$NU_PKG_DBDIR $PKG_COLLECTION
 	fi
 	sister nu_pkg_chk_tree || error 62 'Loop found in package directives'
 	
 	require_tmp want
-	(ls -d $PKG_DBDIR/*_*/dependencies | sed -e 's/dependencies$/name/' | xargs cat; for p in `pkg info -qox ^bootstrap-`; do (cd /usr/ports/$p; make -V PKGNAME); done) | sort -u >| "$want"
+	(ls -d $NU_PKG_DBDIR/*_*/dependencies | sed -e 's/dependencies$/name/' | xargs cat; for p in `pkg info -qox ^bootstrap-`; do (cd /usr/ports/$p; make -V PKGNAME); done) | sort -u >| "$want"
 	require_tmp have
 	pkg info -q | sort >| "$have"
 	require_tmp kill
@@ -267,7 +267,7 @@ if canhas ${OPT_AUTO-} && [ -L $PKG_DBDIR ]; then
 # 			[ ${OPT_AUTO-} -le 3 ] || all=y
 # 			[ ${OPT_AUTO-} -le 4 ] || every=y
 # 			sister nu_pkg_build_cluster ${all:+-a} ${every:+-a} -w 3
-		sister nu_install_pkg -d $PKG_DBDIR
+		sister nu_install_pkg -d $NU_PKG_DBDIR
 		echo Done building new $PKG_COLLECTION packages.
 	fi
 # 	newest_pkg_after=`ls -t $pkgs_dir | head -n 1`
