@@ -63,7 +63,7 @@ X		--without-qrencode \
 X		--without-utils
 X
 XPLIST_FILES=	bin/bitcoingoldd \
-X		man/man1/bitcoingoldd.1.gz \
+X		share/man/man1/bitcoingoldd.1.gz \
 X		etc/bitcoingold.conf.sample
 X
 XUSE_RC_SUBR=	bitcoingoldd
@@ -71,7 +71,7 @@ X
 Xpost-install:
 X	${INSTALL_DATA} ${WRKSRC}/contrib/debian/examples/bitcoingold.conf ${STAGEDIR}${PREFIX}/etc/bitcoingold.conf.sample
 X	${MV} ${STAGEDIR}${PREFIX}/bin/bgoldd ${STAGEDIR}${PREFIX}/bin/bitcoingoldd
-X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bgoldd.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingoldd.1
+X	${MV} ${STAGEDIR}${PREFIX}/share/man/man1/bgoldd.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoingoldd.1
 X
 X.include "${MASTERDIR}/Makefile"
 84fe1e82edda964a88fa3376afc554ff
@@ -115,13 +115,13 @@ X		--with-utils \
 X		--disable-wallet
 X
 XPLIST_FILES=	bin/bitcoingold-cli bin/bitcoingold-tx \
-X		man/man1/bitcoingold-cli.1.gz man/man1/bitcoingold-tx.1.gz
+X		share/man/man1/bitcoingold-cli.1.gz share/man/man1/bitcoingold-tx.1.gz
 X
 Xpost-install:
 X	${MV} ${STAGEDIR}${PREFIX}/bin/bgold-cli ${STAGEDIR}${PREFIX}/bin/bitcoingold-cli
-X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bgold-cli.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-cli.1
+X	${MV} ${STAGEDIR}${PREFIX}/share/man/man1/bgold-cli.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoingold-cli.1
 X	${MV} ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoingold-tx
-X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-tx.1
+X	${MV} ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoingold-tx.1
 X
 X.include "${MASTERDIR}/Makefile"
 017da92757830ebf5ed74f3cf3588f52
@@ -223,14 +223,14 @@ X		SSL_CFLAGS="-I${OPENSSLINC}" SSL_LIBS="-L${OPENSSLLIB} -lssl" \
 X		OBJCXX="${CXX}" OBJCXXFLAGS="${CXXFLAGS}"
 XMAKE_ENV+=	V=1
 X
-XPLIST_FILES?=	bin/bitcoingold-qt man/man1/bitcoingold-qt.1.gz \
+XPLIST_FILES?=	bin/bitcoingold-qt share/man/man1/bitcoingold-qt.1.gz \
 X		share/applications/bitcoingold-qt.desktop share/pixmaps/bitcoingold128.png
 X
 X.if defined(SLAVE_PORT) && ${SLAVE_PORT} == "no"
 X
 Xpost-install:
 X	${MV} ${STAGEDIR}${PREFIX}/bin/bitcoin-qt ${STAGEDIR}${PREFIX}/bin/bitcoingold-qt
-X	${MV} ${STAGEDIR}${PREFIX}/man/man1/bitcoin-qt.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoingold-qt.1
+X	${MV} ${STAGEDIR}${PREFIX}/share/man/man1/bitcoin-qt.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoingold-qt.1
 X	${INSTALL} ${FILESDIR}/bitcoingold-qt.desktop ${STAGEDIR}${PREFIX}/share/applications/
 X	${INSTALL} ${WRKSRC}/share/pixmaps/bitcoin128.png \
 X		${STAGEDIR}${PREFIX}/share/pixmaps/bitcoingold128.png
