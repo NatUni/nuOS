@@ -1,1 +1,1 @@
-[ `find * -type f -not -path 'work*' | sort | xargs md5 | md5` = 79cf2e0b8206906415ebc2af8e9c7803 ]
+! grep -qw OPENSSLINC Makefile

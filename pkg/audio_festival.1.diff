@@ -1,0 +1,18 @@
+--- ../festival.orig/Makefile	2024-06-18 02:12:22.490166000 +0000
++++ Makefile	2024-06-18 02:19:03.725967000 +0000
+@@ -44,13 +44,13 @@
+ 
+ do-build:
+ .for d in speech_tools festival
+-	${MAKE_CMD} -C ${WRKDIR}/$d ${MAKE_FLAGS} Makefile ${MAKE_ARGS}
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -C ${WRKDIR}/$d ${MAKE_FLAGS} Makefile ${MAKE_ARGS}
+ .endfor
+ 
+ # Can not make test in `festival', because the voices may not be installed
+ # XXX: this should fail, if the verdict is not "CORRECT"...
+ post-build test:
+-	${MAKE_CMD} -C ${WRKDIR}/speech_tools test
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -C ${WRKDIR}/speech_tools test
+ 
+ # The below is needed, because Debian's patches expect a different
+ # directory-name

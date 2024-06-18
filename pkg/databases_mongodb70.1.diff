@@ -1,13 +1,15 @@
---- ../mongodb70.orig/Makefile	2023-08-31 23:17:00.502246000 -0400
-+++ ./Makefile	2023-08-31 13:23:44.823733000 -0400
-@@ -68,6 +68,10 @@
+--- ../mongodb70.orig/Makefile	2024-06-18 13:34:48.471729000 +0000
++++ Makefile	2024-06-18 13:37:18.363486000 +0000
+@@ -133,10 +133,10 @@ do-configure:
+ # Replacement of ${WRKSRC}/src/third_party/mozjs/get-sources.sh
+ 	${LN} -sF ${WRKDIR}/spidermonkey-${MOZJS_TAG} ${WRKSRC}/src/third_party/mozjs/mozilla-release
+ 	cd ${WRKSRC}/src/third_party/mozjs/mozilla-release/js/src && ${LOCALBASE}/bin/autoconf2.13
+-	cd ${WRKSRC}/src/third_party/mozjs && PYTHON3="${PYTHON_CMD}" ${SH} ./gen-config.sh ${MOZJS_ARCH} freebsd
++	cd ${WRKSRC}/src/third_party/mozjs && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} PYTHON3="${PYTHON_CMD}" ${SH} ./gen-config.sh ${MOZJS_ARCH} freebsd
  
- CFLAGS+=	-DBOOST_NO_CXX98_FUNCTION_BASE
+ do-build:
+-	${WRKSRC}/buildscripts/scons.py	-C ${WRKSRC} ${MAKE_ARGS}
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${WRKSRC}/buildscripts/scons.py	-C ${WRKSRC} ${MAKE_ARGS}
  
-+EXTRA_PATCHES=	${FILESDIR}/extrapatch-.._spidermonkey-82aac6af18abcd5bf188afbc821779ccb0ca0902_python_mozbuild_mozbuild_util.py \
-+		${FILESDIR}/extrapatch-.._spidermonkey-82aac6af18abcd5bf188afbc821779ccb0ca0902_python_mozbuild_mozbuild_preprocessor.py \
-+		${FILESDIR}/extrapatch-.._spidermonkey-82aac6af18abcd5bf188afbc821779ccb0ca0902_python_mozbuild_mozbuild_action_process_define_files.py
-+
- CONFLICTS_INSTALL=	mongodb[0-9][0-9]
- 
- USERS=		mongodb
+ do-install:
+ .for f in mongod mongos

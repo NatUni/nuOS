@@ -1,0 +1,24 @@
+--- ../erlang-runtime26.orig/Makefile	2024-06-17 10:45:28.741446000 +0000
++++ Makefile	2024-06-18 18:05:23.618269000 +0000
+@@ -116,18 +116,18 @@
+ 
+ post-install-CHUNKS-on:
+ 	cd ${WRKSRC_otp} && \
+-		${SETENV} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD} release_docs DOC_TARGETS=chunks \
+ 		RELEASE_ROOT=${STAGEDIR}${PREFIX}/lib/${_ERLANG_LIB}
+ 
+ post-build-CORBA-on:
+ 	cd ${WRKSRC_corba} && \
+-		${SETENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD}
+ 
+ post-install-CORBA-on:
+ 	cd ${WRKSRC_corba} && \
+-		${SETENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD} release RELEASE_ROOT=${STAGEDIR}${PREFIX}/lib/${_ERLANG_LIB}
+ 
+ post-install-DTRACE-on:

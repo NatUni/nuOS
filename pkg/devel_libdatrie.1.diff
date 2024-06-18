@@ -1,6 +1,6 @@
 --- ../libdatrie.orig/Makefile	2023-03-21 02:40:04.442146000 +0000
 +++ Makefile	2023-03-21 02:43:08.779728000 +0000
-@@ -18,6 +18,8 @@
+@@ -19,6 +19,8 @@
  
  INSTALL_TARGET=	install-strip
  

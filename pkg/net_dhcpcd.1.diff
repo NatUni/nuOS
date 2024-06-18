@@ -1,0 +1,11 @@
+--- ../dhcpcd.orig/Makefile	2024-06-17 10:45:29.217178000 +0000
++++ Makefile	2024-06-17 21:28:40.494464000 +0000
+@@ -16,6 +16,8 @@
+ GH_ACCOUNT=	NetworkConfiguration
+ USE_RC_SUBR=	dhcpcd
+ 
++BINARY_ALIAS=	ntpd=true
++
+ HAS_CONFIGURE=	yes
+ CONFIGURE_ARGS=	--datadir=${PREFIX}/share/examples \
+ 		--prefix=${PREFIX} \
