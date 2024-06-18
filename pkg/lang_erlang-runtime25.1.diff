@@ -1,0 +1,17 @@
+--- ../erlang-runtime25.orig/Makefile	2024-06-17 10:45:28.741302000 +0000
++++ Makefile	2024-06-18 18:37:51.450909000 +0000
+@@ -118,12 +118,12 @@
+ 
+ post-build-CORBA-on:
+ 	cd ${WRKSRC_corba} && \
+-		${SETENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD}
+ 
+ post-install-CORBA-on:
+ 	cd ${WRKSRC_corba} && \
+-		${SETENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD} release RELEASE_ROOT=${STAGEDIR}${PREFIX}/lib/${ERLANG_LIB}
+ 
+ post-install-DTRACE-on:

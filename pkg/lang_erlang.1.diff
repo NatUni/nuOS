@@ -1,0 +1,33 @@
+--- ../erlang.orig/Makefile	2024-06-17 10:45:28.742263000 +0000
++++ Makefile	2024-06-18 17:35:43.128343000 +0000
+@@ -143,7 +143,7 @@
+ 
+ post-build-CORBA-on:
+ 	cd ${WRKSRC_corba} && \
+-		${SETENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD}
+ 
+ # The man-pages are put (in spite of FreeBSD's port convention) in a private
+@@ -153,10 +153,10 @@
+ 
+ post-build-FOP-on:
+ 	@cd ${WRKSRC} && \
+-		${MAKE_CMD} docs
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} docs
+ .if ${PORT_OPTIONS:MCORBA}
+ 	cd ${WRKSRC_corba} && \
+-		${SETENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD} docs
+ .endif
+ 
+@@ -168,7 +168,7 @@
+ 
+ post-install-CORBA-on:
+ 	cd ${WRKSRC_corba} && \
+-		${SETENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} OVERRIDE_TARGET=${CONFIGURE_TARGET} ERL_TOP=${WRKSRC_otp} \
+ 		${MAKE_CMD} release RELEASE_ROOT=${STAGEDIR}${PREFIX}/lib/${ERLANG_LIB}
+ 
+ post-install-DTRACE-on:

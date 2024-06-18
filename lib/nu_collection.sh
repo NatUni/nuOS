@@ -69,7 +69,7 @@ collection_vars_init () {
 	COLL_lite='
 		base
 		sysutils/screen
-		misc/buffer
+		misc/mbuffer
 		sysutils/pipemeter
 		archivers/zstd
 		archivers/7-zip
@@ -96,6 +96,7 @@ collection_vars_init () {
 	COLL_developer='
 		lite
 		sysutils/hw-probe
+		comms/hcidump
 		devel/bsddialog
 		ports-mgmt/portconfig
 		graphics/jp2a
@@ -132,7 +133,6 @@ collection_vars_init () {
 		textproc/moar
 		finance/ledger
 		irc/irssi
-		net-im/tut
 		textproc/en-aspell
 	'
 	
@@ -224,7 +224,6 @@ collection_vars_init () {
 		multimedia/ffmpeg
 		multimedia/Bento4
 		multimedia/av1an
-		www/youtube_dl
 		www/yt-dlp
 		www/flexget
 		www/lux
@@ -269,7 +268,7 @@ collection_vars_init () {
 		sysutils/vmdktool
 		graphics/povray-meta
 		graphics/graphviz
-		www/redmine50
+		www/redmine51
 		www/rubygem-passenger
 		x11-fonts/webfonts
 		net/kamailio
@@ -358,7 +357,7 @@ collection_vars_init () {
 		net-p2p/qbittorrent
 		audio/qtractor
 		audio/pt2-clone
-		audio/fasttracker2
+		audio/ft2-clone
 		audio/audacity
 		audio/muse-sequencer
 		audio/zrythm

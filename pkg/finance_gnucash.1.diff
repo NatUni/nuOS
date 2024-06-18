@@ -1,11 +1,11 @@
 --- ../gnucash.orig/Makefile	2023-09-21 07:38:35.962620000 -0400
 +++ Makefile	2023-09-21 07:27:11.765161000 -0400
-@@ -25,7 +25,7 @@
+@@ -24,7 +24,7 @@
  		p5-LWP-Protocol-https>=0:www/p5-LWP-Protocol-https
  
  USES=		cmake:insource compiler:c++11-lib cpe desktop-file-utils \
--		gettext-tools gnome guile:2.2,3.0,conflicts libtool localbase \
-+		gettext-tools gnome guile:3.0 libtool localbase \
+-		gettext-tools gnome guile:2.2,3.0,conflicts localbase \
++		gettext-tools gnome guile:3.0 localbase \
  		perl5 pkgconfig shebangfix tar:bzip2 xorg
  USE_XORG=	x11
  USE_CXXSTD=	c++11

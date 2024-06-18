@@ -1,9 +1,13 @@
---- ../py-avahi.orig/pkg-plist	2023-12-07 16:00:42.235544000 +0000
-+++ ./pkg-plist	2024-01-28 10:08:13.306081000 +0000
-@@ -7,5 +7,5 @@
- %%PYTHON_SITELIBDIR%%/avahi/__init__.py
- %%PYTHON_SITELIBDIR%%/avahi/__init__.pyc
- %%PYTHON_SITELIBDIR%%/avahi/__init__.pyo
--man/man1/avahi-bookmarks.1.gz
-+share/man/man1/avahi-bookmarks.1.gz
- share/applications/avahi-discover.desktop
+--- ../py-avahi.orig/Makefile	2024-06-17 10:45:29.279142000 +0000
++++ Makefile	2024-06-18 11:39:18.465549000 +0000
+@@ -37,8 +37,8 @@
+ 	@${DO_MAKE_BUILD} -C ${WRKSRC}/service-type-database
+ 
+ do-install:
+-	@(cd ${BUILD_WRKSRC}; ${MAKE_CMD} ${MAKE_ARGS} install-strip)
+-	@(cd ${WRKSRC}/service-type-database; ${MAKE_CMD} ${MAKE_ARGS} install)
++	@(cd ${BUILD_WRKSRC}; ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} install-strip)
++	@(cd ${WRKSRC}/service-type-database; ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} install)
+ 
+ post-install:
+ 	(cd ${STAGEDIR}${PREFIX} && ${PYTHON_CMD} ${PYTHON_LIBDIR}/compileall.py \

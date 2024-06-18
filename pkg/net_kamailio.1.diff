@@ -1,0 +1,15 @@
+--- ../kamailio.orig/Makefile	2024-06-17 10:45:29.235312000 +0000
++++ Makefile	2024-06-18 22:11:49.673692000 +0000
+@@ -187,10 +187,10 @@
+ 		${WRKSRC}/src/Makefile
+ 
+ pre-build:
+-	cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} ${CFG_ARGS} cfg
++	cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} ${CFG_ARGS} cfg
+ 
+ do-install:
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} install
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} install
+ 	@(cd ${STAGEDIR}${ETCDIR}; for i in `${FIND} . -type f`; do ${MV} $$i $$i.sample; done)
+ 
+ post-install:
