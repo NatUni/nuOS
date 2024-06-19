@@ -102,6 +102,7 @@ collection_vars_init () {
 		graphics/jp2a
 		devel/subversion
 		devel/git
+		devel/git-lfs
 		devel/mercurial
 		lang/gawk
 		textproc/gsed
@@ -268,6 +269,7 @@ collection_vars_init () {
 		sysutils/vmdktool
 		graphics/povray-meta
 		graphics/graphviz
+		www/forgejo
 		www/redmine51
 		www/rubygem-passenger
 		x11-fonts/webfonts
@@ -336,6 +338,8 @@ collection_vars_init () {
 		sysutils/qtpass
 		graphics/zbar
 		sysutils/plasma-pass
+		devel/godot
+		devel/godot-tools
 		lang/pharo
 		net-p2p/bitcoin
 		net-p2p/litecoin
