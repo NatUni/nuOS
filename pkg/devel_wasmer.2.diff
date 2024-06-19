@@ -1,0 +1,10 @@
+--- ../wasmer.orig/files/patch-lib_compiler-llvm_src_translator_state.rs	1970-01-01 00:00:00.000000000 +0000
++++ ./files/patch-lib_compiler-llvm_src_translator_state.rs	2024-06-19 10:29:33.552391000 +0000
+@@ -0,0 +1,7 @@
++--- lib/compiler-llvm/src/translator/state.rs.orig	2024-06-19 10:27:57.641242000 +0000
+++++ lib/compiler-llvm/src/translator/state.rs	2024-06-19 10:28:55.900053000 +0000
++@@ -1,3 +1,4 @@
+++#![allow(dead_code)]
++ use inkwell::{
++     basic_block::BasicBlock,
++     values::{BasicValue, BasicValueEnum, PhiValue},
