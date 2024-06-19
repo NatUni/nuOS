@@ -5,14 +5,14 @@
  do-build:
  .for d in speech_tools festival
 -	${MAKE_CMD} -C ${WRKDIR}/$d ${MAKE_FLAGS} Makefile ${MAKE_ARGS}
-+	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -C ${WRKDIR}/$d ${MAKE_FLAGS} Makefile ${MAKE_ARGS}
++	${SETENV} -n MAKEFLAGS ${MAKE_CMD} -C ${WRKDIR}/$d ${MAKE_FLAGS} Makefile ${MAKE_ARGS}
  .endfor
  
  # Can not make test in `festival', because the voices may not be installed
  # XXX: this should fail, if the verdict is not "CORRECT"...
  post-build test:
 -	${MAKE_CMD} -C ${WRKDIR}/speech_tools test
-+	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -C ${WRKDIR}/speech_tools test
++	${SETENV} -n MAKEFLAGS ${MAKE_CMD} -C ${WRKDIR}/speech_tools test
  
  # The below is needed, because Debian's patches expect a different
  # directory-name
