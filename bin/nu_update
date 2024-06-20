@@ -212,8 +212,17 @@ if canhas ${OPT_FREEBSD-}; then
 					zfs set mountpoint=/usr/obj $after_obj_ds
 				fi
 				if [ ${OPT_FREEBSD-} -ge 3 ]; then
-					(cd /usr/src
+					(
+						cd /usr/src
 						make -D WITHOUT_KERNEL_SYMBOLS KERNCONF=$TRGT_KERN installkernel installworld
+
+						# XXX: below is not adequate but only for patchlevel upgrades within a RELEASE. see share/fbsd-divergence/omitted and
+						#      lib/nu_make.sh:prepare_src_conf()
+						# TODO: nu_build has some repeat-myself that ought to be refactored before it gets out of hand. for now just be aware
+						cd /
+						tail -r "$NUOS_CODE/share/fbsd-divergence/omitted" | grep ^/ | xargs rm -dfv
+						# TODO: handle this programmatically using share/fbsd-divergence/renamed
+						mv -fv /usr/bin/openssl /usr/bin/openssl.fbsd
 					)
 				fi
 			fi

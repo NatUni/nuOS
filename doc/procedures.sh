@@ -352,24 +352,71 @@ nu_os_install -P spore -p tty -q
 
 
 
-rsync -avP --delete ~/nuOS zion.top:
+rsync -avP --delete ~/nuOS nuos.org:
 
 
 
 (cd /usr/obj/usr/src/amd64.amd64 && umask 27 && find . -not -perm +go+r | xargs tar -cv --lz4 -f special_permissions.tlz)
-
+find /usr/ports -depth 3 -type d '(' -name work -or -name 'work-*' ')' | xargs rm -rfv
 chown -Rv jedi:jedi /usr/{src,obj,ports}
 
-rsync -avP --delete --exclude ports/distfiles zion.top:/usr/{src,obj,ports} /usr/
-
-(cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
+rsync -avP --delete --exclude ports/distfiles nuos.org:/usr/{src,obj,ports} /usr/
 
 chown -Rv root:wheel /usr/{src,obj,ports}
+(cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
+
 
 
 
 
 zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.2-RELEASE-p9/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done
+mount -p | awk '$2 == "/mnt" || $2 ~ "^/mnt/" {print $2}' | tail -r | xargs -n1 umount
+
+env ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    TZ=America/Detroit \
+    nu_sys -p solo \
+        -s 48G \
+        -h solo.hodl.ceo \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c server \
+        -l @set_timezone \
+        -l @use_proprietary_realtek_driver \
+        -l @keep_time \
+        -l @cache_dns \
+        -l @enable_dynamic_network \
+        -l @soho_mdns \
+        -l @harden_remote_login \
+        -l @allow_remote_login \
+        -l @../examples/install/allow_jedi_in \
+        -q
+
+env ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    TZ=America/Detroit \
+    nu_sys -p yoda \
+        -s 48G \
+        -h yoda.boogaloo.ninja \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c server \
+        -l @set_timezone \
+        -l @use_proprietary_realtek_driver \
+        -l @keep_time \
+        -l @cache_dns \
+        -l @enable_dynamic_network \
+        -l @soho_mdns \
+        -l @harden_remote_login \
+        -l @allow_remote_login \
+        -l @../examples/install/allow_jedi_in \
+        -q
+
+
+
+
 
 
 zpool labelclear -f gpt/bstd0
@@ -416,6 +463,7 @@ nu_hdd -t 5 -p rest -q mfid1 mfid2 mfid3 mfid4 mfid5 mfid6
 
 zpool import -R /spore spore
 nu_os_install -P spore -p epic -q
+
 env ADMIN_PASS= \
     ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     TZ=America/Detroit \
@@ -435,6 +483,7 @@ env ADMIN_PASS= \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
         -q
+
 
 zpool labelclear -f gpt/dusk0
 gpart destroy -F da0x007

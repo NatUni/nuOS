@@ -198,16 +198,18 @@ else
 	
 	sister nu_cloner -mp $POOL_NAME ${fbsd_sysroot_ds#$POOL_NAME/}@pkg_ready ${nuos_sysroot_ds#$POOL_NAME/}
 	
+	# TODO: nu_update has some repeat-myself that ought to be refactored before it gets out of hand. for now just be aware
 	tail -r "$NUOS_CODE/share/fbsd-divergence/omitted" | grep ^/ | (
 		cd $POOL_MNT
 		while read -r f; do
 			rm -dfv "${f#/}"
 		done
+		# TODO: handle this programmatically using share/fbsd-divergence/renamed
+		mv -nv usr/bin/openssl usr/bin/openssl.fbsd
 	)
 	
-	# TODO: handle this programmatically using "$NUOS_CODE/share/fbsd-divergence/renamed"
-	mv $POOL_MNT/usr/bin/openssl $POOL_MNT/usr/bin/openssl.fbsd
-	
+	# TODO: nu_update misses this for now but it's not a real show stopper. make this modificaiton more robust to change and
+	#       include it when refactoring the above fbsd-divergence work.
 	patch -N -V none $POOL_MNT/usr/share/skel/dot.cshrc <<'EOF'
 --- /usr/share/skel/dot.cshrc.orig	2024-01-24 06:41:24.067770000 -0500
 +++ /usr/share/skel/dot.cshrc	2024-01-27 13:32:13.788139000 -0500
