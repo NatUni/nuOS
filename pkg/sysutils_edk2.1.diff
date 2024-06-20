@@ -1,0 +1,14 @@
+--- ../edk2.orig/Makefile	2024-06-20 00:18:00.200190000 -0400
++++ Makefile	2024-06-20 15:22:57.877386000 -0400
+@@ -198,9 +198,9 @@
+ 	(cp ${WRKDIR}/edk2-${GH_TAGNAME}/BaseTools/Conf/tools_def.template ${WRKDIR}/edk2-${GH_TAGNAME}/Conf/tools_def.txt)
+ 	(cp ${WRKDIR}/edk2-${GH_TAGNAME}/BaseTools/Conf/target.template ${WRKDIR}/edk2-${GH_TAGNAME}/Conf/target.txt)
+ 	# Build the basetools
+-	(cd ${WRKDIR} && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} -C edk2-${GH_TAGNAME}/BaseTools ${_MAKE_JOBS})
++	(cd ${WRKDIR} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -C edk2-${GH_TAGNAME}/BaseTools ${_MAKE_JOBS})
+ 	# Build EDK2
+-	(cd ${WRKDIR}/edk2-${GH_TAGNAME} && ${SETENV} ${MAKE_ENV} BaseTools/BinWrappers/PosixLike/build -a ${PLAT_ARCH} -p ${PLATFILE} -n ${MAKE_JOBS_NUMBER} -t GCC5 -b ${PLAT_TARGET} ${PLAT_ARGS})
++	(cd ${WRKDIR}/edk2-${GH_TAGNAME} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} BaseTools/BinWrappers/PosixLike/build -a ${PLAT_ARCH} -p ${PLATFILE} -n ${MAKE_JOBS_NUMBER} -t GCC5 -b ${PLAT_TARGET} ${PLAT_ARGS})
+ 
+ do-install:
+ 	${MKDIR} ${STAGEDIR}/${PREFIX}/share/${PORTNAME}-${PLAT}/
