@@ -51,7 +51,9 @@ require_base_src
 install_vars_init -q
 
 if srsly ${OPT_HOST_IS_SOURCE-}; then
-	WORK_POOL_NAME=$POOL_BOOT_NAME
+	: ${WORK_POOL_NAME:=$POOL_BOOT_NAME}
+else
+	build_fresh=y
 fi
 
 echo 'new zvol sizes (2x)  -z ZVOL_SIZE        ' ${ZVOL_SIZE:=30000000K}
@@ -116,6 +118,7 @@ sister nu_os_install -P $WORK_POOL_NAME -p $OUTPUT_POOL_NAME -c $PKG_COLLECTION 
 
 sister nu_sys -s $SWAP_SIZE -p $OUTPUT_POOL_NAME -u '' -b '' -h $NEW_HOST -c $PKG_COLLECTION ${LOCAL_SCRIPT_0:+-l "$LOCAL_SCRIPT_0"} ${LOCAL_SCRIPT_1:+-l "$LOCAL_SCRIPT_1"} ${LOCAL_SCRIPT_2:+-l "$LOCAL_SCRIPT_2"} ${LOCAL_SCRIPT_3:+-l "$LOCAL_SCRIPT_3"} ${LOCAL_SCRIPT_4:+-l "$LOCAL_SCRIPT_4"} ${LOCAL_SCRIPT_5:+-l "$LOCAL_SCRIPT_5"} ${LOCAL_SCRIPT_6:+-l "$LOCAL_SCRIPT_6"} ${LOCAL_SCRIPT_7:+-l "$LOCAL_SCRIPT_7"} -q
 
+zpool trim -w $OUTPUT_POOL_NAME
 [ ${KEEP_ONLINE-0} -ge 1 ] || zpool export $OUTPUT_POOL_NAME
 [ ${KEEP_ONLINE-0} -ge 1 ] || sister nu_img -d $OUTPUT_POOL_NAME
 
@@ -150,4 +153,4 @@ if canhas "${DD_IMG-}"; then
 	fi
 fi
 
-echo "Created a work image at $POOL_NAME/img/$WORK_POOL_NAME and a release image at $POOL_NAME/img/$OUTPUT_POOL_NAME."
+echo "Created a ${build_fresh:+work image at $POOL_NAME/img/$WORK_POOL_NAME and a }release image at $POOL_NAME/img/$OUTPUT_POOL_NAME."

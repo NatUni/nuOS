@@ -49,7 +49,7 @@ collection_vars_init () {
 		pkg
 		net/ipxe
 		net/isboot-kmod
-		net/realtek-re-kmod
+		net/realtek-re-kmod198
 		sysutils/pefs-kmod
 		security/openssh-portable
 		net/dhcpcd
