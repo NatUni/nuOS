@@ -47,10 +47,7 @@ collection_vars_init () {
 	
 	COLL_bare='
 		pkg
-		net/ipxe
-		net/isboot-kmod
 		net/realtek-re-kmod198
-		sysutils/pefs-kmod
 		security/openssh-portable
 		net/dhcpcd
 		dns/unbound
@@ -60,6 +57,8 @@ collection_vars_init () {
 		bare
 		net/hostapd
 		security/wpa_supplicant
+		sysutils/pefs-kmod
+		net/rsync
 		security/gnupg
 		dns/libidn2
 		dns/libpsl
@@ -78,12 +77,15 @@ collection_vars_init () {
 		sysutils/ipmitool
 		sysutils/freeipmi
 		sysutils/openipmi
-		net/rsync
 		security/sudo
 		sysutils/lsof
 		textproc/jq
+		devel/llvm17
+		lang/gcc13
 		textproc/xsv-rs
 		sysutils/ztop
+		net/ipxe
+		net/isboot-kmod
 		sysutils/bhyve-firmware
 		sysutils/grub2-bhyve
 		net/wifi-firmware-kmod
@@ -113,6 +115,8 @@ collection_vars_init () {
 		lang/v
 		lang/expect
 		math/convertall
+		lang/python
+		lang/ruby33
 		lang/go
 		lang/seed7
 		lang/racket
@@ -178,8 +182,6 @@ collection_vars_init () {
 		lang/gravity
 		lang/wren
 		lang/janet
-		lang/python
-		lang/ruby33
 		java/openjdk21
 		textproc/zed
 		math/or-tools
