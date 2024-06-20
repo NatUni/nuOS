@@ -58,7 +58,6 @@ collection_vars_init () {
 	
 	COLL_base='
 		bare
-		net/ntp
 		net/hostapd
 		security/wpa_supplicant
 		security/gnupg
@@ -159,14 +158,14 @@ collection_vars_init () {
 		net/isc-dhcp44-server
 		net/istgt
 		net/mosquitto
-		mail/cyrus-imapd34
+		mail/cyrus-imapd38
 		security/cyrus-sasl2-saslauthd
 		graphics/vips
 		net/vnstat
-		databases/postgresql15-server
-		databases/postgis33
+		databases/postgresql16-server
+		databases/postgis34
 		databases/pg_activity
-		databases/mysql80-server
+		databases/mysql84-server
 		databases/redis
 		databases/mongodb70
 		databases/mongodb-tools
@@ -180,8 +179,8 @@ collection_vars_init () {
 		lang/wren
 		lang/janet
 		lang/python
-		lang/ruby32
-		java/openjdk19
+		lang/ruby33
+		java/openjdk21
 		textproc/zed
 		math/or-tools
 		www/npm
@@ -189,8 +188,8 @@ collection_vars_init () {
 		security/pssh
 		sysutils/hilite
 		sysutils/py-honcho
-		lang/php82-extensions
-		www/mod_php82
+		lang/php83-extensions
+		www/mod_php83
 		www/apache24
 		www/mod_qos
 		www/nginx
@@ -220,7 +219,7 @@ collection_vars_init () {
 		misc/toilet
 		www/httrack
 		net/netatalk3
-		net/samba416
+		net/samba419
 		www/minio
 		multimedia/ffmpeg
 		multimedia/Bento4
