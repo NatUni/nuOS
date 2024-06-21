@@ -73,6 +73,8 @@ collection_vars_init () {
 		archivers/7-zip
 		sysutils/pciutils
 		sysutils/dmidecode
+		sysutils/hw-probe
+		comms/hcidump
 		sysutils/smartmontools
 		sysutils/ipmitool
 		sysutils/freeipmi
@@ -96,8 +98,6 @@ collection_vars_init () {
 	
 	COLL_developer='
 		lite
-		sysutils/hw-probe
-		comms/hcidump
 		devel/bsddialog
 		ports-mgmt/portconfig
 		graphics/jp2a
