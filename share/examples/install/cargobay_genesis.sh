@@ -294,8 +294,9 @@ EOF
 	done
 done
 
-if [ -d /usr/local/www/redmine -a ! -d /var/jail/redmine ]; then
-	
+
+if srsly ${GENESIS_TRY_REDMINE-} && [ -d /usr/local/www/redmine -a ! -d /var/jail/redmine ]; then
+
 	: ${RM_SITE:='nuOS.xyz'}
 	: ${RM_TITLE:=$RM_SITE}
 	
