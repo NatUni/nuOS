@@ -118,13 +118,13 @@ collection_vars_init () {
 		lang/python
 		lang/ruby33
 		lang/go
+		www/npm
 		lang/seed7
 		lang/racket
 		lang/cim
 		textproc/riffdiff
 		lang/chez-scheme
 		emulators/qemu
-		devel/wasmer
 		editors/vim
 		editors/neovim
 	'
@@ -185,7 +185,6 @@ collection_vars_init () {
 		java/openjdk21
 		textproc/zed
 		math/or-tools
-		www/npm
 		sysutils/parallel
 		security/pssh
 		sysutils/hilite
@@ -381,6 +380,8 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		devel/wasmer
+		net/ntp
 		www/iridium
 		games/veloren-weekly
 		net-p2p/cardano-node
