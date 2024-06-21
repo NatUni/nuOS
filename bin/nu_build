@@ -213,7 +213,7 @@ else
 	patch -N -V none $POOL_MNT/usr/share/skel/dot.cshrc <<'EOF'
 --- /usr/share/skel/dot.cshrc.orig	2024-01-24 06:41:24.067770000 -0500
 +++ /usr/share/skel/dot.cshrc	2024-01-27 13:32:13.788139000 -0500
-@@ -27,8 +27,8 @@
+@@ -26,8 +26,8 @@
  	set promptchars = "%#"
  
  	set filec
