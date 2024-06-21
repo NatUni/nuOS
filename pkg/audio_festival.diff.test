@@ -1,1 +1,1 @@
-! grep -q '{SETENV} -n MAKEFLAGS' Makefile
+! grep -q '{SETENV} -u MAKEFLAGS' Makefile
