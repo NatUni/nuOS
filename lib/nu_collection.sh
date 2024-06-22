@@ -169,7 +169,7 @@ collection_vars_init () {
 		databases/postgresql16-server
 		databases/postgis34
 		databases/pg_activity
-		databases/mysql84-server
+		databases/mysql81-server
 		databases/redis
 		databases/mongodb70
 		databases/mongodb-tools
