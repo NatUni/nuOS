@@ -1,0 +1,15 @@
+--- ../avahi-gtk3.orig/Makefile	2024-06-20 00:17:57.674530000 -0400
++++ Makefile	2024-06-21 13:56:00.005433000 -0400
+@@ -29,9 +29,9 @@
+ 	${DO_MAKE_BUILD} -C ${WRKSRC}/avahi-discover-standalone
+ 
+ do-install:
+-	@(cd ${WRKSRC}/avahi-discover-standalone; ${MAKE_CMD} ${MAKE_ARGS} install-binPROGRAMS install-interfacesDATA)
+-#	@(cd ${WRKSRC}/avahi-ui; ${MAKE_CMD} ${MAKE_ARGS} install-libLTLIBRARIES)
+-	@(cd ${WRKSRC}/avahi-ui; ${MAKE_CMD} ${MAKE_ARGS} install-binPROGRAMS install-desktopDATA install-exec-local)
++	@(cd ${WRKSRC}/avahi-discover-standalone; ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} install-binPROGRAMS install-interfacesDATA)
++#	@(cd ${WRKSRC}/avahi-ui; ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} install-libLTLIBRARIES)
++	@(cd ${WRKSRC}/avahi-ui; ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} install-binPROGRAMS install-desktopDATA install-exec-local)
+ 
+ post-install:
+ 	@${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/libavahi-ui-gtk3.so
