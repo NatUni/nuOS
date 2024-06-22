@@ -169,7 +169,9 @@ ADMIN_USER=`pw usershow -u 1001 | cut -d : -f 1`
 if [ ! -d /var/jail/www ]; then
 	nu_jail -t vnet -m -S $my_ip_1:http -S $my_ip_2:http -S $my_ip_1:https -S $my_ip_2:https -j www -x ${ADMIN_USER:+-u $ADMIN_USER} -q
 	nu_http -C /var/jail/www -s -IIII
-	echo /var/jail/postmaster/var/spool/postfix/maildrop /var/jail/www/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.www
+# 	install -m 0644 /var/jail/www/usr/local/share/postfix/mailer.conf.postfix /var/jail/www/usr/local/etc/mail/mailer.conf
+# 	echo /var/jail/postmaster/var/spool/postfix/maildrop /var/jail/www/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.www
+# 	echo /var/jail/postmaster/var/spool/postfix/public /var/jail/www/var/spool/postfix/public nullfs rw >> /etc/fstab.www
 	sysrc -f /etc/rc.conf.d/jail jail_list+=www
 fi
 for inf in $INFRA_HOST $guest_infras; do set_infra_metadata -q $inf
@@ -349,7 +351,11 @@ SELECT pg_reload_conf();
 EOF
 	
 	nu_http -C /var/jail/redmine -IIII
+
+	install -m 0644 /var/jail/redmine/usr/local/share/postfix/mailer.conf.postfix /var/jail/redmine/usr/local/etc/mail/mailer.conf
 	echo /var/jail/postmaster/var/spool/postfix/maildrop /var/jail/redmine/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.redmine
+	echo /var/jail/postmaster/var/spool/postfix/public /var/jail/redmine/var/spool/postfix/public nullfs rw >> /etc/fstab.redmine
+
 	mkdir /var/jail/redmine/var/run/pgsql
 	echo /var/jail/pgsql/var/run/pgsql /var/jail/redmine/var/run/pgsql nullfs ro >> /etc/fstab.redmine
 	
