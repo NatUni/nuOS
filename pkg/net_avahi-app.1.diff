@@ -1,0 +1,11 @@
+--- ../avahi-app.orig/Makefile	2024-06-21 14:15:31.514543000 -0400
++++ Makefile	2024-06-21 14:15:25.653073000 -0400
+@@ -117,7 +117,7 @@
+ 
+ avahi-post-build:
+ .for f in ${AVAHI_PKGCONFIG}
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} \
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} \
+ 		${MAKE_FLAGS} ${MAKEFILE} ${MAKE_ARGS} ${f}
+ .endfor
+ 
