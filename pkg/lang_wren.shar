@@ -28,7 +28,7 @@ X
 XPLIST_FILES=	lib/libwren.a lib/libwren.so bin/wren_test
 X
 Xdo-build:
-X	cd ${WRKSRC}/projects/make.bsd && ${GMAKE}
+X	cd ${WRKSRC}/projects/make.bsd && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD}
 X
 Xdo-install:
 X	${INSTALL_PROGRAM} ${WRKSRC}/lib/libwren.a ${STAGEDIR}${PREFIX}/lib
@@ -89,7 +89,7 @@ X
 XPLIST_FILES=	bin/wren_cli
 X
 Xdo-build:
-X	cd ${WRKSRC}/projects/make.bsd && ${GMAKE}
+X	cd ${WRKSRC}/projects/make.bsd && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD}
 X
 Xdo-install:
 X	${INSTALL_PROGRAM} ${WRKSRC}/bin/wren_cli ${STAGEDIR}${PREFIX}/bin

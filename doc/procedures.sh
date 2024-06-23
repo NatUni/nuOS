@@ -464,6 +464,30 @@ nu_hdd -t 5 -p rest -q mfid1 mfid2 mfid3 mfid4 mfid5 mfid6
 zpool import -R /spore spore
 nu_os_install -P spore -p epic -q
 
+# zpool destroy squr && zpool labelclear -f gpt/squr0 && gpart destroy -F da0x007
+nu_hdd -b -p squr -q da0
+nu_os_install -d -c server -p squr -q
+
+env ADMIN_PASS= \
+    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    \
+    nu_sys -p squr \
+        -s 64G \
+        -h squr.one \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c server \
+        -l @make_administrator_developer \
+        -l @../examples/install/allow_jedi_in \
+           \
+        -l @use_proprietary_realtek_driver \
+        -l @enable_dynamic_network         -l @soho_mdns \
+        -l @harden_remote_login            -l @allow_remote_login \
+           \
+        -l @cache_dns \
+        -q
+
 env ADMIN_PASS= \
     ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     TZ=America/Detroit \

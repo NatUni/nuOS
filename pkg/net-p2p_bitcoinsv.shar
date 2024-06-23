@@ -54,13 +54,13 @@ X		--without-qrencode \
 X		--without-utils
 X
 XPLIST_FILES=	bin/bitcoinsvd \
-X		man/man1/bitcoinsvd.1.gz \
+X		share/man/man1/bitcoinsvd.1.gz \
 X		"@sample %%ETCDIR%%.conf.sample"
 X
 XUSE_RC_SUBR=	bitcoinsvd
 X
 Xpost-install:
-X	mv ${STAGEDIR}${PREFIX}/man/man1/bitcoind.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoinsvd.1
+X	mv ${STAGEDIR}${PREFIX}/man/man1/bitcoind.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoinsvd.1
 X	mv ${STAGEDIR}${PREFIX}/bin/bitcoind ${STAGEDIR}${PREFIX}/bin/bitcoinsvd
 X	${INSTALL_DATA} ${FILESDIR}/bitcoinsv.conf ${STAGEDIR}${PREFIX}/etc/bitcoinsv.conf.sample
 X
@@ -103,11 +103,11 @@ X		--with-utils \
 X		--disable-wallet
 X
 XPLIST_FILES=	bin/bitcoinsv-cli bin/bitcoinsv-tx bin/bitcoinsv-miner \
-X		man/man1/bitcoinsv-cli.1.gz man/man1/bitcoinsv-tx.1.gz
+X		share/man/man1/bitcoinsv-cli.1.gz share/man/man1/bitcoinsv-tx.1.gz
 X
 Xpost-install:
-X	mv ${STAGEDIR}${PREFIX}/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoinsv-tx.1
-X	mv ${STAGEDIR}${PREFIX}/man/man1/bitcoin-cli.1 ${STAGEDIR}${PREFIX}/man/man1/bitcoinsv-cli.1
+X	mv ${STAGEDIR}${PREFIX}/man/man1/bitcoin-tx.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoinsv-tx.1
+X	mv ${STAGEDIR}${PREFIX}/man/man1/bitcoin-cli.1 ${STAGEDIR}${PREFIX}/share/man/man1/bitcoinsv-cli.1
 X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-miner ${STAGEDIR}${PREFIX}/bin/bitcoinsv-miner
 X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-tx ${STAGEDIR}${PREFIX}/bin/bitcoinsv-tx
 X	mv ${STAGEDIR}${PREFIX}/bin/bitcoin-cli ${STAGEDIR}${PREFIX}/bin/bitcoinsv-cli
@@ -211,7 +211,7 @@ X
 XCONFIGURE_ENV=	OBJCXX="${CXX}" OBJCXXFLAGS="${CXXFLAGS}"
 XMAKE_ENV+=	V=1
 X
-XPLIST_FILES?=	bin/bitcoinsv-qt man/man1/bitcoinsv-qt.1.gz \
+XPLIST_FILES?=	bin/bitcoinsv-qt share/man/man1/bitcoinsv-qt.1.gz \
 X		share/applications/bitcoinsv-qt.desktop
 X
 X.include <bsd.port.pre.mk>
