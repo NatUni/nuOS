@@ -1,7 +1,7 @@
 #!/usr/bin/false
 set -e; set -u; set -C
 
-# nuOS 0.0.12.99a0 - lib/nu_backup.sh
+# nuOS 0.0.12.999a0 - lib/nu_backup.sh
 #
 # Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
 # All rights reserved.
@@ -14,7 +14,7 @@ set -e; set -u; set -C
 # Official updates and community support available at https://nuos.org .
 # Professional services available at https://ccsys.com .
 
-nuos_lib_ver=0.0.12.99a0
+nuos_lib_ver=0.0.12.999a0
 [ $nuos_lib_ver = "$NUOS_VER" ]
 [ -z "${nuos_lib_backup_loaded-}" ]
 nuos_lib_backup_loaded=y
