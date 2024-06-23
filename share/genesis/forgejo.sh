@@ -21,9 +21,23 @@ NUOS_VER=0.0.12.99a0
 : ${FJ_SITE='Repo.DIY'}
 : ${FJ_TAGLINE='All your codebase are belong to...YOU!'}
 
-: ${FJ_DB_USER=$J}
 : ${FJ_DB_NAME=$J}
+: ${FJ_DB_USER=$J}
 
+chk_jail_name () {
+    case "$1" in
+        [[:digit:]-_.]*) :;&
+        *[-_.]) :;&
+        *[^[:lower:][:digit:]-.]*) error 22 'nuOS jail names must follow the same rules as [one or more] DNS node labels';;
+    esac
+}
+
+safe_db_id () {
+    case "$1" in
+        [[:digit:]]*) error 22 'DB identifiers cannot begin with a numeral.';;
+    esac
+    printf %s "$1" | tr [[:upper:]] [[:lower:]] | tr -c [[:alnum:]_] _
+}
 
 app=forgejo       # There is no need to change this.
 fjv=7             # The specific version of Forgejo, major part.
@@ -31,26 +45,38 @@ dbj=pgsql         # This jail should be up and running already, somehow.
 pgv=15            # The specific version of PostgreSQL, major part.
 pmj=postmaster    # This jail should be configured to run Postfix MTA.
 
+
+
+
 if [ -d /usr/local/share/$app -a ! -d ${fj_jd:=/var/jail/${J:=$app}} ]; then
 
     [ x${fjv} = x7 ] || error 78 'Forgejo 7.x is assumed'
 
-    fj_enc_key=`cat /root/.$J.db.key || { umask 277; nu_randpw -b 32 | tee /root/.$J.db.key; }`
-
-    fj_conf=$fj_jd/usr/local/etc/$app/conf/app.ini
+    chk_jail_name "$J" && j=$J
+    : ${FJ_DB_NAME:=$j}
+    : ${FJ_DB_USER:=$j}
 
     : ${FJ_SITE:='nuOS.work'}
     : ${FJ_TAGLINE:='Prosper, free from industry overlords'}
 
-    : ${FJ_DB_USER:=$J}
-    : ${FJ_DB_NAME:=$J}
     : ${FJ_DB_PASS:=`nu_randpw -b 32`}
+
+    db=`safe_db_id "$FJ_DB_NAME"`
+    un=`safe_db_id "$FJ_DB_USER"`
+
+    spill app dbj j fj_jd db un FJ_SITE FJ_TAGLINE FJ_DB_PASS
+    exit
+
+    fj_enc_key=`cat /root/.$j.db.key || { umask 277; nu_randpw -b 32 | tee /root/.$j.db.key; }`
+
+    fj_conf=$fj_jd/usr/local/etc/$app/conf/app.ini
+
 
     lower_case -s FJ_SITE
     fj_title="$FJ_SITE: $FJ_TAGLINE"
     fj_mail_from="\"$FJ_SITE Webserver\" <www-noreply@$FJ_SITE_lc>"
 
-    nu_jail -t vnet -m -x -u fj$fjv -j $J -q
+    nu_jail -t vnet -m -x -u fj$fjv -j $j -q
 
     chown root:git $fj_conf
     chmod 640 $fj_conf
@@ -62,32 +88,32 @@ if [ -d /usr/local/share/$app -a ! -d ${fj_jd:=/var/jail/${J:=$app}} ]; then
     } >| $fj_conf
 
     install -m 0644 $fj_jd/usr/local/share/postfix/mailer.conf.postfix $fj_jd/usr/local/etc/mail/mailer.conf
-    echo /var/jail/$pmj/var/spool/postfix/maildrop $fj_jd/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.$J
-    echo /var/jail/$pmj/var/spool/postfix/public $fj_jd/var/spool/postfix/public nullfs rw >> /etc/fstab.$J
+    echo /var/jail/$pmj/var/spool/postfix/maildrop $fj_jd/var/spool/postfix/maildrop nullfs rw >| /etc/fstab.$j
+    echo /var/jail/$pmj/var/spool/postfix/public $fj_jd/var/spool/postfix/public nullfs rw >> /etc/fstab.$j
 
     if srsly ${GENESIS_DROP_FORGEJO_DB-}; then
         jexec $dbj su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<EOF
 DO
-$$BEGIN
-IF EXISTS (SELECT FROM pg_roles WHERE rolname = '$FJ_DB_USER') THEN
-    EXECUTE 'REVOKE ALL ON SCHEMA public FROM $FJ_DB_USER';
+\$\$BEGIN
+IF EXISTS (SELECT FROM pg_roles WHERE rolname = '$un') THEN
+    EXECUTE 'REVOKE ALL ON SCHEMA public FROM $un';
 END IF;
-END$$;
-DROP DATABASE IF EXISTS $FJ_DB_NAME;
-DROP ROLE IF EXISTS $FJ_DB_USER;
+END\$\$;
+DROP DATABASE IF EXISTS $db;
+DROP ROLE IF EXISTS $un;
 EOF
     fi
 
     jexec $dbj su -l postgres -c 'psql -v ON_ERROR_STOP=1' <<EOF
-CREATE ROLE $FJ_DB_USER WITH LOGIN ${GENESIS_FORGEJO_NETWORK_DB:+ENCRYPTED }PASSWORD '$FJ_DB_PASS' NOINHERIT VALID UNTIL 'infinity';
-CREATE DATABASE $FJ_DB_NAME WITH OWNER $FJ_DB_USER TEMPLATE template0 ENCODING UTF8 LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8';
-\c $FJ_DB_NAME;
-GRANT ALL ON SCHEMA public TO $FJ_DB_USER;
+CREATE ROLE $un WITH LOGIN ${GENESIS_FORGEJO_NETWORK_DB:+ENCRYPTED }PASSWORD '$FJ_DB_PASS' NOINHERIT VALID UNTIL 'infinity';
+CREATE DATABASE $db WITH OWNER $un TEMPLATE template0 ENCODING UTF8 LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8';
+\c $db;
+GRANT ALL ON SCHEMA public TO $un;
 EOF
 
     if srsly ${GENESIS_FORGEJO_NETWORK_DB-}; then
         db_type=host
-        db_client_host=`getent hosts $J.jail | head -n 1 | cut -w -f 1`/32
+        db_client_host=`getent hosts $j.jail | head -n 1 | cut -w -f 1`/32
         db_meth=scram-sha-256
     else
         local_fj_db=y
@@ -96,10 +122,10 @@ EOF
         db_meth=password
     fi
 
-    sed -e "/^#/!{/\<$FJ_DB_NAME\>/d;}" /var/jail/$dbj/var/db/postgres/data$pgv/pg_hba.conf | sed -e '${/^$/d;}' > /var/jail/$dbj/var/db/postgres/data$pgv/pg_hba.conf.new
+    sed -e "/^#/!{/\<$db\>/d;}" /var/jail/$dbj/var/db/postgres/data$pgv/pg_hba.conf | sed -e '${/^$/d;}' > /var/jail/$dbj/var/db/postgres/data$pgv/pg_hba.conf.new
     cat >> /var/jail/$dbj/var/db/postgres/data$pgv/pg_hba.conf.new <<EOF
 
-$db_type${GENESIS_FORGEJO_NETWORK_DB:+ }   $FJ_DB_NAME         $FJ_DB_USER         $db_client_host${local_fj_db:+              }          $db_meth
+$db_type${GENESIS_FORGEJO_NETWORK_DB:+ }   $db         $un         $db_client_host${local_fj_db:+              }          $db_meth
 EOF
     mv /var/jail/$dbj/var/db/postgres/data$pgv/pg_hba.conf.new /var/jail/$dbj/var/db/postgres/data$pgv/pg_hba.conf
 
@@ -108,15 +134,15 @@ SELECT pg_reload_conf();
 EOF
 
     mkdir $fj_jd/var/run/pgsql
-    echo /var/jail/$dbj/var/run/pgsql $fj_jd/var/run/pgsql nullfs ro >> /etc/fstab.$J
+    echo /var/jail/$dbj/var/run/pgsql $fj_jd/var/run/pgsql nullfs ro >> /etc/fstab.$j
 
     cat >> $fj_conf <<EOF
 
 [database]
 DB_TYPE = postgres
 HOST = ${local_fj_db:+/var/run/pgsql}${GENESIS_FORGEJO_NETWORK_DB:+$dbj.jail}
-NAME = $FJ_DB_NAME
-USER = $FJ_DB_USER
+NAME = $db
+USER = $un
 PASSWD = $FJ_DB_PASS
 SCHEMA =
 SSL_MODE=${local_fj_db:+disable}${GENESIS_FORGEJO_NETWORK_DB:+verify-full}
@@ -138,8 +164,8 @@ EOF
 
     enable_svc -C $fj_jd $app
 
-    sysrc -f /etc/rc.conf.d/jail jail_list+=$J
-    service jail start $J
+    sysrc -f /etc/rc.conf.d/jail jail_list+=$j
+    service jail start $j
 
 fi
 
