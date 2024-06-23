@@ -1,7 +1,7 @@
 #!/usr/bin/false
 set -e; set -u; set -C
 
-# nuOS 0.0.12.99a0 - lib/nu_collection.sh
+# nuOS 0.0.12.999a0 - lib/nu_collection.sh
 #
 # Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
 # All rights reserved.
@@ -14,7 +14,7 @@ set -e; set -u; set -C
 # Official updates and community support available at https://nuos.org .
 # Professional services available at https://ccsys.com .
 
-nuos_lib_ver=0.0.12.99a0
+nuos_lib_ver=0.0.12.999a0
 [ $nuos_lib_ver = "$NUOS_VER" ]
 [ -n "${nuos_lib_system_loaded-}" ]
 [ -z "${nuos_lib_collection_loaded-}" ]
@@ -248,8 +248,6 @@ collection_vars_init () {
 		net-p2p/bitcoincash-utils
 		net-p2p/bitcoingold-daemon
 		net-p2p/bitcoingold-utils
-		net-p2p/bitcoinsv-daemon
-		net-p2p/bitcoinsv-utils
 		net-p2p/monero-cli
 		finance/vanitygen++
 		security/solana
@@ -270,7 +268,6 @@ collection_vars_init () {
 		graphics/povray-meta
 		graphics/graphviz
 		www/forgejo
-		www/redmine51
 		www/rubygem-passenger
 		x11-fonts/webfonts
 		net/kamailio
@@ -382,6 +379,9 @@ collection_vars_init () {
 		server
 		devel/wasmer
 		net/ntp
+		net-p2p/bitcoinsv-daemon
+		net-p2p/bitcoinsv-utils
+		www/redmine51
 		www/iridium
 		games/veloren-weekly
 		net-p2p/cardano-node

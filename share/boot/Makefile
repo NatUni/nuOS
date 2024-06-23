@@ -70,7 +70,7 @@ badges.png:
 				-alpha off -compose copyalpha -composite \
 			-trim -resize 22.5% \) \
 		\( \
-			\( -fill white -font Cantarell-Bold -pointsize 16 'label:13.2' \) \
+			\( -fill white -font Cantarell-Bold -pointsize 16 'label:13.3' \) \
 			\( -fill white -font Cantarell -pointsize 16 'label:-' \) \
 			\( -fill white -font Cantarell-Bold -pointsize 16 'label:RELEASE' \
 				-resize 60%x100% \) \

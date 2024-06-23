@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e; set -u; set -C
 
-# nuOS 0.0.12.99a0 - bin/nu_vpn_client
+# nuOS 0.0.12.999a0 - bin/nu_vpn_client
 #
 # Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
 # All rights reserved.
@@ -14,7 +14,7 @@ set -e; set -u; set -C
 # Official updates and community support available at https://nuos.org .
 # Professional services available at https://ccsys.com .
 
-NUOS_VER=0.0.12.99a0
+NUOS_VER=0.0.12.999a0
 
 while getopts A:c:C:h:k:s:v OPT; do case $OPT in
 	A) ALTERNATE=$OPTARG;;
