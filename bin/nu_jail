@@ -105,7 +105,7 @@ if srsly "${OPT_DELETE-}"; then
 		remove_our_jail_from_hostfile "$jail_dir/$j/etc/hosts" || true
 	done
 	
-	[ ! -f "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_" ] || mv "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_" "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_.`env TZ=UTC date +%Y-%m-%d-%H%M%S`.removed_from_service"
+	[ ! -f "${CHROOTDIR-}/etc/fstab.$JAIL_NAME" ] || mv "${CHROOTDIR-}/etc/fstab.$JAIL_NAME" "${CHROOTDIR-}/etc/fstab.$JAIL_NAME.`env TZ=UTC date +%Y-%m-%d-%H%M%S`.removed_from_service"
 	
 	unmount_our_jail_pseudofs
 	zfs list -H -r $JAIL_DATA | cut -w -f 1 | tail -r | xargs -n1 zfs destroy -f
@@ -187,9 +187,9 @@ EOF
 fi
 
 if [ -n "${OPT_MOUNT_FSTAB-}" ]; then
-	touch "${CHROOTDIR-}/etc/fstab.$JAIL_NAME_"
+	touch "${CHROOTDIR-}/etc/fstab.$JAIL_NAME"
 	cat >> "${CHROOTDIR-}/etc/jail.conf${dir_add-}" <<EOF
-	mount.fstab = "/etc/fstab.$JAIL_NAME_";
+	mount.fstab = "/etc/fstab.$JAIL_NAME";
 EOF
 fi
 
