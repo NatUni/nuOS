@@ -3,6 +3,9 @@ set -e; set -u; set -C
 code=/usr/share/examples/bhyve/vmrun.sh
 
 case `uname -sr` in
+	'FreeBSD 13.3-'*)
+		hash=646c927e9427beae1a819c67618c091ae386bbb543db6f5d806394ede1ba7725;;
+	'FreeBSD 13.2-'*) :;&
 	'FreeBSD 13.1-'*)
 		hash=7ef529a86863d9b3fc0608035c54890f8d5a148c36f276f81ef35945a94e1bd3;;
 	'FreeBSD 11.4-'*)
