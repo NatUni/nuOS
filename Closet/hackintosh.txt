@@ -1,0 +1,5 @@
+# as per: https://github.com/kholia/OSX-KVM/blob/master/run_offline.md
+# from:   https://mrmacintosh.com/macos-ventura-13-full-installer-database-download-directly-from-apple/
+# about:  macOS (Ventura) 13.6.7
+https://swcdn.apple.com/content/downloads/46/31/052-96247-A_MLN9N00Y8W/dmml3up52hrsb01krjtczmdhexiruv1b5m/InstallAssistant.pkg
+

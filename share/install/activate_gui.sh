@@ -1,5 +1,7 @@
 sister enable_svc -C "$TRGT" nuos_gui seatd dbus hald webcamd
 
+eko 'utouch_load="YES"' > "$TRGT/boot/loader.conf.d/utouch"
+
 if canhas ${GPU_VENDOR-}; then
 	case $GPU_VENDOR in
 		[Aa][Mm][Dd]) gpu_kmod=amdgpu;;
