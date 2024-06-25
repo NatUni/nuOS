@@ -577,4 +577,4 @@ env ADMIN_PASS= \
 ls pkg/*_*/dependencies/all | cut -d / -f 2 | sed -e s,_,/, | xargs pkg check -dnq | cut -wf1 | xargs pkg delete -fyn | grep '^[[:space:]]' | sed -e 's/: /-/' | xargs -n1 > kill
 xargs pkg delete -fy < kill
 sh -c 'while read -r p; do rm -v /usr/ports/packages/All/$p.pkg; done < kill'
-sh -c 'while read -r p; do rm -v /usr/ports/packages/Index.nuOS/FreeBSD-13.2-amd64.opteron-sse3/$p.g????????????.????????????????.pkg; done < kill'
+sh -c 'while read -r p; do rm -v /usr/ports/packages/Index.nuOS/FreeBSD-13.3-amd64.opteron-sse3/$p.g????????????.????????????????.pkg; done < kill'

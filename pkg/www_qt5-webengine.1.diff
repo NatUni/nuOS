@@ -1,6 +1,6 @@
 --- ../qt5-webengine.orig/Makefile	2023-03-10 18:43:33.759382000 +0000
 +++ Makefile	2023-03-10 18:43:51.556868000 +0000
-@@ -80,7 +80,7 @@
+@@ -75,7 +75,7 @@
  # We pass `norecursive' to USES=qmake because src/plugins/plugins.pro checks
  # whether webenginewidgets is available, which fails when qmake processes all
  # .pro files at once.

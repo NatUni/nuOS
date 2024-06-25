@@ -90,6 +90,7 @@ collection_vars_init () {
 		net/isboot-kmod
 		sysutils/bhyve-firmware
 		sysutils/grub2-bhyve
+		sysutils/dmg2img
 		net/wifi-firmware-kmod
 		net/wifibox
 		net/ntopng
@@ -281,6 +282,7 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
+		misc/utouch-kmod
 		sysutils/radeontop
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
@@ -294,7 +296,6 @@ collection_vars_init () {
 		x11/ly
 		x11/kanshi
 		x11/mako
-		x11-wm/hyprland
 		net/waypipe
 		multimedia/helvum
 		accessibility/wlsunset
@@ -335,6 +336,7 @@ collection_vars_init () {
 		sysutils/qtpass
 		graphics/zbar
 		sysutils/plasma-pass
+		graphics/qtqr
 		devel/godot
 		devel/godot-tools
 		lang/pharo
@@ -398,5 +400,6 @@ collection_vars_init () {
 		nice
 		desktop
 		math/sage
+		x11-wm/hyprland
 	'
 }
