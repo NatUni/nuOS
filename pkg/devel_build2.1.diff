@@ -1,0 +1,37 @@
+--- ../build2.orig/Makefile	2024-06-20 00:17:48.810807000 -0400
++++ Makefile	2024-06-26 02:41:13.146945000 -0400
+@@ -30,11 +30,11 @@
+ 
+ pre-build:
+ # phase 1
+-	@cd ${WRKSRC}/build2 && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_FLAGS} bootstrap.gmake ${_MAKE_JOBS}
++	@cd ${WRKSRC}/build2 && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_FLAGS} bootstrap.gmake ${_MAKE_JOBS}
+ 
+ do-build:
+ # phase 2
+-	@cd ${WRKSRC}/build2 && ${SETENV} ${MAKE_ENV} ./build2/b-boot \
++	@cd ${WRKSRC}/build2 && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ./build2/b-boot \
+ 		config.cxx=${CXX} \
+ 		config.cxx.coptions="${CXXFLAGS}" \
+ 		config.cxx.loptions="${LDFLAGS} -s" \
+@@ -45,7 +45,7 @@
+ 
+ do-install:
+ # "stage" (local installation)
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ./build2/build2/b-boot configure \
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ./build2/build2/b-boot configure \
+ 		config.cxx=${CXX} \
+ 		config.cxx.coptions="${CXXFLAGS}" \
+ 		config.cxx.loptions="${LDFLAGS} -s" \
+@@ -54,9 +54,9 @@
+ 		config.bin.rpath=${PREFIX}/lib \
+ 		config.install.chroot=${STAGEDIR} \
+ 		config.install.root=${PREFIX}
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ./build2/build2/b-boot install: build2/ bpkg/ bdep/ \
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ./build2/build2/b-boot install: build2/ bpkg/ bdep/ \
+ 		-V -j ${MAKE_JOBS_NUMBER} -J ${MAKE_JOBS_NUMBER}
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ./build2/build2/b-boot install: '!config.install.scope=project' libbuild2-*/ \
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ./build2/build2/b-boot install: '!config.install.scope=project' libbuild2-*/ \
+ 		-V -j ${MAKE_JOBS_NUMBER} -J ${MAKE_JOBS_NUMBER}
+ 	${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/libpkg-config-0.1.so
+ 
