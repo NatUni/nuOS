@@ -312,7 +312,6 @@ collection_vars_init () {
 		graphics/krita
 		graphics/inkscape
 		print/scribus
-		deskutils/calibre
 		print/fontforge
 		x11/xorg
 		graphics/scrot
@@ -400,6 +399,7 @@ collection_vars_init () {
 		nice
 		desktop
 		math/sage
+		deskutils/calibre
 		x11-wm/hyprland
 	'
 }
