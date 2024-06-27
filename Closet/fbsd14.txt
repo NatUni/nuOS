@@ -46,7 +46,8 @@ sh /usr/share/examples/bhyve/vmrun.sh \
 sh /usr/share/examples/bhyve/vmrun.sh \
     -c 3 -m 8192M \
     -t tap7 \
-    -d /dev/zvol/yoda/img/ubuntu \
+    -d /dev/zvol/solo/img/ubuntu \
+    -d /dev/zvol/solo/img/hackintosh \
     -E -L 0.0.0.0 -T -v -F w=1280,h=1024 \
     ubuntu
                     #       1920 x 1200
