@@ -76,7 +76,7 @@ for img_name in $@; do
 		cat $TMPDIR/nu_img.vol-$img_name.conf
 		require_tmp image_conf
 		sed -n -E -e '
-				/^zv=[[:alnum:]/]+$/p
+				/^zv=[[:alnum:]/_-]+$/p
 				/^(ct|fe)lun=[[:digit:]]+$/p
 				/^zvdev=[[:alpha:]]+[[:digit:]]+$/p
 			' $TMPDIR/nu_img.vol-$img_name.conf >| "$image_conf"

@@ -3,3 +3,20 @@
 # about:  macOS (Ventura) 13.6.7
 https://swcdn.apple.com/content/downloads/46/31/052-96247-A_MLN9N00Y8W/dmml3up52hrsb01krjtczmdhexiruv1b5m/InstallAssistant.pkg
 
+
+# just notes, doesnt work this way
+zfs create -o volmode=dev -b 4K -s -V 192G solo/img/hackintosh
+sh /usr/share/examples/bhyve/vmrun.sh \
+    -m 4096M -w \
+    -d /dev/zvol/solo/img/hackintosh \
+    -d /home/jedi/Downloads/Ventura/BaseSystem.img \
+    -E -L 0.0.0.0 -T -v -F w=1920,h=1080 \
+    hackintosh
+time rsync -C --progress --copy-devices --write-devices --inplace --no-whole-file --block-size=4K /home/jedi/OSX-KVM/mac_hdd_ng.dd /dev/zvol/solo/img/hackintosh
+sh /usr/share/examples/bhyve/vmrun.sh \
+    -c 2 -m 8192M -A -w \
+    -d /dev/zvol/solo/img/hackintosh-oc \
+    -d /dev/zvol/solo/img/hackintosh \
+    -E -L 0.0.0.0 -T -v -F w=1920,h=1080 \
+    hackintosh
+
