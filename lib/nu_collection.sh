@@ -212,7 +212,7 @@ collection_vars_init () {
 		lang/erlang-runtime25
 		lang/elixir
 		devel/stack
-		sysutils/ipfs-go
+		sysutils/kubo-go
 		security/tor
 	'
 	
@@ -377,11 +377,16 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		devel/jenkins
+		net/krill
+		multimedia/kooha
+		audio/mousai
 		devel/wasmer
 		net/ntp
 		net-p2p/bitcoinsv-daemon
 		net-p2p/bitcoinsv-utils
 		www/redmine51
+		www/librewolf
 		www/iridium
 		games/veloren-weekly
 		net-p2p/cardano-node
@@ -401,5 +406,6 @@ collection_vars_init () {
 		math/sage
 		deskutils/calibre
 		x11-wm/hyprland
+		cad/qcad
 	'
 }
