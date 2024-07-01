@@ -328,7 +328,7 @@ collection_vars_init () {
 		sysutils/qtxdg-tools
 		x11/libxdg-basedir
 		x11/xdg-desktop-portal-gtk
-		x11/xdg-desktop-portal-hyprland@qt6
+		x11/xdg-desktop-portal-hyprland
 		x11/xdg-desktop-portal-wlr
 		security/openssh-askpass
 		sysutils/qtpass

@@ -1,0 +1,16 @@
+--- ../freeimage.orig/Makefile	2024-06-20 00:17:54.190740000 -0400
++++ Makefile	2024-07-01 13:14:22.057700000 -0400
+@@ -61,11 +61,11 @@
+ 		/^-fPIC/d' ${WRKSRC}/Makefile.gnu ${WRKSRC}/Makefile.fip
+ 
+ post-build:
+-	${SETENV} ${MAKE_ENV} ${MAKE_CMD} -f Makefile.fip ${_MAKE_JOBS} \
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -f Makefile.fip ${_MAKE_JOBS} \
+ 		${MAKE_ARGS} -C ${BUILD_WRKSRC}
+ 
+ post-install:
+-	${SETENV} ${MAKE_ENV} ${MAKE_CMD} -f Makefile.fip ${MAKE_ARGS} \
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -f Makefile.fip ${MAKE_ARGS} \
+ 		-C ${INSTALL_WRKSRC} ${INSTALL_TARGET}
+ 	${LN} -sf libfreeimageplus.so.3 \
+ 		${STAGEDIR}${PREFIX}/lib/libfreeimageplus.so
