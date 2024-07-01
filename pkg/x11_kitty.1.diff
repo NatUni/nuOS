@@ -1,0 +1,11 @@
+--- ../kitty.orig/Makefile	2024-06-20 00:18:04.642001000 -0400
++++ Makefile	2024-07-01 07:25:06.887425000 -0400
+@@ -98,7 +98,7 @@
+ # For librsync, we need to set header and library path
+ do-build:
+ 	(cd ${WRKSRC} && \
+-	        ${SETENV} ${MAKE_ENV} ${PYTHON_CMD} -OO setup.py \
++	        ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${PYTHON_CMD} -OO setup.py \
+ 			--extra-include-dirs ${LOCALBASE}/include \
+ 			--extra-library-dirs ${LOCALBASE}/lib \
+ 			--libdir-name share \
