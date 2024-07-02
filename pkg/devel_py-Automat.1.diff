@@ -1,0 +1,11 @@
+--- ../py-Automat.orig/Makefile	2024-07-02 08:46:03.036441000 -0400
++++ Makefile	2024-07-02 08:46:28.345995000 -0400
+@@ -14,7 +14,7 @@
+ LICENSE=	MIT
+ LICENSE_FILE=	${WRKSRC}/LICENSE
+ 
+-BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}setuptools_scm7>0:devel/py-setuptools_scm7@${PY_FLAVOR}
++BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}setuptools-scm>0:devel/py-setuptools-scm@${PY_FLAVOR}
+ RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}attrs>=19.2.0:devel/py-attrs@${PY_FLAVOR} \
+ 		${PYTHON_PKGNAMEPREFIX}six>0:devel/py-six@${PY_FLAVOR}
+ 

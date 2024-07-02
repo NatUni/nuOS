@@ -119,6 +119,7 @@ collection_vars_init () {
 		lang/python
 		lang/ruby33
 		lang/go
+		devel/wasmer
 		www/npm
 		lang/seed7
 		lang/racket
@@ -373,6 +374,10 @@ collection_vars_init () {
 		devel/p5-Module-Build-Tiny
 		finance/gnucash
 		finance/kmymoney
+		math/sage
+		deskutils/calibre
+		x11-wm/hyprland
+		cad/qcad
 	'
 	
 	COLL_nice='
@@ -381,7 +386,6 @@ collection_vars_init () {
 		net/krill
 		multimedia/kooha
 		audio/mousai
-		devel/wasmer
 		net/ntp
 		net-p2p/bitcoinsv-daemon
 		net-p2p/bitcoinsv-utils
@@ -403,9 +407,5 @@ collection_vars_init () {
 		nice
 		desktop
 		x11/sddm
-		math/sage
-		deskutils/calibre
-		x11-wm/hyprland
-		cad/qcad
 	'
 }
