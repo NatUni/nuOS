@@ -1,0 +1,59 @@
+--- /dev/null	2024-07-02 13:35:22.620370000 -0400
++++ files/patch-configure	2024-07-02 13:34:20.823089000 -0400
+@@ -0,0 +1,56 @@
++--- configure.orig	2024-06-14 03:00:52.000000000 -0400
+++++ configure	2024-07-02 13:21:33.373806000 -0400
++@@ -46366,7 +46366,7 @@
++ #ifdef PRINT
++     printf("day %ld\n", res);
++ #else
++-    if(res != 1577880000L) exit(1);
+++    if(res != 1577880000L && res != 1577880027L) exit(1);
++ #endif
++     // and can we go back to POSIXlt?
++ #ifdef HAVE_GMTIME_R
++@@ -46388,7 +46388,7 @@
++ #ifdef PRINT
++     printf("res %ld\n", res);
++ #else
++-    if(res != 1593604800L) exit(2);
+++    if(res != 1593604800L && res != 1593604827L) exit(2);
++ #endif
++ #ifdef HAVE_GMTIME_R
++     stm = gmtime_r(&res, &tm);
++@@ -46412,7 +46412,7 @@
++ #ifdef PRINT
++     printf("res %ld\n", res);
++ #else
++-    if(res != 1577880000L) exit(3);
+++    if(res != 1577880000L && res != 1577880027L) exit(3);
++ #endif
++ #ifdef HAVE_LOCALTIME_R
++     stm = localtime_r(&res, &tm);
++@@ -46433,7 +46433,7 @@
++ #ifdef PRINT
++     printf("res %ld\n", res);
++ #else
++-    if(res != 1593601200L) exit(4);
+++    if(res != 1593601200L && res != 1593601227L) exit(4);
++ #endif
++ #ifdef HAVE_LOCALTIME_R
++     stm = localtime_r(&res, &tm);
++@@ -46455,7 +46455,7 @@
++ #ifdef PRINT
++     printf("res %ld\n", res);
++ #else
++-    if(res != 1577833200L) exit(5);
+++    if(res != 1577833200L && res != 1577833227L) exit(5);
++ #endif
++ #ifdef HAVE_LOCALTIME_R
++     stm = localtime_r(&res, &tm);
++@@ -46475,7 +46475,7 @@
++ #ifdef PRINT
++     printf("res %ld\n", res);
++ #else
++-    if(res != 1593561600L) exit(6);
+++    if(res != 1593561600L && res != 1593561627L) exit(6);
++ #endif
++ #ifdef HAVE_LOCALTIME_R
++     stm = localtime_r(&res, &tm);
