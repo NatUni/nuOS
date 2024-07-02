@@ -1,0 +1,11 @@
+--- ../py-cysignals.orig/Makefile	2024-07-02 07:30:05.515996000 -0400
++++ Makefile	2024-07-02 07:34:57.536336000 -0400
+@@ -37,7 +37,7 @@
+ 		${WRKSRC}/docs/Makefile
+ 
+ do-build-DOCS-on:
+-	(cd ${WRKSRC}/docs && ${GMAKE} html)
++	(cd ${WRKSRC}/docs && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} html)
+ 
+ post-build-DOCS-on:
+ 	${MKDIR} ${STAGEDIR}${DOCSDIR}
