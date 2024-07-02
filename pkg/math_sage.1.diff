@@ -1,0 +1,11 @@
+--- ../sage.orig/Makefile	2024-07-02 09:40:55.424070000 -0400
++++ Makefile	2024-07-02 09:44:32.671966000 -0400
+@@ -337,7 +337,7 @@
+ 		pixz:archivers/pixz
+ 
+ USES=		autoreconf blaslapack:openblas compiler:c++11-lib fortran \
+-		gettext gmake gnome iconv jpeg libtool localbase magick:6,build \
++		gettext gmake gnome iconv jpeg libtool localbase magick:build \
+ 		ncurses ninja:build perl5 pkgconfig python readline shebangfix \
+ 		sqlite tex tk xorg
+ USE_TEX=	latex:build pdftex:build tex:build
