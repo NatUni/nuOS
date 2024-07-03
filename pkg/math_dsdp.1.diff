@@ -1,0 +1,13 @@
+--- ../dsdp.orig/Makefile	2024-06-20 00:17:56.065073000 -0400
++++ Makefile	2024-07-02 18:53:58.617527000 -0400
+@@ -37,8 +37,8 @@
+ 		lib/libdsdp.so
+ 
+ do-build: # the build fails to build all binaries without being called twice due to makefile convolution
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} ${ALL_TARGET}
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} ${ALL_TARGET}
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} ${ALL_TARGET}
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} ${ALL_TARGET}
+ 
+ do-install:
+ 	@${MKDIR} ${STAGEDIR}${PREFIX}/include/dsdp
