@@ -95,7 +95,7 @@ exit 1
 
 # The current live boot and installation image is available from https://nuOS.org and retrieved as
 # follows. Note that unless you are already using nuOS you might use an alternate method to get it.
-fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.xz
+fetch https://nuos.org/nuOS-v12.999a0-amd64.dd.xz
 
 # For high security environments a PGP signed fingerprint is also available. The commands below are
 # merely illustrative. Note that to download and verify the fingerprint using the same computer and
@@ -109,7 +109,7 @@ fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.xz
 # powerless to defend against preexisting malware of all but the most rudimentary types. Consider
 # a brand new computer for running nuOS offered by a trustworthy vendor of hardware and consulting
 # services specializing in security.
-fetch https://nuos.org/nuOS-v12.99a0-amd64.dd.sum
+fetch https://nuos.org/nuOS-v12.999a0-amd64.dd.sum
 
 # List suitable devices recognized by the system.
 geom disk list | grep -wiF -e 'geom name:' -e descr: -e mediasize: -e ident:
@@ -128,7 +128,7 @@ geom disk list | grep -wiF -e 'geom name:' -e descr: -e mediasize: -e ident:
 # target disk as indicated by "Geom name: da0" above. Note the size, description and serial number
 # match that of the drive you intend to wipe and use for nuOS.
 
-# WARNING: "da0" seen below is the name of a new blank USB thumb drive (of at least 32 GB in size)
+# WARNING: "da0" seen below is the name of a new blank USB thumb drive (of at least 64 GB in size)
 #          when it is attached to tty or neo. Other systems, your system for instance, may have one
 #          or more drives that the system has already identified as da0, da1, da2, etc. Therefore
 #          BE VERY CERTAIN of WHICH DRIVE you wish to ERASE and format exclusively for installing
@@ -187,7 +187,7 @@ zpool labelclear -f /dev/da0p3
 gpart destroy -F da0
 
 # Simultaneously decompress and write the boot/installation image to our blank drive.
-xzcat -T0 /home/jedi/nuOS-v12.99a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=fullblock obs=128K conv=sparse,osync status=progress
+xzcat -T0 /home/jedi/nuOS-v12.999a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=fullblock obs=128K conv=sparse,osync status=progress
 
 
 # ...more to come...
@@ -332,11 +332,11 @@ shutdown -r now
 zfs destroy -r nebu/img/spore
 
 env DISPLAY_MANAGER=light nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui
-cp -v /root/nuOS-v12.99a0-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
+cp -v /root/nuOS-v12.999a0-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
 
-gpg2 --local-user 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 --clear-sign nuOS-v12.99a0-amd64.dd.sum
+gpg2 --local-user 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 --clear-sign nuOS-v12.999a0-amd64.dd.sum
 
-export GNUPGHOME=$(mktemp -d) && gpg2 --import /usr/nuos/share/key/root\@nuos.org.pub && gpg2 --batch --yes --command-file <(printf 'trust\n5\ny\nsave\nquit\n') --edit-key 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 && gpg2 --verify nuOS-v12.99a0-amd64.dd.sum.asc
+export GNUPGHOME=$(mktemp -d) && gpg2 --import /usr/nuos/share/key/root\@nuos.org.pub && gpg2 --batch --yes --command-file <(printf 'trust\n5\ny\nsave\nquit\n') --edit-key 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 && gpg2 --verify nuOS-v12.999a0-amd64.dd.sum.asc
 
 
 zpool export spore
@@ -369,21 +369,23 @@ chown -Rv root:wheel /usr/{src,obj,ports}
 
 
 
-zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.2-RELEASE-p9/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done
+zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.3-RELEASE-p4/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done
 mount -p | awk '$2 == "/mnt" || $2 ~ "^/mnt/" {print $2}' | tail -r | xargs -n1 umount
 
 env ADMIN_PASS= \
     ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     TZ=America/Detroit \
+    PRIMARY_NETIF=re0 \
     nu_sys -p solo \
         -s 48G \
         -h solo.hodl.ceo \
         -b '' \
         -a jedi \
         -u '' \
-        -c server \
+        -c desktop \
         -l @set_timezone \
         -l @use_proprietary_realtek_driver \
+        -l @set_primary_netif \
         -l @keep_time \
         -l @cache_dns \
         -l @enable_dynamic_network \
@@ -396,15 +398,17 @@ env ADMIN_PASS= \
 env ADMIN_PASS= \
     ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     TZ=America/Detroit \
+    PRIMARY_NETIF=re1 \
     nu_sys -p yoda \
         -s 48G \
         -h yoda.boogaloo.ninja \
         -b '' \
         -a jedi \
         -u '' \
-        -c server \
+        -c desktop \
         -l @set_timezone \
         -l @use_proprietary_realtek_driver \
+        -l @set_primary_netif \
         -l @keep_time \
         -l @cache_dns \
         -l @enable_dynamic_network \
