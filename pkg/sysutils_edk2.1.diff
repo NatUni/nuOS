@@ -1,6 +1,6 @@
 --- ../edk2.orig/Makefile	2024-06-20 00:18:00.200190000 -0400
 +++ Makefile	2024-06-20 15:22:57.877386000 -0400
-@@ -198,9 +198,9 @@
+@@ -199,9 +199,9 @@
  	(cp ${WRKDIR}/edk2-${GH_TAGNAME}/BaseTools/Conf/tools_def.template ${WRKDIR}/edk2-${GH_TAGNAME}/Conf/tools_def.txt)
  	(cp ${WRKDIR}/edk2-${GH_TAGNAME}/BaseTools/Conf/target.template ${WRKDIR}/edk2-${GH_TAGNAME}/Conf/target.txt)
  	# Build the basetools
