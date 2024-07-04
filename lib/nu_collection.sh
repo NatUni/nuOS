@@ -353,6 +353,7 @@ collection_vars_init () {
 		java/icedtea-web
 		mail/thunderbird
 		multimedia/vlc
+		multimedia/mpc-qt
 		multimedia/obs-studio
 		multimedia/wlrobs
 		multimedia/shotcut
@@ -374,9 +375,6 @@ collection_vars_init () {
 		devel/p5-Module-Build-Tiny
 		finance/gnucash
 		finance/kmymoney
-		math/sage
-		deskutils/calibre
-		x11-wm/hyprland
 		cad/qcad
 	'
 	
@@ -401,6 +399,9 @@ collection_vars_init () {
 		multimedia/obs-streamfx
 		lang/opensycl
 		lang/crystal
+		math/sage
+		deskutils/calibre
+		x11-wm/hyprland
 	'
 	
 	COLL_nasty='
