@@ -1,0 +1,11 @@
+--- ../opendx.orig/Makefile	2024-07-06 19:29:37.774510000 -0400
++++ Makefile	2024-07-06 19:29:49.940117000 -0400
+@@ -19,7 +19,7 @@
+ LIB_DEPENDS=	libtiff.so:graphics/tiff		\
+ 		libcdf.so:science/cdf
+ 
+-USES=		bison compiler:c++17-lang gl gmake libtool localbase:ldflags magick:6 motif xorg
++USES=		bison compiler:c++17-lang gl gmake libtool localbase:ldflags magick motif xorg
+ USE_GL=		gl glu
+ USE_LDCONFIG=	yes
+ USE_XORG=	x11 xt xinerama xext xpm xmu sm ice

@@ -1,0 +1,19 @@
+--- ../octave-forge-rtree.orig/Makefile	2024-07-06 14:54:34.839375000 -0400
++++ Makefile	2024-07-06 14:55:32.671512000 -0400
+@@ -29,12 +29,12 @@
+ 
+ do-build:
+ 	cd ${WRKSRC} && ${SETENV} ${CONFIGURE_ENV} CFLAGS="${CFLAGS}" ./configure
+-	cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${GMAKE} package
+-	cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${GMAKE} spotless
++	cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} package
++	cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} spotless
+ 	${TAR} xvf ${WRKSRC}/src/pkg/versions/${OCTAVE_DISTNAME}.tar.gz -C ${WRKSRC}
+ 	cd ${WRKSRC}/${OCTAVE_DISTNAME}/src && \
+-		${SETENV} ${CONFIGURE_ENV} CFLAGS="${CFLAGS}" ./configure && \
+-		${SETENV} ${MAKE_ENV} CLAGS="${CFLAGS}" ${GMAKE}
++		${SETENVI} ${WRK_ENV} ${CONFIGURE_ENV} CFLAGS="${CFLAGS}" ./configure && \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} CLAGS="${CFLAGS}" ${GMAKE}
+ 
+ pre-install:
+ 	${RM} ${WRKSRC}/${OCTAVE_DISTNAME}/src/Makefile ${WRKSRC}/${OCTAVE_DISTNAME}/src/configure
