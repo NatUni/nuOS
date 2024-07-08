@@ -121,6 +121,7 @@ collection_vars_init () {
 		lang/go
 		devel/wasmer
 		www/npm
+		lang/nim
 		lang/seed7
 		lang/racket
 		lang/cim
@@ -129,6 +130,8 @@ collection_vars_init () {
 		emulators/qemu
 		editors/vim
 		editors/neovim
+		math/octave
+		math/octave-forge
 	'
 	
 	COLL_user='
@@ -186,6 +189,7 @@ collection_vars_init () {
 		lang/janet
 		java/openjdk21
 		textproc/zed
+		textproc/zq
 		math/or-tools
 		sysutils/parallel
 		security/pssh
@@ -236,6 +240,8 @@ collection_vars_init () {
 		net-p2p/mktorrent
 		net-p2p/torrentcheck
 		multimedia/streamlink
+		audio/shairport-sync
+		audio/owntone
 	'
 	
 	COLL_coinserver='
@@ -259,6 +265,11 @@ collection_vars_init () {
 	COLL_commonserver='
 		mediaserver
 		coinserver
+		sysutils/docker
+		sysutils/docker-compose
+		sysutils/docker-credential-pass
+		sysutils/docker-machine
+		sysutils/docker-registry
 	'
 	
 	COLL_server='
@@ -315,6 +326,8 @@ collection_vars_init () {
 		print/scribus
 		print/fontforge
 		x11/xorg
+		net/xrdp
+		x11-drivers/xorgxrdp
 		graphics/scrot
 		x11/xeyes
 		x11/wshowkeys

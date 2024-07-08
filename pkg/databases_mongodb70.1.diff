@@ -1,9 +1,9 @@
 --- ../mongodb70.orig/Makefile	2024-06-18 13:34:48.471729000 +0000
 +++ Makefile	2024-06-18 13:37:18.363486000 +0000
-@@ -134,10 +134,10 @@ do-configure:
+@@ -134,10 +134,10 @@
+ do-configure:
  # Replacement of ${WRKSRC}/src/third_party/mozjs/get-sources.sh
  	${LN} -sF ${WRKDIR}/spidermonkey-${MOZJS_TAG} ${WRKSRC}/src/third_party/mozjs/mozilla-release
- 	cd ${WRKSRC}/src/third_party/mozjs/mozilla-release/js/src && ${LOCALBASE}/bin/autoconf2.13
 -	cd ${WRKSRC}/src/third_party/mozjs && PYTHON3="${PYTHON_CMD}" ${SH} ./gen-config.sh ${MOZJS_ARCH} freebsd
 +	cd ${WRKSRC}/src/third_party/mozjs && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} PYTHON3="${PYTHON_CMD}" ${SH} ./gen-config.sh ${MOZJS_ARCH} freebsd
  
