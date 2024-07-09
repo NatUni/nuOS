@@ -1,0 +1,13 @@
+--- ../podman.orig/Makefile	2024-07-03 04:59:48.137557000 -0400
++++ Makefile	2024-07-09 17:13:21.705498000 -0400
+@@ -37,8 +37,8 @@
+ 
+ # Temporary until https://github.com/containers/podman/pull/16422 lands
+ do-install:
+-	${GMAKE} -C ${WRKSRC} ${MAKE_ARGS} DESTDIR=${STAGEDIR} GO=${GO_CMD} install
+-	${GMAKE} -C ${WRKSRC} ${MAKE_ARGS} DESTDIR=${STAGEDIR} GO=${GO_CMD} install.completions
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GO_ENV} ${GMAKE} -C ${WRKSRC} ${MAKE_ARGS} DESTDIR=${STAGEDIR} GO=${GO_CMD} install
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GO_ENV} ${GMAKE} -C ${WRKSRC} ${MAKE_ARGS} DESTDIR=${STAGEDIR} GO=${GO_CMD} install.completions
+ 	${RM} ${STAGEDIR}${PREFIX}/lib/tmpfiles.d/podman.conf
+ 
+ .include <bsd.port.mk>

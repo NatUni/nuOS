@@ -270,6 +270,15 @@ collection_vars_init () {
 		sysutils/docker-credential-pass
 		sysutils/docker-machine
 		sysutils/docker-registry
+		sysutils/helm
+		sysutils/helmfile
+		sysutils/podman-suite
+		devel/etcd34
+		net/kube-apiserver
+		net/kube-controller-manager
+		net/kube-scheduler
+		sysutils/kubectl
+		sysutils/minikube
 	'
 	
 	COLL_server='
@@ -389,6 +398,7 @@ collection_vars_init () {
 		finance/gnucash
 		finance/kmymoney
 		cad/qcad
+		emulators/wine-proton
 	'
 	
 	COLL_nice='
