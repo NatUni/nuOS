@@ -1,0 +1,26 @@
+--- ../containers-common.orig/Makefile	2024-06-20 00:18:00.134471000 -0400
++++ Makefile	2024-07-09 16:54:35.385497000 -0400
+@@ -34,8 +34,8 @@ STORAGESRC=	${WRKDIR}/storage-${STORAGEVERSION}
+ SKOPEOSRC=	${WRKDIR}/skopeo-${SKOPEOVERSION}
+ 
+ do-build:
+-	${GMAKE} -C ${WRKSRC}/docs
+-	${GMAKE} -C ${STORAGESRC} install.tools
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} -C ${WRKSRC}/docs
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} -C ${STORAGESRC} install.tools
+ 
+ do-install:
+ 	${MKDIR} ${STAGEDIR}${PREFIX}/etc/containers/certs.d
+@@ -47,9 +47,9 @@ do-install:
+ #${INSTALL_DATA} ${WRKSRC}/pkg/config/containers.conf-freebsd ${STAGEDIR}${PREFIX}/etc/containers/containers.conf.sample
+ 	${INSTALL_DATA} ${STORAGESRC}/storage.conf-freebsd ${STAGEDIR}${PREFIX}/etc/containers/storage.conf.sample
+ 	${INSTALL_DATA} ${IMAGESRC}/registries.conf ${STAGEDIR}${PREFIX}/etc/containers/registries.conf.sample
+-	${GMAKE} -C ${WRKSRC}/docs DESTDIR=${STAGEDIR} install
+-	${GMAKE} -C ${IMAGESRC} PREFIX=${STAGEDIR}${PREFIX} install-docs
+-	${GMAKE} -C ${STORAGESRC}/docs GOMD2MAN=${LOCALBASE}/bin/go-md2man containers-storage.conf.5
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} -C ${WRKSRC}/docs DESTDIR=${STAGEDIR} install
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} -C ${IMAGESRC} PREFIX=${STAGEDIR}${PREFIX} install-docs
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} -C ${STORAGESRC}/docs GOMD2MAN=${LOCALBASE}/bin/go-md2man containers-storage.conf.5
+ 	${INSTALL_MAN} ${STORAGESRC}/docs/containers-storage.conf.5 ${STAGEDIR}${PREFIX}/share/man/man5
+ 
+ .include <bsd.port.mk>

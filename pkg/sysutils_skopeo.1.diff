@@ -1,0 +1,11 @@
+--- ../skopeo.orig/Makefile	2024-07-03 04:59:48.139160000 -0400
++++ Makefile	2024-07-09 16:58:37.496041000 -0400
+@@ -21,7 +21,7 @@
+ GH_ACCOUNT=	containers
+ 
+ do-install:
+-	${SETENV} ${MAKE_ENV} ${GO_ENV} ${GMAKE} -C ${WRKSRC} \
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GO_ENV} ${GMAKE} -C ${WRKSRC} \
+ 		DESTDIR=${STAGEDIR} GOCACHE=${TMPDIR} \
+ 		GO=${GO_CMD} install-binary install-docs install-completions
+ 	${MKDIR} ${STAGEDIR}${PREFIX}/etc/containers/registries.d

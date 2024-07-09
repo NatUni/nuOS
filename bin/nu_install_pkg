@@ -187,7 +187,7 @@ for port in `grep / "$deps"`; do
 				spill make_conf
 				spill db
 				spill port
-				idx=`port_idx "$make_conf" "$db" $port`
+				idx=`port_idx "$make_conf" "${CHROOTDIR-}$db" $port`
 				mv -v $pkg_file.$PKG_SUFFIX "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT/$pkg.$tag.$idx.$PKG_SUFFIX"
 				ln -s "../Index.nuOS/$os_compat-$TRGT/$pkg.$tag.$idx.$PKG_SUFFIX" $pkg_file.$PKG_SUFFIX
 			fi
