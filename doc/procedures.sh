@@ -372,12 +372,14 @@ chown -Rv root:wheel /usr/{src,obj,ports}
 zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.3-RELEASE-p4/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done
 mount -p | awk '$2 == "/mnt" || $2 ~ "^/mnt/" {print $2}' | tail -r | xargs -n1 umount
 
-env ADMIN_PASS= \
-    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    ADMIN_PASS=jizz \
     TZ=America/Detroit \
     PRIMARY_NETIF=re0 \
+    GPU_VENDOR=AMD \
+    DISPLAY_MANAGER=light \
     nu_sys -p solo \
-        -s 48G \
+        -es 72G \
         -h solo.hodl.ceo \
         -b '' \
         -a jedi \
@@ -386,19 +388,22 @@ env ADMIN_PASS= \
         -l @set_timezone \
         -l @use_proprietary_realtek_driver \
         -l @set_primary_netif \
-        -l @keep_time \
-        -l @cache_dns \
         -l @enable_dynamic_network \
         -l @soho_mdns \
+        -l @cache_dns \
+        -l @keep_time \
         -l @harden_remote_login \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
+        -l @activate_gui \
         -q
 
-env ADMIN_PASS= \
-    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    ADMIN_PASS=jizz \
     TZ=America/Detroit \
     PRIMARY_NETIF=re1 \
+    GPU_VENDOR=Radeon \
+    DISPLAY_MANAGER=light \
     nu_sys -p yoda \
         -s 48G \
         -h yoda.boogaloo.ninja \
@@ -409,13 +414,14 @@ env ADMIN_PASS= \
         -l @set_timezone \
         -l @use_proprietary_realtek_driver \
         -l @set_primary_netif \
-        -l @keep_time \
-        -l @cache_dns \
         -l @enable_dynamic_network \
         -l @soho_mdns \
+        -l @cache_dns \
+        -l @keep_time \
         -l @harden_remote_login \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
+        -l @activate_gui \
         -q
 
 
@@ -492,9 +498,60 @@ env ADMIN_PASS= \
         -l @cache_dns \
         -q
 
-env ADMIN_PASS= \
-    ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    ADMIN_PASS=jizz \
+    DISPLAY_MANAGER=light \
     TZ=America/Detroit \
+    \
+    nu_sys -p munq \
+        -s 64G \
+        -h munq.zion.top \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c desktop \
+        -l @set_timezone \
+        -l @make_administrator_developer \
+        -l @../examples/install/allow_jedi_in \
+           \
+        -l @use_proprietary_realtek_driver \
+        -l @enable_dynamic_network         -l @soho_mdns \
+        -l @harden_remote_login            -l @allow_remote_login \
+           \
+        -l @cache_dns \
+        -l @activate_gui \
+        -q
+
+env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    ADMIN_PASS=jizz \
+    DISPLAY_MANAGER=light \
+    TZ=America/Detroit \
+    \
+    nu_sys -p moos \
+        -s 8G \
+        -h moos.zion.top \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c desktop \
+        -l @set_timezone \
+        -l @make_administrator_developer \
+        -l @../examples/install/allow_jedi_in \
+           \
+        -l @use_proprietary_realtek_driver \
+        -l @enable_dynamic_network         -l @soho_mdns \
+        -l @harden_remote_login            -l @allow_remote_login \
+           \
+        -l @cache_dns \
+        -l @activate_gui \
+        -q
+
+env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    ADMIN_PASS=jizz \
+    TZ=America/Detroit \
+    PRIMARY_NETIF=re2 \
+    GPU_VENDOR=Intel \
+    DISPLAY_MANAGER=light \
     nu_sys -p epic \
         -s 24G \
         -h artu.bofh.vip \
@@ -503,13 +560,16 @@ env ADMIN_PASS= \
         -u '' \
         -c desktop \
         -l @set_timezone \
-        -l @keep_time \
-        -l @cache_dns \
+        -l @use_proprietary_realtek_driver \
+        -l @set_primary_netif \
         -l @enable_dynamic_network \
         -l @soho_mdns \
+        -l @cache_dns \
+        -l @keep_time \
         -l @harden_remote_login \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
+        -l @activate_gui \
         -q
 
 

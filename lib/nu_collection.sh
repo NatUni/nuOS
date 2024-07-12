@@ -214,6 +214,12 @@ collection_vars_init () {
 		net-im/ejabberd
 		net/rabbitmq
 		net/nsq
+		net/natscli
+		net/nats-top
+		net/nats-streaming-server
+		net/nats-server
+		net/nats-nsc
+		net/nats-nkeys
 		lang/erlang-runtime25
 		lang/elixir
 		devel/stack
