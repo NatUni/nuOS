@@ -698,10 +698,11 @@ Official updates and community support available at https://nuOS.org .
 This is the $BASEOS_TYPE edition of nuOS, extending $BASEOS_TYPE $BASEOS_VER. More
 information about $BASEOS_TYPE is available at $baseos_info_url .
 
-Your contributions are greatly appreciated and allow nuOS to thrive.
+Your participation and feedback are greatly appreciated. --root+cjm@nuOS.org
 
-Edit /etc/motd${new_motd:+.template and run \`service motd restart\`} to change this login announcement.
-
+   ${new_motd:+          }Edit /etc/motd${new_motd:+.template and run \`service motd restart\`
+                      } to change this login announcement.
+________________________________________________________________________________
 EOF
 		
 		mkdir $POOL_MNT/usr/nuos
