@@ -703,6 +703,7 @@ Your participation and feedback are greatly appreciated. --root+cjm@nuOS.org
    ${new_motd:+          }Edit /etc/motd${new_motd:+.template and run \`service motd restart\`
                       } to change this login announcement.
 ________________________________________________________________________________
+
 EOF
 		
 		mkdir $POOL_MNT/usr/nuos

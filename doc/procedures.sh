@@ -375,6 +375,31 @@ mount -p | awk '$2 == "/mnt" || $2 ~ "^/mnt/" {print $2}' | tail -r | xargs -n1 
 env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS=jizz \
     TZ=America/Detroit \
+    PRIMARY_NETIF=igc0 \
+    GPU_VENDOR=AMD \
+    DISPLAY_MANAGER=light \
+    nu_sys -p rick \
+        -es 120G \
+        -h rick.space.force.us.org \
+        -b '' \
+        -a jedi \
+        -u '' \
+        -c desktop \
+        -l @set_timezone \
+        -l @set_primary_netif \
+        -l @enable_dynamic_network \
+        -l @soho_mdns \
+        -l @cache_dns \
+        -l @keep_time \
+        -l @harden_remote_login \
+        -l @allow_remote_login \
+        -l @../examples/install/allow_jedi_in \
+        -l @activate_gui \
+        -q
+
+env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
+    ADMIN_PASS=jizz \
+    TZ=America/Detroit \
     PRIMARY_NETIF=re0 \
     GPU_VENDOR=AMD \
     DISPLAY_MANAGER=light \
