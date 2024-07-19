@@ -309,6 +309,7 @@ collection_vars_init () {
 		server
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
+		x11/nvidia-driver
 		misc/utouch-kmod
 		sysutils/radeontop
 		net/wpa_supplicant_gui
@@ -404,6 +405,8 @@ collection_vars_init () {
 		finance/gnucash
 		finance/kmymoney
 		cad/qcad
+		cad/freecad
+		science/opensim-core
 		emulators/wine-proton
 	'
 	
