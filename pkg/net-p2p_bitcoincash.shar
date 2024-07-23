@@ -16,6 +16,7 @@
 #	bitcoincash/files/bitcoincash-qt.desktop
 #	bitcoincash/files/bitcoincash.conf
 #	bitcoincash/files/bitcoincashd.in
+#	bitcoincash/files/patch-src_net.cpp
 #	bitcoincash/files/patch-src_qt_trafficgraphwidget.h
 #	bitcoincash/files/patch-src_util_system.cpp
 #	bitcoincash/pkg-descr
@@ -441,6 +442,23 @@ X}
 X
 Xrun_rc_command "$1"
 880485a68ec4b45b9bccdba6db72d12a
+echo x - bitcoincash/files/patch-src_net.cpp
+sed 's/^X//' >bitcoincash/files/patch-src_net.cpp << '8bfc7fde7c83c6fa48dd69ac379d1a2f'
+X--- src/net.cpp.orig	2022-11-21 07:35:21 UTC
+X+++ src/net.cpp
+X@@ -1545,7 +1545,11 @@ static bool ProcessUpnp()
+X     struct IGDdatas data;
+X     int r;
+X 
+X+#if MINIUPNPC_API_VERSION >= 18
+X+    r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr), NULL, 0);
+X+#else
+X     r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+X+#endif
+X     if (r == 1) {
+X         if (fDiscover) {
+X             char externalIPAddress[40];
+8bfc7fde7c83c6fa48dd69ac379d1a2f
 echo x - bitcoincash/files/patch-src_qt_trafficgraphwidget.h
 sed 's/^X//' >bitcoincash/files/patch-src_qt_trafficgraphwidget.h << 'c9e698104570da917c8f63a9dd8e1e87'
 X--- src/qt/trafficgraphwidget.h.orig	2023-12-12 20:02:14.000000000 +0000

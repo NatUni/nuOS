@@ -18,6 +18,7 @@
 #	bitcoingold/files/bitcoingold.conf
 #	bitcoingold/files/bitcoingoldd.in
 #	bitcoingold/files/patch-src_httpserver.cpp
+#	bitcoingold/files/patch-src_net.cpp
 #	bitcoingold/files/patch-src_net_processing.cpp
 #	bitcoingold/files/patch-src_qt_bitcoingui.cpp
 #	bitcoingold/files/patch-src_qt_clientmodel.cpp
@@ -486,6 +487,23 @@ X #include <memory>
 X #include <stdio.h>
 X #include <stdlib.h>
 a806d0f97dfc3e8ad384f5942a0532f3
+echo x - bitcoingold/files/patch-src_net.cpp
+sed 's/^X//' >bitcoingold/files/patch-src_net.cpp << 'f18028d9d1574029e141106102a5cb98'
+X--- src/net.cpp.orig	2022-11-21 07:35:21 UTC
+X+++ src/net.cpp
+X@@ -1501,7 +1501,11 @@ static bool ProcessUpnp()
+X     struct IGDdatas data;
+X     int r;
+X 
+X+#if MINIUPNPC_API_VERSION >= 18
+X+    r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr), NULL, 0);
+X+#else
+X     r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+X+#endif
+X     if (r == 1)
+X     {
+X         if (fDiscover) {
+f18028d9d1574029e141106102a5cb98
 echo x - bitcoingold/files/patch-src_net_processing.cpp
 sed 's/^X//' >bitcoingold/files/patch-src_net_processing.cpp << 'c0cd077c9c912662aca03986a0980df3'
 X--- src/net_processing.cpp.orig	2024-01-06 00:28:38.382777000 +0000
