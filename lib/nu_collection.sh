@@ -405,8 +405,8 @@ collection_vars_init () {
 		finance/gnucash
 		finance/kmymoney
 		cad/qcad
-		cad/freecad
 		science/opensim-core
+		cad/PrusaSlicer
 		emulators/wine-proton
 	'
 	

@@ -1,0 +1,1 @@
+! grep -qw work-around-pyside2-brokenness Makefile
