@@ -1,0 +1,12 @@
+--- ../qt5-core.orig/Makefile	2024-07-19 11:53:40.261337000 -0400
++++ Makefile	2024-07-19 11:54:35.414628000 -0400
+@@ -6,6 +6,9 @@
+ MAINTAINER=	kde@FreeBSD.org
+ COMMENT=	Qt core non-graphical module
+ 
++PATCH_SITES+=	https://raw.githubusercontent.com/OpenMandrivaAssociation/qt5-qtbase/20f97a4bfb95658bc35c3292ac11e52c335cc1e9/
++PATCHFILES+=	qtbase-5.15.9-work-around-pyside2-brokenness.patch:-p1
++
+ LIB_DEPENDS=	libdouble-conversion.so:devel/double-conversion \
+ 		libicui18n.so:devel/icu \
+ 		libpcre2-posix.so:devel/pcre2 \
