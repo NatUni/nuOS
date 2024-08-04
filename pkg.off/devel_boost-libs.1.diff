@@ -1,8 +1,0 @@
---- ../boost-libs.orig/Makefile	2024-01-10 02:19:08.319423000 +0000
-+++ ./Makefile	2024-01-10 01:54:52.674541000 +0000
-@@ -1,5 +1,4 @@
- PORTNAME=	boost-libs
--PORTREVISION?=	1
- 
- COMMENT=	Free portable C++ libraries (without Boost.Python)
- WWW=		https://www.boost.org/

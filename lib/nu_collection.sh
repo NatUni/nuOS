@@ -110,6 +110,7 @@ collection_vars_init () {
 		textproc/gsed
 		devel/gmake
 		sysutils/coreutils
+		sysutils/heirloom
 		security/nmap
 		math/units
 		textproc/ydiff
@@ -119,11 +120,17 @@ collection_vars_init () {
 		lang/python
 		lang/ruby33
 		lang/go
+		lang/rust
 		devel/wasmer
+		www/node
 		www/npm
+		www/yarn
+		www/deno
+		sysutils/mise
 		lang/nim
 		lang/seed7
 		lang/racket
+		lang/cairo
 		lang/cim
 		textproc/riffdiff
 		lang/chez-scheme
@@ -143,6 +150,12 @@ collection_vars_init () {
 		finance/ledger
 		irc/irssi
 		textproc/en-aspell
+		textproc/ripgrep
+		shells/pdksh
+		shells/ksh
+		shells/zsh
+		shells/fish
+		shells/bash
 	'
 	
 	COLL_miniserver='
@@ -211,6 +224,8 @@ collection_vars_init () {
 		security/shibboleth-idp
 		www/authelia
 		net/keycloak
+		mail/nocc
+		mail/snappymail
 		net-im/ejabberd
 		net/rabbitmq
 		net/nsq
@@ -225,6 +240,7 @@ collection_vars_init () {
 		devel/stack
 		sysutils/kubo-go
 		security/tor
+		security/i2pd
 	'
 	
 	COLL_mediaserver='
@@ -235,6 +251,14 @@ collection_vars_init () {
 		net/samba419
 		www/minio
 		multimedia/ffmpeg
+		multimedia/uvg266
+		multimedia/gstreamer1-plugins-all
+		multimedia/gstreamer1-qt
+		multimedia/gstreamer1-vaapi
+		multimedia/gstreamer1-validate
+		multimedia/gstreamer1-rtsp-server
+		multimedia/gstreamer1-editing-services
+		multimedia/gstreamermm
 		multimedia/Bento4
 		multimedia/av1an
 		www/yt-dlp
@@ -248,6 +272,7 @@ collection_vars_init () {
 		multimedia/streamlink
 		audio/shairport-sync
 		audio/owntone
+		sysutils/android-file-transfer
 	'
 	
 	COLL_coinserver='
@@ -292,17 +317,21 @@ collection_vars_init () {
 		graphics/optipng
 		archivers/zopfli
 		graphics/gifsicle
+		graphics/guetzli
 		sysutils/vmdktool
 		graphics/povray-meta
 		graphics/graphviz
 		www/forgejo
 		www/rubygem-passenger
+		www/redmine51
+		finance/prestashop
 		x11-fonts/webfonts
 		net/kamailio
 		net-im/jitsi-videobridge
 		www/jitsi-meet
 		print/gutenprint
 		print/brlaser
+		misc/llama-cpp
 	'
 	
 	COLL_desktop='
@@ -310,8 +339,17 @@ collection_vars_init () {
 		graphics/drm-kmod
 		graphics/gpu-firmware-kmod
 		x11/nvidia-driver
+		graphics/nvidia-drm-kmod
+		graphics/nvidia-texture-tools
 		misc/utouch-kmod
 		sysutils/radeontop
+		graphics/vulkan-caps-viewer
+		graphics/vulkan-extension-layer
+		graphics/vulkan-headers
+		graphics/vulkan-loader
+		graphics/vulkan-tools
+		graphics/vulkan-utility-libraries
+		graphics/vulkan-validation-layers
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
 		x11-wm/wayfire
@@ -342,8 +380,10 @@ collection_vars_init () {
 		print/scribus
 		print/fontforge
 		x11/xorg
+		x11/scripts
 		net/xrdp
 		x11-drivers/xorgxrdp
+		x11-clocks/wlclock
 		graphics/scrot
 		x11/xeyes
 		x11/wshowkeys
@@ -376,17 +416,23 @@ collection_vars_init () {
 		x11/kitty
 		x11/rio
 		net/x11vnc
+		net/spiritvnc
+		www/novnc
+		sysutils/conky
 		www/firefox
 		multimedia/mpv-mpris
 		multimedia/haruna
 		java/icedtea-web
 		mail/thunderbird
+		net-im/dissent
 		multimedia/vlc
 		multimedia/mpc-qt
 		multimedia/obs-studio
 		multimedia/wlrobs
 		multimedia/shotcut
 		net-p2p/qbittorrent
+		comms/scrcpy
+		audio/qjackctl
 		audio/qtractor
 		audio/pt2-clone
 		audio/ft2-clone
@@ -399,6 +445,7 @@ collection_vars_init () {
 		games/sdlpop
 		games/openarena
 		games/openrct2
+		games/wesnoth
 		astro/stellarium
 		devel/gwenhywfar
 		devel/p5-Module-Build-Tiny
@@ -408,6 +455,7 @@ collection_vars_init () {
 		science/opensim-core
 		cad/PrusaSlicer
 		emulators/wine-proton
+		databases/pgmodeler
 	'
 	
 	COLL_nice='

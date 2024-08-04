@@ -1,8 +1,0 @@
---- ../pipewire/Makefile
-+++ Makefile
-@@ -109,4 +109,5 @@ post-install-MEDIASESSION-on:
-	${INSTALL_DATA} ${WRKDIR}/10-alsa-default.conf \
-		${STAGEDIR}${ETCDIR}/${PORTNAME}.conf.d
- 
-+CFLAGS+=	-DOPENSSL_API_COMPAT=0x10100000L
- .include <bsd.port.mk>

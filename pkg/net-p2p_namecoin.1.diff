@@ -2,12 +2,12 @@
 +++ Makefile
 @@ -1,5 +1,5 @@
  PORTNAME=	namecoin
+ DISTVERSIONPREFIX=	nc
 -DISTVERSION=	24.0
 +DISTVERSION=	25.1
- DISTVERSIONPREFIX=	nc
  PORTREVISION=	4
  PORTEPOCH=	1
-@@ -72,12 +71,12 @@ QRCODES_LIB_DEPENDS=	libqrencode.so:graphics/libqrencode
+@@ -75,12 +75,12 @@ QRCODES_LIB_DEPENDS=	libqrencode.so:graphics/libqrencode
  
  WALLET_CONFIGURE_OFF=	--disable-wallet
  WALLET_CONFIGURE_ON=	--enable-wallet \
