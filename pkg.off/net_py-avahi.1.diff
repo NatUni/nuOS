@@ -1,9 +1,0 @@
---- ../py-avahi.orig/pkg-plist	2023-12-07 16:00:42.235544000 +0000
-+++ ./pkg-plist	2024-01-28 10:08:13.306081000 +0000
-@@ -7,5 +7,5 @@
- %%PYTHON_SITELIBDIR%%/avahi/__init__.py
- %%PYTHON_SITELIBDIR%%/avahi/__init__.pyc
- %%PYTHON_SITELIBDIR%%/avahi/__init__.pyo
--man/man1/avahi-bookmarks.1.gz
-+share/man/man1/avahi-bookmarks.1.gz
- share/applications/avahi-discover.desktop

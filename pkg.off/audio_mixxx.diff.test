@@ -1,1 +1,0 @@
-[ `find * -type f -not -path 'work*' | sort | xargs md5 | md5` = 09ca49379926a9a7a2cddc2b3f265f1b ]

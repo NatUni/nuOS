@@ -1,0 +1,15 @@
+--- ../redmine51.orig/files/patch-Gemfile	2024-08-03 20:07:01.247420000 -0400
++++ files/patch-Gemfile	2024-08-03 20:08:04.822401000 -0400
+@@ -1,7 +1,10 @@
+ --- Gemfile.orig	2024-06-12 00:45:02 UTC
+ +++ Gemfile
+-@@ -3,24 +3,24 @@ gem 'rails', '6.1.7.8'
+- ruby '>= 2.7.0', '< 3.3.0'
++@@ -1,26 +1,26 @@ gem 'rails', '6.1.7.8'
++ source 'https://rubygems.org'
++ 
++-ruby '>= 2.7.0', '< 3.3.0'
+++ruby '>= 2.7.0', '< 3.4.0'
+  
+  gem 'rails', '6.1.7.8'
+ -gem 'rouge', '~> 4.2.0'
