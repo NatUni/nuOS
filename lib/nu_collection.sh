@@ -135,6 +135,7 @@ collection_vars_init () {
 		textproc/riffdiff
 		lang/chez-scheme
 		emulators/qemu
+		emulators/unicorn
 		editors/vim
 		editors/neovim
 		math/octave
