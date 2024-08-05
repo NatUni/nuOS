@@ -114,6 +114,8 @@ collection_vars_init () {
 		security/nmap
 		math/units
 		textproc/ydiff
+		sysutils/siegfried
+		math/lean4
 		lang/v
 		lang/expect
 		math/convertall
@@ -132,6 +134,7 @@ collection_vars_init () {
 		lang/racket
 		lang/cairo
 		lang/cim
+		www/zola
 		textproc/riffdiff
 		lang/chez-scheme
 		emulators/qemu
@@ -140,6 +143,7 @@ collection_vars_init () {
 		editors/neovim
 		math/octave
 		math/octave-forge
+		math/geogebra
 	'
 	
 	COLL_user='
@@ -274,6 +278,7 @@ collection_vars_init () {
 		audio/shairport-sync
 		audio/owntone
 		sysutils/android-file-transfer
+		www/galene
 	'
 	
 	COLL_coinserver='

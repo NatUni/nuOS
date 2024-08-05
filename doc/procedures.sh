@@ -111,7 +111,7 @@ fetch https://nuos.org/nuOS-v12.999a0-amd64.dd.xz
 # services specializing in security.
 fetch https://nuos.org/nuOS-v12.999a0-amd64.dd.sum
 
-# List suitable devices recognized by the system.
+# List suitable devices recognized by the system. (`nu_hdd -l` does this on nuOS)
 geom disk list | grep -wiF -e 'geom name:' -e descr: -e mediasize: -e ident:
 
 # *Output* from the above command looks something like this:
