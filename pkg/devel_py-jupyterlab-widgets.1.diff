@@ -1,0 +1,12 @@
+--- /dev/null	2024-08-06 06:49:47.940702000 -0400
++++ files/patch-pyproject.toml	2024-08-06 06:48:43.244673000 -0400
+@@ -0,0 +1,9 @@
++--- pyproject.toml.bak	2024-08-06 06:47:19.680404000 -0400
+++++ pyproject.toml	2024-08-06 06:48:05.961558000 -0400
++@@ -1,5 +1,5 @@
++ [build-system]
++-requires = ["jupyter_packaging~=0.10,<2", "jupyterlab~=4.0"]
+++requires = ["jupyter_packaging~=0.10,<2", "jupyterlab>=4"]
++ build-backend = "jupyter_packaging.build_api"
++ 
++ [tool.jupyter-packaging.options]

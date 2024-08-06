@@ -57,6 +57,7 @@ collection_vars_init () {
 		bare
 		net/hostapd
 		security/wpa_supplicant
+		net-mgmt/net-snmp
 		sysutils/pefs-kmod
 		net/rsync
 		security/gnupg
@@ -95,6 +96,8 @@ collection_vars_init () {
 		net/wifibox
 		net/ntopng
 		sysutils/neofetch
+		sysutils/pfetch
+		sysutils/bottom
 	'
 	
 	COLL_developer='
@@ -144,6 +147,8 @@ collection_vars_init () {
 		math/octave
 		math/octave-forge
 		math/geogebra
+		math/R
+		net/spoofdpi
 	'
 	
 	COLL_user='
@@ -338,6 +343,22 @@ collection_vars_init () {
 		print/gutenprint
 		print/brlaser
 		misc/llama-cpp
+		misc/ollama
+		devel/py-jupyterlab@py311
+		devel/py-jupyterlab-lsp@py311
+		textproc/py-jupyterlab-pygments@py311
+		devel/py-jupyterlab_launcher@py311
+		textproc/py-jupyter_sphinx@py311
+		devel/py-pytest-jupyter@py311
+		devel/py-jupyter_console@py311
+		devel/py-jupyter-packaging@py311
+		devel/py-jupyter-telemetry@py311
+		devel/py-jupyter-collaboration@py311
+		devel/py-jupyter-server-fileid@py311
+		devel/py-jupyter-kernel-test@py311
+		devel/py-jupyter-server-mathjax@py311
+		devel/py-jupyter-ydoc@py311
+		devel/evcxr-jupyter
 	'
 	
 	COLL_desktop='
@@ -427,6 +448,7 @@ collection_vars_init () {
 		sysutils/conky
 		www/firefox
 		multimedia/mpv-mpris
+		multimedia/mpvpaper
 		multimedia/haruna
 		java/icedtea-web
 		mail/thunderbird
@@ -462,10 +484,13 @@ collection_vars_init () {
 		cad/PrusaSlicer
 		emulators/wine-proton
 		databases/pgmodeler
+		devel/RStudio@desktop
 	'
 	
 	COLL_nice='
 		server
+		devel/py-jupyterlab-widgets@py311
+		science/py-jupyter_jsmol@py311
 		devel/jenkins
 		net/krill
 		multimedia/kooha
