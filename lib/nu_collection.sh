@@ -67,6 +67,7 @@ collection_vars_init () {
 	
 	COLL_lite='
 		base
+		sysutils/limine
 		sysutils/screen
 		misc/mbuffer
 		sysutils/pipemeter
@@ -330,6 +331,7 @@ collection_vars_init () {
 		graphics/gifsicle
 		graphics/guetzli
 		sysutils/vmdktool
+		www/librespeed
 		graphics/povray-meta
 		graphics/graphviz
 		www/forgejo
