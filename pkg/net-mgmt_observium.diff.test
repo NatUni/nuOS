@@ -1,0 +1,1 @@
+grep -qw IGNORE_WITH_PHP Makefile

@@ -1,0 +1,19 @@
+--- ../observium.orig/Makefile	2024-08-07 00:57:35.835899000 -0400
++++ Makefile	2024-08-07 00:58:24.181219000 -0400
+@@ -21,7 +21,6 @@
+ WRKSRC=		${WRKDIR}/${PORTNAME}
+ 
+ USES=		cpe php:cli,flavors python shebangfix
+-IGNORE_WITH_PHP=	82 83 84
+ SHEBANG_FILES=	\
+ 		poller-wrapper.py \
+ 		poller.php \
+@@ -34,7 +33,7 @@
+ 
+ RUN_DEPENDS+=	rrdtool:databases/rrdtool \
+ 		dot:graphics/graphviz \
+-		mtr:net/mtr-nox11 \
++		mtr:net/mtr \
+ 		${LOCALBASE}/share/pear/Net/IPv4.php:net/pear-Net_IPv4@${PHP_FLAVOR} \
+ 		${LOCALBASE}/share/pear/Net/IPv6.php:net/pear-Net_IPv6@${PHP_FLAVOR} \
+ 		snmpget:net-mgmt/net-snmp \

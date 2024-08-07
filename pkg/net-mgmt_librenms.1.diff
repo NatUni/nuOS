@@ -1,0 +1,13 @@
+--- ../librenms.orig/Makefile	2024-07-31 09:30:47.205258000 -0400
++++ Makefile	2024-08-06 21:04:44.413244000 -0400
+@@ -113,8 +113,8 @@
+ WMIC_RUN_DEPENDS=	wmic:net-mgmt/wmi-client
+ X11_RUN_DEPENDS=	mtr:net/mtr
+ X11_RUN_DEPENDS_OFF=	mtr:net/mtr-nox11
+-X11_USES=		magick:6
+-X11_USES_OFF=		magick:6,nox11
++X11_USES=		magick:7
++X11_USES_OFF=		magick:7,nox11
+ 
+ _ROOT_FILES=		addhost.php alerts.php artisan billing-calculate.php \
+ 			check-services.php composer.json composer.lock \

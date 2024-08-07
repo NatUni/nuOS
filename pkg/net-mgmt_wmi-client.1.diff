@@ -1,0 +1,12 @@
+--- /dev/null	2024-08-06 20:37:12.163634000 -0400
++++ files/patch-pyinclude.py	2024-08-06 20:33:06.369765000 -0400
+@@ -0,0 +1,9 @@
++--- pyinclude.py.bak	2024-08-06 20:32:25.252190000 -0400
+++++ pyinclude.py	2024-08-06 20:32:42.213310000 -0400
++@@ -14,5 +14,5 @@
++ import sys
++ import os
++ version = '.'.join(map(str, sys.version_info[:2]))
++-print os.path.join(sys.prefix, 'include', 'python' + version)
+++print(os.path.join(sys.prefix, 'include', 'python' + version))
++ 
