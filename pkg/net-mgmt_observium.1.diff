@@ -1,0 +1,10 @@
+--- ../observium.orig/Makefile	2024-08-06 20:49:35.935440000 -0400
++++ Makefile	2024-08-06 20:51:42.883033000 -0400
+@@ -21,7 +21,6 @@
+ WRKSRC=		${WRKDIR}/${PORTNAME}
+ 
+ USES=		cpe php:cli,flavors python shebangfix
+-IGNORE_WITH_PHP=	82 83 84
+ SHEBANG_FILES=	\
+ 		poller-wrapper.py \
+ 		poller.php \

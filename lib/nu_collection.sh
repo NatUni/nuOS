@@ -88,6 +88,10 @@ collection_vars_init () {
 		lang/gcc13
 		textproc/xsv-rs
 		sysutils/ztop
+		sysutils/btop
+		net/ntopng
+		sysutils/bottom
+		sysutils/usbtop
 		net/ipxe
 		net/isboot-kmod
 		sysutils/bhyve-firmware
@@ -95,10 +99,8 @@ collection_vars_init () {
 		sysutils/dmg2img
 		net/wifi-firmware-kmod
 		net/wifibox
-		net/ntopng
 		sysutils/neofetch
 		sysutils/pfetch
-		sysutils/bottom
 	'
 	
 	COLL_developer='
@@ -119,6 +121,7 @@ collection_vars_init () {
 		math/units
 		textproc/ydiff
 		sysutils/siegfried
+		devel/llvm18
 		math/lean4
 		lang/v
 		lang/expect
@@ -379,8 +382,13 @@ collection_vars_init () {
 		graphics/vulkan-tools
 		graphics/vulkan-utility-libraries
 		graphics/vulkan-validation-layers
+		graphics/spirv-tools
+		graphics/spirv-cross
+		devel/spirv-llvm-translator
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
+		net-mgmt/librenms
+		net-mgmt/observium
 		x11-wm/wayfire
 		x11/wf-shell
 		x11/wcm
