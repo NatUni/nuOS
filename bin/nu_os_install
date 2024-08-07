@@ -62,6 +62,7 @@ if canhas ${INPUT-}; then
 	! srsly "${OPT_DO_NOTHING-}" || error 43 'merely to inspect an input file is a functionality not yet supported'
 	require_tmp restore_log
 	sister nu_restore -t $POOL_NAME < "$INPUT" | tee -a "$restore_log"
+	re_pattern -n os_software_ds
 	{
 		read -r BASEOS_TYPE
 		read -r BASEOS_VER
@@ -70,7 +71,7 @@ if canhas ${INPUT-}; then
 		read -r rev
 		rev=${rev%@*}
 	} <<EOF
-$(awk "\$1 ~ /^$POOL_NAME\/$os_software_ds\// && \$2 == \"->\" {print \$0; exit}" < "$restore_log" | cut -d / -f 3,4,5,9,11 | tr / '\n')
+$(awk "\$1 ~ /^$POOL_NAME\/$os_software_ds_re\// && \$2 == \"->\" {print \$0; exit}" < "$restore_log" | cut -d / -f 3,4,5,9,11 | tr / '\n')
 EOF
 	set_std_ds
 else

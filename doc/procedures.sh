@@ -401,7 +401,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS=jizz \
     TZ=America/Detroit \
     PRIMARY_NETIF=re0 \
-    L2_bridge="net0 re1 re2 re3 re4"
+    L2_bridge="net0 re1 re2 re3 re4" \
     GPU_VENDOR=AMD \
     DISPLAY_MANAGER=light \
     nu_sys -p solo \

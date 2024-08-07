@@ -36,7 +36,14 @@ load_lib () {
 }
 
 baseos_init () {
-	if [ -r /usr/src/sys/conf/newvers.sh ]; then
+	local quiet= init=;
+	while getopts iq OPT; do case $OPT in
+		i) init=y;;
+		q) quiet=y;;
+	esac; done; shift $(($OPTIND-1))
+	if ! srsly ${init-} && canhas ${BASEOS_TYPE-} && canhas ${BASEOS_VER-}; then
+		echo "NOTE: base opsys specified by process environment - $BASEOS_TYPE-$BASEOS_VER"
+	elif [ -r /usr/src/sys/conf/newvers.sh ]; then
 		local TYPE REVISION BRANCH
 		eval `grep -E '^(TYPE|REVISION|BRANCH)=' /usr/src/sys/conf/newvers.sh`
 		BASEOS_TYPE=$TYPE
@@ -45,7 +52,7 @@ baseos_init () {
 		: ${BASEOS_TYPE:=`uname -s`}
 		: ${BASEOS_VER:=`uname -r`}
 	fi
-	if [ -q != "${1-}" ]; then
+	if ! srsly ${quiet-}; then
 		echo 'base opsys                        ' $BASEOS_TYPE
 		echo 'base opsys v#                     ' $BASEOS_VER
 	fi
@@ -148,12 +155,12 @@ re_pattern () {
 				printf %s "$1"
 				shift
 				[ $# -gt 0 ] && printf '\0'
-			done | sed -e 's/\./\\\./g' | tr '\0' '|'
+			done | sed -e 's/\./\\\./g;s|/|\/|g' | tr '\0' '|'
 			srsly ${naked-} || printf %s '$'
 			eko
 		}`
 	else
-		setvar ${var}_re "${whole:+^}`eval eko \\"\\$$var\\" | sed -e 's/\./\\\./g'`${whole:+\$}"
+		setvar ${var}_re "${whole:+^}`eval eko \\"\\$$var\\" | sed -e 's/\./\\\./g;s|/|\\\/|g'`${whole:+\$}"
 	fi
 }
 

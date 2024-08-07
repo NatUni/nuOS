@@ -148,7 +148,7 @@ if canhas ${OPT_FREEBSD-}; then
 	fi
 	after_rev=`save_git_info -r /usr/src`
 	before_ver=$BASEOS_VER
-	baseos_init
+	baseos_init -i
 	echo -n "FreeBSD source tree: $before_ver.$before_rev"
 	if [ $before_rev != $after_rev -o $before_ver != $BASEOS_VER ]; then
 		echo " -> $BASEOS_VER.$after_rev"
