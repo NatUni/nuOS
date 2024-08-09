@@ -1,0 +1,13 @@
+--- ../mp4v2.orig/pkg-plist	2024-07-31 09:30:46.934225000 -0400
++++ pkg-plist	2024-08-07 21:02:55.787193000 -0400
+@@ -1,8 +1,8 @@
+ bin/mp4art
+ bin/mp4chaps
+-bin/mp4extract
++bin/mp4v2extract
+ bin/mp4file
+-bin/mp4info
++bin/mp4v2info
+ bin/mp4subtitle
+ bin/mp4tags
+ bin/mp4track

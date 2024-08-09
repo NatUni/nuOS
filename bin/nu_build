@@ -601,7 +601,6 @@ nuos_gui_start ()
 
 	test ! -f /usr/local/etc/X11/xorg.conf.d/20-${drv}.conf || return
 	cat > /usr/local/etc/X11/xorg.conf.d/20-${drv}.conf <<EOF
-
 Section "Device"
 	Identifier "Card0"
 	Driver     "${drv}"

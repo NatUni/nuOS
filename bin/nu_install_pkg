@@ -83,6 +83,15 @@ else
 	sister nu_pkg_tree ${OPT_VERBOSE:+-v} ${OPT_NORECURSE:+-R} -o txt "$deps" -o dir "$db" $@
 fi
 
+make_way () {
+	if [ -f "$metainfo_dir/$port_.displace" ]; then
+		dps=$(pkg info -qO `cat "$metainfo_dir/$port_.displace"`)
+		if canhas ${dps-}; then
+			lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" pkg ${CHROOTDIR:+-c $CHROOTDIR} delete -fy $dps || true
+		fi
+	fi
+}
+
 for port in `grep / "$deps"`; do
 	underscore port
 	while [ -f "$metainfo_dir/$port_.substitute" ]; do
@@ -143,6 +152,7 @@ for port in `grep / "$deps"`; do
 				if canhas ${old_pkg-}; then
 					lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS deinstall
 				fi
+				make_way
 				if [ -z "${OPT_NOBUILD-}" ]; then
 					lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS ${old_pkg:+re}install
 					if [ -f "${CHROOTDIR-}$db/$port_/dependencies/extract_to_build" ]; then
@@ -195,6 +205,7 @@ for port in `grep / "$deps"`; do
 		if pkg info -e $pkg < /dev/null && ( [ -z "${CHROOTDIR-}" ] || pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg < /dev/null ); then
 			echo found dependency $pkg
 		else
+			make_way
 			destdir="${CHROOTDIR-}"
 			if [ -f "$script" ]; then
 				pkg_step=pre-install

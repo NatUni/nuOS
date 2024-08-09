@@ -212,16 +212,16 @@ PATH=$PATH:/home/$USER/nuOS/bin
 env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS='?' \
     USER_PASS='?' \
-    DISPLAY_MANAGER=light \
     TZ=America/Detroit \
+    DISPLAY_MANAGER=light \
     nu_sys -p tty \
         -es 16G \
         -h tty.zion.top \
         -b '' \
         -a jedi \
+        -u bum \
         -c desktop \
         -l @set_timezone \
-        -l @keep_time \
         -l @enable_dynamic_network \
         -l @cache_dns \
         -l @harden_remote_login \
@@ -259,6 +259,7 @@ patch -N -V none /etc/nuos/exodus.local < ~/nuos_deliverance/exodus.local.diff
 
 patch -N -V none /etc/nuos/backup < ~/nuos_deliverance/local/backup.diff
 
+#passthru=2/0/0
 patch -N -V none /usr/local/etc/wifibox/bhyve.conf < ~/nuos_deliverance/local/wifibox/bhyve.conf.diff
 patch -N -V none /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf < ~/nuos_deliverance/local/wifibox/wpa_supplicant.conf.diff
 
@@ -324,7 +325,7 @@ cp -anv nuos_site_exodus `echo /tmp/nu_sys.*.ALT_MNT.*`/root/nuos_deliverance
 cp -anv ~/owner_pass /tmp/nu_sys.*.ALT_MNT.*/root/
 cp -anv /usr/local/etc/ssh/ssh_host_*_key* /tmp/nu_sys.*.ALT_MNT.*/usr/local/etc/ssh/
 history -S +
-cp -anv ~/.*history `echo /tmp/nu_sys.*.ALT_MNT.*`/root/
+cp -anv ~/.*history /tmp/nu_sys.*.ALT_MNT.*/root/
 
 shutdown -r now
 
@@ -376,11 +377,11 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS=jizz \
     TZ=America/Detroit \
     PRIMARY_NETIF=igc0 \
-    GPU_VENDOR=AMD \
+    GPU_VENDOR=Nvidia \
     DISPLAY_MANAGER=light \
     nu_sys -p rick \
         -es 120G \
-        -h rick.space.force.us.org \
+        -h rick.lab.us.org \
         -b '' \
         -a jedi \
         -u '' \
@@ -577,6 +578,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS=jizz \
     TZ=America/Detroit \
     PRIMARY_NETIF=re2 \
+    L2_bridge="re0 re1" \
     GPU_VENDOR=Intel \
     DISPLAY_MANAGER=light \
     nu_sys -p epic \
@@ -589,6 +591,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
         -l @set_timezone \
         -l @use_proprietary_realtek_driver \
         -l @set_primary_netif \
+        -l @layer2_bridge \
         -l @enable_dynamic_network \
         -l @soho_mdns \
         -l @cache_dns \

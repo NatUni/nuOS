@@ -1,0 +1,11 @@
+--- ../mp4v2.orig/Makefile	2024-07-31 09:30:46.933974000 -0400
++++ Makefile	2024-08-07 21:07:47.748259000 -0400
+@@ -30,4 +30,8 @@
+ CONFIGURE_ARGS=	--disable-gch
+ .endif
+ 
++post-stage:
++	${MV} ${STAGEDIR}${PREFIX}/bin/mp4extract ${STAGEDIR}${PREFIX}/bin/mp4v2extract
++	${MV} ${STAGEDIR}${PREFIX}/bin/mp4info ${STAGEDIR}${PREFIX}/bin/mp4v2info
++
+ .include <bsd.port.post.mk>

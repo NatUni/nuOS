@@ -99,6 +99,7 @@ collection_vars_init () {
 		sysutils/dmg2img
 		net/wifi-firmware-kmod
 		net/wifibox
+		emulators/libc6-shim
 		sysutils/neofetch
 		sysutils/pfetch
 	'
@@ -141,6 +142,7 @@ collection_vars_init () {
 		lang/racket
 		lang/cairo
 		lang/cim
+		lang/halide
 		www/zola
 		textproc/riffdiff
 		lang/chez-scheme
@@ -153,6 +155,7 @@ collection_vars_init () {
 		math/geogebra
 		math/R
 		net/spoofdpi
+		emulators/qemu-user-static
 	'
 	
 	COLL_user='
@@ -201,6 +204,9 @@ collection_vars_init () {
 		databases/postgresql16-server
 		databases/postgis34
 		databases/pg_activity
+		databases/timescaledb
+		databases/timescaledb-backup
+		databases/timescaledb-tune
 		databases/mysql81-server
 		databases/redis
 		databases/mongodb70
@@ -228,6 +234,7 @@ collection_vars_init () {
 		www/mod_qos
 		www/nginx
 		net/haproxy
+		www/trunk
 		security/snort3
 		security/zeek
 		security/barnyard2
@@ -255,6 +262,18 @@ collection_vars_init () {
 		sysutils/kubo-go
 		security/tor
 		security/i2pd
+		net-mgmt/librenms
+		net-mgmt/observium
+		net-mgmt/prometheus2
+		databases/prometheus-postgresql-adapter
+		databases/prometheus-postgres-exporter
+		net-mgmt/prometheus-collectd-exporter
+		dns/prometheus-dnssec-exporter
+		sysutils/py-prometheus-zfs
+		www/nginx-prometheus-exporter
+		net-mgmt/nvidia_gpu_prometheus_exporter
+		net-mgmt/mqtt2prometheus
+		www/grafana
 	'
 	
 	COLL_mediaserver='
@@ -288,6 +307,7 @@ collection_vars_init () {
 		audio/owntone
 		sysutils/android-file-transfer
 		www/galene
+		multimedia/zoneminder
 	'
 	
 	COLL_coinserver='
@@ -349,6 +369,7 @@ collection_vars_init () {
 		print/brlaser
 		misc/llama-cpp
 		misc/ollama
+		misc/py-oterm@py311
 		devel/py-jupyterlab@py311
 		devel/py-jupyterlab-lsp@py311
 		textproc/py-jupyterlab-pygments@py311
@@ -373,6 +394,10 @@ collection_vars_init () {
 		x11/nvidia-driver
 		graphics/nvidia-drm-kmod
 		graphics/nvidia-texture-tools
+		x11/nvidia-xconfig
+		x11/nvidia-settings
+		multimedia/libva-nvidia-driver
+		x11/linux-nvidia-libs
 		misc/utouch-kmod
 		sysutils/radeontop
 		graphics/vulkan-caps-viewer
@@ -385,10 +410,13 @@ collection_vars_init () {
 		graphics/spirv-tools
 		graphics/spirv-cross
 		devel/spirv-llvm-translator
+		multimedia/libva-vdpau-driver
+		multimedia/libvdpau
+		multimedia/libvdpau-va-gl
+		multimedia/linux-rl9-libvdpau
+		multimedia/vdpauinfo
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
-		net-mgmt/librenms
-		net-mgmt/observium
 		x11-wm/wayfire
 		x11/wf-shell
 		x11/wcm
@@ -405,6 +433,7 @@ collection_vars_init () {
 		sysutils/seatd
 		sysutils/touchegg
 		security/howdy
+		graphics/sdl2_gpu
 		devel/tortoisehg
 		editors/neovim-qt@qt6
 		editors/neovim-gtk
@@ -455,6 +484,8 @@ collection_vars_init () {
 		net/x11vnc
 		net/spiritvnc
 		www/novnc
+		x11/xpra
+		x11/xpra-html5
 		sysutils/conky
 		www/firefox
 		multimedia/mpv-mpris
@@ -465,6 +496,7 @@ collection_vars_init () {
 		net-im/dissent
 		multimedia/vlc
 		multimedia/mpc-qt
+		multimedia/v4l-utils
 		multimedia/obs-studio
 		multimedia/wlrobs
 		multimedia/shotcut

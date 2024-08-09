@@ -1,0 +1,14 @@
+--- ../py-typer.orig/Makefile	2024-07-31 09:30:41.871246000 -0400
++++ Makefile	2024-08-08 21:11:58.400329000 -0400
+@@ -22,4 +22,10 @@ USE_PYTHON=	autoplist concurrent pep517
+ 
+ NO_ARCH=	yes
+ 
+-.include <bsd.port.mk>
++.include <bsd.port.pre.mk>
++
++pre-package:
++	${RM} ${STAGEDIR}${PREFIX}/bin/typer
++	${REINPLACE_CMD} -e 5d ${TMPPLIST}
++
++.include <bsd.port.post.mk>
