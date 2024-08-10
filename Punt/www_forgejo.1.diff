@@ -1,0 +1,10 @@
+--- ../forgejo/Makefile.orig	2024-06-20 23:30:47.536517000 +0000
++++ Makefile	2024-06-20 23:30:39.906143000 +0000
+@@ -62,6 +62,7 @@
+ MAKE_JOBS_UNSAFE=	yes
+ 
+ post-patch:
++	${REINPLACE_CMD} -e 's:(curUrl.startsWith(appUrl) || `\$${curUrl}/` === appUrl):(curUrl.toLowerCase().startsWith(appUrl.toLowerCase()) || `\$${curUrl.toLowerCase()}/` === appUrl.toLowerCase()):g' ${WRKSRC}/public/assets/js/index.js.e38300cc.map ${WRKSRC}/web_src/js/features/common-global.js
+ 	${ECHO_CMD} ${DISTVERSION} >${WRKSRC}/VERSION
+ 
+ # Too lazy to figure out why go install won't work.

@@ -126,6 +126,7 @@ collection_vars_init () {
 		devel/llvm18
 		math/lean4
 		lang/v
+		devel/kokkos
 		lang/expect
 		math/convertall
 		lang/python
