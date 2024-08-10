@@ -197,13 +197,13 @@ xzcat -T0 /home/jedi/nuOS-v12.999a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=
 setenv PATH ${PATH}:/usr/nuos/bin
 
 # Your shell is (t)csh and you want to use the nuOS version you're developing:
-setenv PATH ${PATH}:/home/$USER/nuOS/bin
+setenv PATH ${PATH}:/home/jedi/nuOS/bin
 
 # Your shell is (ba)sh and you want to use the nuOS version your system came with:
 PATH=$PATH:/usr/nuos/bin
 
 # Your shell is (ba)sh and you want to use the nuOS version you're developing:
-PATH=$PATH:/home/$USER/nuOS/bin
+PATH=$PATH:/home/jedi/nuOS/bin
 
 # WARNING: Passing secrets via the environment or command line is insecure on any multiuser system
 #          and any secrets landing in your shell's command history log are hard to keep private.

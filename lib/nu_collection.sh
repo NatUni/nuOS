@@ -102,6 +102,7 @@ collection_vars_init () {
 		emulators/libc6-shim
 		sysutils/neofetch
 		sysutils/pfetch
+		sysutils/fastfetch
 	'
 	
 	COLL_developer='
@@ -369,6 +370,7 @@ collection_vars_init () {
 		print/brlaser
 		misc/llama-cpp
 		misc/ollama
+		misc/py-ollama@py311
 		misc/py-oterm@py311
 		devel/py-jupyterlab@py311
 		devel/py-jupyterlab-lsp@py311
@@ -531,6 +533,9 @@ collection_vars_init () {
 	
 	COLL_nice='
 		server
+		lang/ldc
+		net/dpdk
+		net/vpp
 		devel/py-jupyterlab-widgets@py311
 		science/py-jupyter_jsmol@py311
 		devel/jenkins
@@ -540,7 +545,6 @@ collection_vars_init () {
 		net/ntp
 		net-p2p/bitcoinsv-daemon
 		net-p2p/bitcoinsv-utils
-		www/redmine51
 		www/librewolf
 		www/iridium
 		games/veloren-weekly

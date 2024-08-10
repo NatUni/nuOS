@@ -1,4 +1,4 @@
-if canhas ${L2_bridge} && ! canhas ${L2_BRIDGES-}; then
+if canhas ${L2_bridge-} && ! canhas ${L2_BRIDGES-}; then
 	L2_bridge255=$L2_bridge
 fi
 

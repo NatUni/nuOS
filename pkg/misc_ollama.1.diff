@@ -1,0 +1,35 @@
+--- ../ollama.orig/Makefile	2024-08-09 11:09:21.639707000 -0400
++++ Makefile	2024-08-09 11:08:03.954150000 -0400
+@@ -1,7 +1,7 @@
+ PORTNAME=	ollama
+ DISTVERSIONPREFIX=	v
+ DISTVERSION=	0.3.4
+-PORTREVISION=	4
++PORTREVISION=	2
+ CATEGORIES=	misc # machine-learning
+ 
+ MAINTAINER=	yuri@FreeBSD.org
+@@ -16,7 +16,6 @@
+ 
+ BUILD_DEPENDS=	bash:shells/bash \
+ 		cmake:devel/cmake-core \
+-		glslc:graphics/shaderc \
+ 		vulkan-headers>0:graphics/vulkan-headers
+ LIB_DEPENDS=	libvulkan.so:graphics/vulkan-loader
+ 
+@@ -28,14 +27,12 @@
+ USE_GITHUB=	nodefault
+ GH_TUPLE=	ggerganov:llama.cpp:6eeaeba:llama_cpp/llm/llama.cpp
+ 
+-MAKE_ENV=	PATH=${PATH}:${WRKSRC}/llm/build/bsd/x86_64_static/bin # workaround to find vulkan-shaders-gen
+-
+ PLIST_FILES=	bin/${PORTNAME}
+ 
+ post-patch: # workaround for https://github.com/ollama/ollama/issues/6259 (use of extenral libllama.so)
+ 	@${REINPLACE_CMD} \
+ 		-e '\
+-			s| llama | llama ${LOCALBASE}/lib/libvulkan.so omp pthread |; \
++			s| llama | llama omp |; \
+ 			s| llama | ${WRKSRC}/llm/build/bsd/x86_64_static/src/libllama.a |; \
+ 			s| ggml | ${WRKSRC}/llm/build/bsd/x86_64_static/ggml/src/libggml.a |; \
+ 		' \

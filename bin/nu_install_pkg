@@ -84,8 +84,8 @@ else
 fi
 
 make_way () {
-	if [ -f "$metainfo_dir/$port_.displace" ]; then
-		dps=$(pkg info -qO `cat "$metainfo_dir/$port_.displace"`)
+	if [ -f "$metainfo_dir/$port_.displace" ] || [ -f "$metainfo_dir/${port_%@*}.displace" ]; then
+		dps=$(pkg ${CHROOTDIR:+-c $CHROOTDIR} info -qO `cat "$metainfo_dir/$port_.displace" "$metainfo_dir/${port_%@*}.displace" 2>/dev/null | sort -u`)
 		if canhas ${dps-}; then
 			lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" pkg ${CHROOTDIR:+-c $CHROOTDIR} delete -fy $dps || true
 		fi
