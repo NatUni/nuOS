@@ -1,11 +1,11 @@
 sister enable_svc -C "$TRGT" nuos_gui seatd dbus hald webcamd
 
-eko 'utouch_load="YES"' > "$TRGT/boot/loader.conf.d/utouch"
+eko 'utouch_load="YES"' > "$TRGT/boot/loader.conf.d/utouch.conf"
 
 if canhas ${GPU_VENDOR-}; then
 	case $GPU_VENDOR in
 		[Nn][Vv][Ii][Dd][Ii][Aa])
-			eko hw.nvidiadrm.modeset=1 > "$TRGT/boot/loader.conf.d/nvidia-modeset"
+			eko hw.nvidiadrm.modeset=1 > "$TRGT/boot/loader.conf.d/nvidia-modeset.conf"
 			gpu_kmod=nvidia-modeset
 		;;
 		[Aa][Mm][Dd]) gpu_kmod=amdgpu;;
