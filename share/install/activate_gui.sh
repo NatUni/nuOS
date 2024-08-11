@@ -6,7 +6,7 @@ if canhas ${GPU_VENDOR-}; then
 	case $GPU_VENDOR in
 		[Nn][Vv][Ii][Dd][Ii][Aa])
 			eko hw.nvidiadrm.modeset=1 > "$TRGT/boot/loader.conf.d/nvidia-modeset.conf"
-			gpu_kmod=nvidia-modeset
+			gpu_kmod=nvidia-drm
 		;;
 		[Aa][Mm][Dd]) gpu_kmod=amdgpu;;
 		[Ii][Nn][Tt][Ee][Ll]) gpu_kmod=i915kms;;
