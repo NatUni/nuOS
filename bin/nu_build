@@ -204,9 +204,18 @@ else
 		while read -r f; do
 			rm -dfv "${f#/}"
 		done
+		
 		# TODO: handle this programmatically using share/fbsd-divergence/renamed
 		mv -nv usr/bin/openssl usr/bin/openssl.fbsd
 	)
+	
+	cat > $POOL_MNT/etc/rc.d/sshd <<'EOF'
+#!/bin/sh
+
+# PROVIDE: sshd
+# REQUIRE: openssh LOGIN FILESYSTEMS
+# KEYWORD: shutdown
+EOF
 	
 	# TODO: nu_update misses this for now but it's not a real show stopper. make this modificaiton more robust to change and
 	#       include it when refactoring the above fbsd-divergence work.
@@ -573,7 +582,7 @@ EOF
 
 # PROVIDE: nuos_gui
 # REQUIRE: LOGIN syscons swaplate sshd cron jail localpkg securelevel power_profile nfscbd natd msgs moused mixer kpasswdd kfd kadmind ipropd_slave ipropd_master ipfw_netflow inetd hostapd gptboot geli2 ftpd ftp-proxy dhclient bsnmpd bluetooth blacklistd bgfsck
-# BEFORE: nuos_firstboot
+# BEFORE: lightdm sddm gdm nuos_firstboot
 
 . /etc/rc.subr
 
@@ -583,30 +592,66 @@ start_cmd="${name}_start"
 stop_cmd=":"
 rcvar="${name}_enable"
 : ${nuos_gui_enable:=NO}
+: ${nuos_gui_nvidia:=NO}
 
 nuos_gui_start ()
 {
 	test -d /usr/local/etc/X11/xorg.conf.d || return
 
-	fw=`sysctl -n machdep.bootmethod`
+	fw=`checkyesno nuos_gui_nvidia && echo NV || sysctl -n machdep.bootmethod`
 	echo nuos_gui: $fw
 
 	case $fw in
-		BIOS)
-			drv=vesa
-			rm -vf /usr/local/etc/X11/xorg.conf.d/20-scfb.conf 2>/dev/null;;
-		UEFI)
-			drv=scfb
-			rm -vf /usr/local/etc/X11/xorg.conf.d/20-vesa.conf 2>/dev/null;;
+		NV)
+			drv=nvidia
+			i=0
+			while pcidata=`pciconf -l vgapci$i 2>&1`; do
+				IFS=$'\t' read -r loc data <<EOF
+$pcidata
+EOF
+				read -r c r h v d sv sd <<EOF
+$data
+EOF
+				case ${v#vendor=0x} in
+					10de)
+						supported=`sed -ne '/ id="Current"/,/Below are the legacy GPUs that are no longer supported/{/^.* id="devid/{s///;s/".*$//p;};}' /usr/local/share/doc/NVIDIA_GLX-1.0/html/supportedchips.html | grep -xi -e ${d#device=0x} -e ${d#device=0x}_${sv#subvendor=0x}_${sd#subdevice=0x}`
+						if [ -n "$supported" ]; then
+							IFS=: read -r dom s d f <<EOF
+$loc
+EOF
+							dom=${dom#*@pci}
+							dom=${dom#0}
+							s=$s${dom:+@$dom}
+							gpus="${gpus:+$gpus }$s:$d:$f"
+						fi
+					;;
+				esac
+				i=$(($i + 1))
+			done
+		;;
+		BIOS) drv=vesa;;
+		UEFI) drv=scfb;;
 	esac
 
-	test ! -f /usr/local/etc/X11/xorg.conf.d/20-${drv}.conf || return
-	cat > /usr/local/etc/X11/xorg.conf.d/20-${drv}.conf <<EOF
+	i=0
+	while
+		cat <<EOF
 Section "Device"
-	Identifier "Card0"
+	Identifier "Card$i"
 	Driver     "${drv}"
-EndSection
+${gpus:+	BusID      "PCI:${gpus%% *}"
+}EndSection
 EOF
+		if [ "x$gpus" != "x${gpus#* }" ]; then
+			gpus="${gpus#* }"
+		else
+			gpus=
+		fi
+		[ -n "$gpus" ];
+	do
+		i=$(($i + 1))
+	done > /var/run/nuos_gui/xorg.conf.new
+	mv -f /var/run/nuos_gui/xorg.conf.new /var/run/nuos_gui/xorg.conf
 }
 
 load_rc_config $name

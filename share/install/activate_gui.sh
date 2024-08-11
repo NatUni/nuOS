@@ -2,11 +2,12 @@ sister enable_svc -C "$TRGT" nuos_gui seatd dbus hald webcamd
 
 eko 'utouch_load="YES"' > "$TRGT/boot/loader.conf.d/utouch.conf"
 
-if canhas ${GPU_VENDOR-}; then
-	case $GPU_VENDOR in
+for gpu in ${GPU_VENDOR-}; do
+	case $gpu in
 		[Nn][Vv][Ii][Dd][Ii][Aa])
 			eko hw.nvidiadrm.modeset=1 > "$TRGT/boot/loader.conf.d/nvidia-modeset.conf"
 			gpu_kmod=nvidia-drm
+			eko 'nuos_gui_nvidia="YES"' >> "$TRGT/etc/rc.conf.d/nuos_gui"
 		;;
 		[Aa][Mm][Dd]) gpu_kmod=amdgpu;;
 		[Ii][Nn][Tt][Ee][Ll]) gpu_kmod=i915kms;;
@@ -15,7 +16,11 @@ if canhas ${GPU_VENDOR-}; then
 	cat >> "$TRGT/etc/rc.conf.local" <<EOF
 kld_list="\$kld_list $gpu_kmod"
 EOF
-fi
+done
+
+mkdir "$TRGT/var/run/nuos_gui"
+:> "$TRGT/var/run/nuos_gui/xorg.conf"
+ln -s ../../../../../var/run/nuos_gui/xorg.conf "$TRGT/usr/local/etc/X11/xorg.conf.d/20-nuos_gui.conf"
 
 mkdir -m 1777 "$TRGT/var/run/user"
 
