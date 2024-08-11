@@ -47,6 +47,7 @@ collection_vars_init () {
 	
 	COLL_bare='
 		pkg
+		sysutils/cpu-microcode
 		net/realtek-re-kmod198
 		security/openssh-portable
 		net/dhcpcd
@@ -58,6 +59,7 @@ collection_vars_init () {
 		net/hostapd
 		security/wpa_supplicant
 		net-mgmt/net-snmp
+		net/ntp
 		sysutils/pefs-kmod
 		net/rsync
 		security/gnupg
@@ -103,12 +105,16 @@ collection_vars_init () {
 		sysutils/neofetch
 		sysutils/pfetch
 		sysutils/fastfetch
+		sysutils/ufetch
+		sysutils/bsdebfetch
+		sysutils/cpufetch
 	'
 	
 	COLL_developer='
 		lite
 		devel/bsddialog
 		ports-mgmt/portconfig
+		archivers/rpm4
 		graphics/jp2a
 		devel/subversion
 		devel/git
@@ -146,6 +152,7 @@ collection_vars_init () {
 		lang/cim
 		lang/halide
 		www/zola
+		sysutils/linux-miniconda-installer
 		textproc/riffdiff
 		lang/chez-scheme
 		emulators/qemu
@@ -242,6 +249,7 @@ collection_vars_init () {
 		security/barnyard2
 		security/suricata
 		security/lego
+		net-mgmt/fastnetmon
 		www/matomo
 		security/shibboleth-sp
 		security/shibboleth-idp
@@ -310,6 +318,7 @@ collection_vars_init () {
 		sysutils/android-file-transfer
 		www/galene
 		multimedia/zoneminder
+		multimedia/linux_dvbwrapper-kmod
 	'
 	
 	COLL_coinserver='
@@ -373,6 +382,7 @@ collection_vars_init () {
 		misc/ollama
 		misc/py-ollama@py311
 		misc/py-oterm@py311
+		misc/alpaca
 		devel/py-jupyterlab@py311
 		devel/py-jupyterlab-lsp@py311
 		textproc/py-jupyterlab-pygments@py311
@@ -418,6 +428,7 @@ collection_vars_init () {
 		multimedia/libvdpau-va-gl
 		multimedia/linux-rl9-libvdpau
 		multimedia/vdpauinfo
+		graphics/linux-rl9-libglvnd
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
 		x11-wm/wayfire
@@ -543,7 +554,6 @@ collection_vars_init () {
 		net/krill
 		multimedia/kooha
 		audio/mousai
-		net/ntp
 		net-p2p/bitcoinsv-daemon
 		net-p2p/bitcoinsv-utils
 		www/librewolf

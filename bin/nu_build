@@ -278,6 +278,7 @@ kern.ipc.semmni="1000"
 EOF
 	
 	cat >> $POOL_MNT/etc/rc.conf <<'EOF'
+microcode_update_enable="YES"
 linux_enable="YES"
 kld_list="geom_eli ipfw ng_ether ng_bridge nmdm vmm sem cuse accf_data accf_dns accf_http cc_cdg"
 entropy_file="/var/db/entropy/seed"
