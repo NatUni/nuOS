@@ -456,7 +456,6 @@ collection_vars_init () {
 		x11/swayidle
 		x11/wlogout
 		x11/ly
-		x11-wm/labwc
 		x11-wm/hyprland
 		x11/kanshi
 		x11/mako
@@ -703,6 +702,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		gamer
+		x11-wm/labwc
 		math/or-tools
 		devel/librashader
 		lang/ldc

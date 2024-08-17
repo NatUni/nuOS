@@ -964,3 +964,8 @@ glabel status -s | xargs -L1 | awk '$1 ~ /^gpt\/kono[0-9]/{print $3}' | sed -Ee 
 awk '$2 == "DS" && $4 == 8 && $5 == 2 { print substr($1, 1, length($1) - 1), $3, $6}' ds.txt | while read d t h; do host -t ds $d 8.8.8.8 | grep "^$d has "; sleep 1; done | tee lookup.out
 
 awk '$2 == "DS" && $4 == 8 && $5 == 2 { print substr($1, 1, length($1) - 1), $3, $6}' ds.txt | while read d t h; do echo; sed -ne /^$d/'{s/\. /            /;p;}' ds.txt; grep "^$d has " lookup.out; echo "https://ap.www.namecheap.com/Domains/DomainControlPanel/$d/advancedns"; done
+
+
+
+for f in `ls FreeBSD-13.3-amd64.opteron-sse3`; do echo $f; xzcat FreeBSD-13.3-amd64.opteron-sse3/$f | xz -zc -T0 > FreeBSD-13.3-amd64.opteron-sse3.new/$f; done
+for f in `ls FreeBSD-13.3-amd64.opteron-sse3`; do echo $f; touch -r FreeBSD-13.3-amd64.opteron-sse3/$f FreeBSD-13.3-amd64.opteron-sse3.new/$f; done

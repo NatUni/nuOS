@@ -276,7 +276,7 @@ service netif restart wifibox0
 
 nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q -c gamer
 
-nu_build -q
+time nu_build -q -c gamer -r g13
 
 service jail stop
 
@@ -328,10 +328,12 @@ cp -anv ~/.*history /tmp/nu_sys.*.ALT_MNT.*/root/
 
 shutdown -r now
 
-
+nu_img -d spore
 zfs destroy -r rick/img/spore
 
-env DISPLAY_MANAGER=light nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c gamer -r g13 -z 120000000K
+#time nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c gamer -r g13 -z 120000000K
+time nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c desktop -r g13
+
 cp -v /root/nuOS-v12.999a0-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
 
 gpg2 --local-user 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 --clear-sign nuOS-v12.999a0-amd64.dd.sum

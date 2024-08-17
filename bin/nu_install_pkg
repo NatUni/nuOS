@@ -221,7 +221,7 @@ for port in `grep / "$deps"`; do
 				pkg_step=pre-install
 				. "$script"
 			fi
-			env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg || lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} add -M - < $pkg_file.$PKG_SUFFIX
+			env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg || xz --threads=0 --decompress --keep --force --stdout $pkg_file.$PKG_SUFFIX | lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} add -M -
 			if [ -f "$script" ]; then
 				pkg_step=post-install
 				. "$script"
