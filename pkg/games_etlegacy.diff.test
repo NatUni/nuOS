@@ -1,0 +1,1 @@
+! grep -qw pak0\\.pk3 distinfo

@@ -1,0 +1,72 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.999a0 - bin/nu_clock
+#
+# Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.999a0
+
+# current hardcoded target terminal: 172x32
+
+: ${NOM=nuOS}
+: ${NMR=`echo $NUOS_VER | sed -Ee 's/^0\.//;s/^0\.//;s/[a-zA-Z]+[0-9]+$//'`}
+
+if [ -t 1 ]; then
+	trm=y
+else
+	echo "$NOM"
+	echo "$NMR"
+fi
+
+logo () {
+	tdfiglet -jr -f breachx -w $(($W - 5)) "$NOM" && tdfiglet -jr -w $(($W - 11)) -f cartoon "$NMR"
+}
+
+while
+	{ read -r W; read -r H; } <<EOF
+`[ -n "${trm-}" ] && tput cols lines || printf "80\n24\n"`
+EOF
+	if [ $W != "${w-}" ]; then
+		w=$W
+		l=`logo`
+	fi
+	if [ $H != "${h-}" ]; then
+		h=$H
+		s=
+		i=24
+		while [ $i -lt $H ]; do
+			s=$s$'\n'
+			i=$(($i + 2))
+		done
+	fi
+	# echo $W $H
+	t=`gdate +%T.%3N`
+	ms=${t##*.}
+	ms=${ms#0}
+	ms=${ms#0}
+	time=${t%.*}
+	time=${time#0}
+	if [ $(($W + $H)) -le 110 ]; then
+		time=${time%:*}
+	fi
+	cat <<EOF
+$t
+
+
+$s$(tdfiglet -jc -w $(($W - 9)) -f cyanidx $time)$s
+$l
+EOF
+:
+do
+	sleep .$((1000 - $ms))
+done

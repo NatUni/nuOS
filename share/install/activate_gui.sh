@@ -1,4 +1,4 @@
-sister enable_svc -C "$TRGT" nuos_gui seatd dbus hald webcamd
+sister enable_svc -C "$TRGT" nuos_gui seatd dbus webcamd
 
 eko 'utouch_load="YES"' > "$TRGT/boot/loader.conf.d/utouch.conf"
 
@@ -30,12 +30,12 @@ Ly:\
 	:al=root:
 EOF
 
-if canhas ${DISPLAY_MANAGER-}; then
+if canhas ${DISPLAY_MANAGER=lightdm}; then
 	case $DISPLAY_MANAGER in
 		[Ll][Yy])
 			sed -i '' -e '/^ttyv1[[:space:]]/s/[[:<:]]Pc[[:>:]]/Ly/' "$TRGT/etc/ttys"
 		;;
-		[Ll][Ii][Gg][Hh][Tt])
+		[Ll][Ii][Gg][Hh][Tt]*)
 			sister enable_svc -C "$TRGT" lightdm
 		;;
 	esac

@@ -136,10 +136,12 @@ collection_vars_init () {
 		lang/expect
 		math/convertall
 		lang/python
+		lang/python38
 		lang/ruby33
 		lang/go
 		lang/rust
 		devel/wasmer
+		lang/mono6.8
 		www/node
 		www/npm
 		www/yarn
@@ -152,6 +154,9 @@ collection_vars_init () {
 		lang/cim
 		lang/halide
 		www/zola
+		devel/libsigsegv
+		devel/linux-rl9-libsigsegv
+		devel/linux-rl9-devtools
 		sysutils/linux-miniconda-installer
 		textproc/riffdiff
 		lang/chez-scheme
@@ -165,6 +170,7 @@ collection_vars_init () {
 		math/R
 		net/spoofdpi
 		emulators/qemu-user-static
+		archivers/nfpm
 	'
 	
 	COLL_user='
@@ -182,6 +188,9 @@ collection_vars_init () {
 		shells/zsh
 		shells/fish
 		shells/bash
+		games/cxxmatrix
+		misc/figlet-fonts
+		misc/tdfiglet
 	'
 	
 	COLL_miniserver='
@@ -232,7 +241,6 @@ collection_vars_init () {
 		java/openjdk21
 		textproc/zed
 		textproc/zq
-		math/or-tools
 		sysutils/parallel
 		security/pssh
 		sysutils/hilite
@@ -398,6 +406,15 @@ collection_vars_init () {
 		devel/py-jupyter-server-mathjax@py311
 		devel/py-jupyter-ydoc@py311
 		devel/evcxr-jupyter
+		misc/pytorch
+		misc/py-pytorch@py311
+		audio/py-torchaudio@py311
+		math/py-pytorchvideo@py311
+		misc/py-facenet-pytorch@py311
+		misc/py-pytorch-lightning@py311
+		misc/py-torch-geometric@py311
+		misc/py-torchmetrics@py311
+		misc/py-torchvision@py311
 	'
 	
 	COLL_desktop='
@@ -439,6 +456,8 @@ collection_vars_init () {
 		x11/swayidle
 		x11/wlogout
 		x11/ly
+		x11-wm/labwc
+		x11-wm/hyprland
 		x11/kanshi
 		x11/mako
 		net/waypipe
@@ -526,11 +545,6 @@ collection_vars_init () {
 		audio/mixxx
 		cad/opencascade
 		graphics/blender
-		games/sdlpop
-		games/openarena
-		games/openrct2
-		games/wesnoth
-		astro/stellarium
 		devel/gwenhywfar
 		devel/p5-Module-Build-Tiny
 		finance/gnucash
@@ -543,13 +557,163 @@ collection_vars_init () {
 		devel/RStudio@desktop
 	'
 	
+	COLL_gamer='
+		desktop
+		astro/stellarium
+		games/sdlpop
+		games/openarena
+		games/urbanterror-data
+		games/wesnoth
+		games/0ad
+		games/SRB2
+		games/astromenace
+		games/bzflag
+		games/brutalchess
+		games/connectfive
+		games/cgoban
+		games/diaspora
+		games/endgame-singularity
+		games/endless-sky-high-dpi
+		games/el
+		games/dunelegacy
+		games/flightgear
+		games/formido
+		games/foobillard
+		games/evq3
+		games/etracer
+		games/etlegacy
+		games/freecol
+		games/freeciv21
+		games/freeorion
+		games/frogatto
+		games/frozen-bubble
+		games/gigalomania
+		games/glest
+		games/goonies
+		games/gracer
+		games/hedgewars
+		games/hedgewars-server
+		games/heretic
+		games/hexxagon
+		games/highmoon
+		emulators/fceux
+		emulators/higan
+		emulators/mednafen
+		games/jumpy
+		games/jumpnbump
+		games/irrlamb
+		games/iqpuzzle
+		games/lugaru
+		games/lincity-ng
+		games/lander
+		games/minecraft-server
+		games/minecraft-client
+		games/megamario
+		games/megaglest
+		games/mari0
+		games/marblemarcher
+		games/netrek-client-cow
+		games/nexuiz
+		games/neverball
+		games/moonlight-qt
+		games/open-adventure
+		games/oolite
+		games/opensonic
+		games/openmortal
+		games/openclonk
+		games/openclaw
+		games/opencity
+		games/openttd
+		games/opengfx
+		games/openmsx
+		games/opensfx
+		games/opentyrian
+		games/tyrian-data
+		games/opensurge
+		games/openssn
+		games/pioneers
+		games/pioneer
+		games/phlipple
+		games/pingus
+		games/pinball
+		games/pengupop
+		games/pacmanarena
+		games/prboom-plus
+		games/primateplunge
+		games/punchy
+		games/openyahtzee
+		games/powermanga
+		games/powder-toy
+		games/pokerth
+			devel/py-flit-core@py311
+			x11-toolkits/py-wxPython4@py311
+			devel/py-flit-core@py39
+			x11-toolkits/py-wxPython4@py39
+		emulators/playonbsd
+		emulators/ares
+		games/veloren-weekly
+		games/simutrans
+		games/tesseract
+		games/supertux
+		games/supertux2
+		games/supertuxkart
+		games/stormbaancoureur
+		graphics/ogre3d
+		games/gogrepo
+		games/torcs
+		games/toycars
+		games/trackballs
+		games/traingame
+		games/triplane
+		games/tuxracer
+		games/trigger-rally
+		games/voadi
+		games/ultimatestunts
+		games/unknown-horizons
+		games/untahris
+		games/ufoai
+		games/vamos
+		games/vkquake
+		games/wolfpack
+		games/wop
+		games/wordwarvi
+		games/worldofpadman
+		games/wyrmsun
+		games/uqm
+		games/xpilot-ng-server
+		games/xpilot
+		games/xonotic
+		games/xbill
+		games/xlennart
+		games/xkoules
+		games/xinvaders3d
+		games/xeyesplus
+		games/xfireworks
+		games/xdesktopwaves
+		games/xconq
+		games/xblackjack
+		games/xbl
+		games/widelands
+		games/whichwayisup
+		games/warzone2100
+		games/warmux
+		games/xrally
+		games/xsc
+	'
+	
 	COLL_nice='
-		server
+		gamer
+		math/or-tools
+		devel/librashader
 		lang/ldc
+		games/stuntrally
 		net/dpdk
 		net/vpp
 		devel/py-jupyterlab-widgets@py311
 		science/py-jupyter_jsmol@py311
+		games/emptyepsilon
+		games/pink-pony
+		games/palomino
 		devel/jenkins
 		net/krill
 		multimedia/kooha
@@ -558,7 +722,6 @@ collection_vars_init () {
 		net-p2p/bitcoinsv-utils
 		www/librewolf
 		www/iridium
-		games/veloren-weekly
 		net-p2p/cardano-node
 		net-p2p/cardano-db-sync
 		net-im/py-matrix-synapse
@@ -569,7 +732,7 @@ collection_vars_init () {
 		lang/crystal
 		math/sage
 		deskutils/calibre
-		x11-wm/hyprland
+		games/openbve
 	'
 	
 	COLL_nasty='

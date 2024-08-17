@@ -1,0 +1,8 @@
+--- ../ORIG/pkg-plist	2024-08-13 00:00:00
++++ pkg-plist	2024-08-13 00:00:00
+@@ -107,3 +107,5 @@ share/vulkan/implicit_layer.d/nvidia_layers.json
+ %%MODULESDIR%%/extensions/libglxserver_nvidia.so.1
+ /%%KMODDIR%%/nvidia.ko
+ /%%KMODDIR%%/nvidia-modeset.ko
++/%%KMODDIR%%/nvidia_gsp_ga10x_fw.ko
++/%%KMODDIR%%/nvidia_gsp_tu10x_fw.ko

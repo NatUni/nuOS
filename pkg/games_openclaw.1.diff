@@ -1,0 +1,11 @@
+--- ../openclaw.orig/Makefile	2024-07-31 09:30:43.713879000 -0400
++++ Makefile	2024-08-14 09:48:04.595082000 -0400
+@@ -31,7 +31,7 @@
+ OPTIONS_DEFAULT=	LAUNCHER
+ 
+ LAUNCHER_DESC=	Install launcher to manage game settings
+-LAUNCHER_USES=	magick:6,build mono
++LAUNCHER_USES=	magick:7,build mono
+ LAUNCHER_PLIST_FILES=	bin/ClawLauncher.exe bin/clawlauncher
+ LAUNCHER_DESKTOP_ENTRIES=	\
+ 		"${GH_PROJECT}" \

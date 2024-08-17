@@ -1,0 +1,13 @@
+--- ../emptyepsilon.orig/distinfo	2024-08-13 17:31:28.022187000 -0400
++++ distinfo	2024-08-13 17:31:31.720027000 -0400
+@@ -1,5 +1,5 @@
+-TIMESTAMP = 1624569629
+-SHA256 (daid-EmptyEpsilon-EE-2021.06.23_GH0.tar.gz) = 878f36330a95a76039671a980a2fd680e7ddbdc5e22ff6ca046010b03d3efd01
+-SIZE (daid-EmptyEpsilon-EE-2021.06.23_GH0.tar.gz) = 285211647
+-SHA256 (daid-SeriousProton-EE-2021.06.23_GH0.tar.gz) = 4c79b358ad310c773dd0db265393fba829df10a6f284240acbb383288d4f33d5
+-SIZE (daid-SeriousProton-EE-2021.06.23_GH0.tar.gz) = 1181117
++TIMESTAMP = 1723584718
++SHA256 (daid-EmptyEpsilon-EE-2024.08.09_GH0.tar.gz) = 94e20a79e08e97213d0add936fe3caa1a6f79d8ad1495d73f476b52b91ea5531
++SIZE (daid-EmptyEpsilon-EE-2024.08.09_GH0.tar.gz) = 261106883
++SHA256 (daid-SeriousProton-EE-2024.08.09_GH0.tar.gz) = ff8762016eacf18620ff4f9513462231b1f2c9819127d8aebbdea05c149c1db3
++SIZE (daid-SeriousProton-EE-2024.08.09_GH0.tar.gz) = 2648726

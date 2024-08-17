@@ -1,0 +1,19 @@
+--- ../etlegacy.orig/files/pkg-message.in	2024-07-31 09:30:43.463173000 -0400
++++ files/pkg-message.in	2024-08-13 18:49:05.097313000 -0400
+@@ -1,16 +0,0 @@
+-{ type: install
+-  message: <<EOM
+-Enemy Territory Legacy (native version) has been installed.
+-
+-1) In order to run ET: Legacy you will need to copy the original pak0.pk3
+-assets file to the etmain folder. In addition, third party mods might also
+-require the pak1.pk3 and pak2.pk3 assets files.
+-
+-Download them from https://mirror.etlegacy.com/etmain/ to
+-
+-%%PREFIX%%/lib/etlegacy/etmain/ or ~/.etlegacy/etmain/
+-
+-2) Enjoy it :)
+-EOM
+-}
+-]

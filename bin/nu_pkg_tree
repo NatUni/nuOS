@@ -181,7 +181,14 @@ main () {
 					*) flavor=
 				esac
 				underscore port
-				makeargs="$metainfo_dir/${port_%@*}.makeargs"
+				unset makeargs
+				if canhas ${flavor-}; then
+					require_tmp makeargs
+					cat "$metainfo_dir/${port_%@*}.makeargs" 2>/dev/null >| "$makeargs" || true
+					cat "$metainfo_dir/$port_.makeargs" 2>/dev/null >> "$makeargs" || true
+				else
+					makeargs="$metainfo_dir/$port_.makeargs"
+				fi
 				
 				cd "/usr/ports/${port%@*}"
 
@@ -279,7 +286,7 @@ main () {
 						underscore master
 						if [ ! -e "$work_dir/$master_/name" ]; then
 							mkdir -p "$work_dir/$master_"
-							makeargs="$metainfo_dir/$master_.makeargs"
+							masters_makeargs="$metainfo_dir/$master_.makeargs"
 							cd /usr/ports/$master
 							srsly ${OPT_SERIAL-} || until mkdir \
 								"$scratch_dir/$master_.name.lock" \
@@ -289,7 +296,7 @@ main () {
 							done
 							make __MAKE_CONF="$make_conf" PORT_DBDIR="$PORT_DBDIR" \
 								${flavor:+FLAVOR=$flavor} \
-								`cat "$makeargs" 2>/dev/null` \
+								`cat "$masters_makeargs" 2>/dev/null` \
 								-v PKGNAME \
 									>| "$work_dir/$master_/name"
 							srsly ${OPT_SERIAL-} \
@@ -347,6 +354,9 @@ main () {
 
 				if ! srsly ${OPT_NORECURSE-}; then
 					deps=`cat "$scratch_dir/$port_.${recurse}_deps"`
+				fi
+				if canhas ${flavor-}; then
+					retire_tmp makeargs
 				fi
 				echo -n '>'
 			;;

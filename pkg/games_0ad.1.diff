@@ -1,0 +1,11 @@
+--- ../0ad.orig/Makefile	2024-08-13 12:02:34.108577000 -0400
++++ Makefile	2024-08-13 12:03:00.629583000 -0400
+@@ -68,7 +68,7 @@
+ .endif
+ 
+ pre-build:
+-	(cd ${WRKSRC}/build/workspaces && ${SETENV} ${MAKE_ENV} ./update-workspaces.sh --bindir=${PREFIX}/bin --datadir=${DATADIR} --libdir=${PREFIX}/lib/${PORTNAME})
++	(cd ${WRKSRC}/build/workspaces && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ./update-workspaces.sh --bindir=${PREFIX}/bin --datadir=${DATADIR} --libdir=${PREFIX}/lib/${PORTNAME})
+ 
+ do-install:
+ 	${INSTALL_PROGRAM} ${WRKSRC}/binaries/system/pyrogenesis ${STAGEDIR}${PREFIX}/bin

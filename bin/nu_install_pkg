@@ -117,7 +117,14 @@ for port in `grep / "$deps"`; do
 		if srsly "${OPT_TAGPKG-}" || [ -z "${PKG_SUFFIX-}" -o ! -e $pkg_file.${PKG_SUFFIX-} ]; then
 			[ -z "${OPT_NOMAKE-}" ]
 			destdir=
-			makeargs="$metainfo_dir/$uni.makeargs"
+			unset makeargs
+			if canhas ${flavor-}; then
+				require_tmp makeargs
+				cat "$metainfo_dir/$uni.makeargs" 2>/dev/null >| "$makeargs" || true
+				cat "$metainfo_dir/$uni@$flavor.makeargs" 2>/dev/null >> "$makeargs" || true
+			else
+				makeargs="$metainfo_dir/$uni.makeargs"
+			fi
 			if [ -z "${OPT_NOSCRIPT-}" ] && [ -f "$script" ]; then
 				pkg_step=pre-build
 				. "$script"
@@ -147,12 +154,12 @@ for port in `grep / "$deps"`; do
 							)
 						done
 					fi
+					make_way
 					env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS package
 				fi
 				if canhas ${old_pkg-}; then
 					lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS deinstall
 				fi
-				make_way
 				if [ -z "${OPT_NOBUILD-}" ]; then
 					lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS ${old_pkg:+re}install
 					if [ -f "${CHROOTDIR-}$db/$port_/dependencies/extract_to_build" ]; then
@@ -174,6 +181,9 @@ for port in `grep / "$deps"`; do
 				fi
 				[ -n "${OPT_NOCLEAN_AFTER-}" ] || make ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} -DNOCLEANDEPENDS clean
 			)
+			if canhas ${flavor-}; then
+				retire_tmp makeargs
+			fi
 			[ ports-mgmt/pkg != $port ] || pkg_suffix_init -i
 			[ -f $pkg_file.$PKG_SUFFIX ]
 			if [ -z "${OPT_NOSCRIPT-}" ] && [ -f "$script" ]; then

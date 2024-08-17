@@ -1,0 +1,11 @@
+--- ../plasma5-kinfocenter.orig/Makefile	2024-07-31 09:30:50.246043000 -0400
++++ Makefile	2024-08-13 22:56:07.230898000 -0400
+@@ -7,7 +7,7 @@
+ WWW=		https://www.kde.org/plasma-desktop
+ 
+ RUN_DEPENDS=	clinfo:devel/clinfo \
+-		glxinfo:graphics/mesa-demos \
++		glxinfo:graphics/glx-utils \
+ 		lscpu:sysutils/lscpu \
+ 		vulkaninfo:graphics/vulkan-tools \
+ 		wayland-info:graphics/wayland-utils \

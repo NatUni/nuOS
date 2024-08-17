@@ -213,7 +213,6 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS='?' \
     USER_PASS='?' \
     TZ=America/Detroit \
-    DISPLAY_MANAGER=light \
     nu_sys -p tty \
         -es 16G \
         -h tty.zion.top \
@@ -275,7 +274,7 @@ service wifibox start
 service netif restart wifibox0
 
 
-nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q
+nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q -c gamer
 
 nu_build -q
 
@@ -330,9 +329,9 @@ cp -anv ~/.*history /tmp/nu_sys.*.ALT_MNT.*/root/
 shutdown -r now
 
 
-zfs destroy -r nebu/img/spore
+zfs destroy -r rick/img/spore
 
-env DISPLAY_MANAGER=light nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui
+env DISPLAY_MANAGER=light nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c gamer -r g13 -z 120000000K
 cp -v /root/nuOS-v12.999a0-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
 
 gpg2 --local-user 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 --clear-sign nuOS-v12.999a0-amd64.dd.sum
@@ -378,14 +377,13 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     TZ=America/Detroit \
     PRIMARY_NETIF=igc0 \
     GPU_VENDOR=Nvidia \
-    DISPLAY_MANAGER=light \
     nu_sys -p rick \
         -es 120G \
         -h rick.lab.us.org \
         -b '' \
         -a jedi \
         -u '' \
-        -c desktop \
+        -c gamer \
         -l @set_timezone \
         -l @set_primary_netif \
         -l @enable_dynamic_network \
@@ -404,7 +402,6 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     PRIMARY_NETIF=re0 \
     L2_bridge="net0 re1 re2 re3 re4" \
     GPU_VENDOR=AMD \
-    DISPLAY_MANAGER=light \
     nu_sys -p solo \
         -es 72G \
         -h solo.hodl.ceo \
@@ -431,7 +428,6 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     TZ=America/Detroit \
     PRIMARY_NETIF=re1 \
     GPU_VENDOR=Radeon \
-    DISPLAY_MANAGER=light \
     nu_sys -p yoda \
         -s 48G \
         -h yoda.boogaloo.ninja \
@@ -528,7 +524,6 @@ env ADMIN_PASS= \
 
 env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS=jizz \
-    DISPLAY_MANAGER=light \
     TZ=America/Detroit \
     \
     nu_sys -p munq \
@@ -552,7 +547,6 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
 
 env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     ADMIN_PASS=jizz \
-    DISPLAY_MANAGER=light \
     TZ=America/Detroit \
     \
     nu_sys -p moos \
@@ -580,7 +574,6 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     PRIMARY_NETIF=re2 \
     L2_bridge="re0 re1" \
     GPU_VENDOR=Intel \
-    DISPLAY_MANAGER=light \
     nu_sys -p epic \
         -s 24G \
         -h artu.bofh.vip \

@@ -1,0 +1,15 @@
+--- ../uqm.orig/Makefile	2024-08-16 10:03:31.856342000 -0400
++++ Makefile	2024-08-16 10:04:28.883135000 -0400
+@@ -83,10 +83,10 @@
+ .endif
+ 
+ do-configure:
+-	@(cd ${WRKSRC} && ${SETENV} LDFLAGS=-lm ./build.sh uqm reprocess_config)
++	@(cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} LDFLAGS=-lm ./build.sh uqm reprocess_config)
+ 
+ do-build:
+-	@(cd ${WRKSRC} && ./build.sh uqm ${_MAKE_JOBS})
++	@(cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ./build.sh uqm ${_MAKE_JOBS})
+ 
+ do-install:
+ 	${INSTALL_PROGRAM} ${WRKSRC}/uqm ${STAGEDIR}${PREFIX}/bin

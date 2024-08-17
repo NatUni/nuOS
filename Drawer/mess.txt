@@ -481,11 +481,11 @@ tar -cf - -C /r2d2/usr/ports distfiles | tar -xvf - -C /usr/ports
 
 country=US
 province='Florida'
-locality='Sarasota'
+locality='Kissimmee'
 organization='Crop Circle Systems'
 
 nu_ssl -h chewy.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'Advanced Software Development' -S
-nu_ca -a ca.cargobay.net -h chappie.ccsys.com
+nu_ca -a ca.cargobay.net -h chewy.ccsys.com
 # nu_vpn_client -h chewy.ccsys.com
 
 nu_ssl -h spartacus.ccsys.com -b 4096 -n $country -p "$province" -l "$locality" -o "$organization" -u 'Quality Assurance' -S

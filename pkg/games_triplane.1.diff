@@ -1,0 +1,10 @@
+--- ../triplane.orig/Makefile	2024-08-15 21:19:27.095513000 -0400
++++ Makefile	2024-08-15 21:19:42.018050000 -0400
+@@ -22,6 +22,6 @@
+ 
+ # ALL_TARGET="depend all" would not work in -jX case due to races
+ pre-build:
+-	${SETENV} ${MAKE_ENV} ${MAKE_CMD} -C ${BUILD_WRKSRC} ${MAKE_ARGS} depend
++	${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} -C ${BUILD_WRKSRC} ${MAKE_ARGS} depend
+ 
+ .include <bsd.port.mk>

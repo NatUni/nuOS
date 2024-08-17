@@ -1,0 +1,23 @@
+--- /dev/null	2024-08-13 17:12:44.859984000 -0400
++++ files/patch-code_libspeex_bits.c	2024-08-13 17:07:00.379084000 -0400
+@@ -0,0 +1,20 @@
++--- code/libspeex/bits.c.orig	2024-08-13 17:03:56.893839000 -0400
+++++ code/libspeex/bits.c	2024-08-13 17:05:59.432745000 -0400
++@@ -106,7 +106,7 @@
++    bits->overflow=0;
++ }
++ 
++-void speex_bits_read_from(SpeexBits *bits, char *chars, int len)
+++void speex_bits_read_from(SpeexBits *bits, const char *chars, int len)
++ {
++    int i;
++    int nchars = len / BYTES_PER_CHAR;
++@@ -153,7 +153,7 @@
++    bits->charPtr=0;
++ }
++ 
++-void speex_bits_read_whole_bytes(SpeexBits *bits, char *chars, int nbytes)
+++void speex_bits_read_whole_bytes(SpeexBits *bits, const char *chars, int nbytes)
++ {
++    int i,pos;
++    int nchars = nbytes/BYTES_PER_CHAR;

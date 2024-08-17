@@ -1,0 +1,20 @@
+--- ../emptyepsilon.orig/Makefile	2024-08-13 17:30:04.410585000 -0400
++++ Makefile	2024-08-13 17:30:35.353984000 -0400
+@@ -1,6 +1,6 @@
+ PORTNAME=	emptyepsilon
+ DISTVERSIONPREFIX=	EE-
+-DISTVERSION=	2021.06.23
++DISTVERSION=	2024.08.09
+ CATEGORIES=	games
+ 
+ MAINTAINER=	yuri@FreeBSD.org
+@@ -15,7 +15,8 @@
+ LICENSE_PERMS_AngryFly-Royalty-Free-License=	auto-accept dist-mirror pkg-mirror
+ 
+ BUILD_DEPENDS=	glm>0:math/glm
+-LIB_DEPENDS=	libsfml-system.so:devel/sfml251
++LIB_DEPENDS=	libsfml-system.so:devel/sfml \
++		libmeshoptimizer.so:misc/meshoptimizer
+ RUN_DEPENDS=	xclip:x11/xclip
+ 
+ USES=		cmake compiler:c++11-lib gl localbase xorg

@@ -1,0 +1,1 @@
+grep -qw mesa-demos Makefile

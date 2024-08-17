@@ -1,0 +1,25 @@
+--- ../fpc.orig/Makefile	2024-08-13 20:38:31.643282000 -0400
++++ Makefile	2024-08-13 20:39:25.773223000 -0400
+@@ -155,19 +155,19 @@
+ do-build:
+ # build fpc compiler
+ 	@${ECHO_MSG} "##### STARTING COMPILER #####"
+-	(cd ${WRKDIR}/${FPCSRCDIR}/compiler && ${SETENV} ${MAKE_ENV} \
++	(cd ${WRKDIR}/${FPCSRCDIR}/compiler && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} \
+ 		${MAKE_CMD} cycle ${MAKE_ARGS} ${BOOTPPC})
+ 	@${ECHO_MSG} "##### COMPLETE COMPILER #####"
+ 
+ # build units
+ 	@${ECHO_MSG} "##### STARTING UNITS #####"
+-	(cd ${WRKDIR}/${FPCSRCDIR} && ${SETENV} ${MAKE_ENV} \
++	(cd ${WRKDIR}/${FPCSRCDIR} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} \
+ 		${MAKE_CMD} build ${MAKE_ARGS} ${BOOTPPC})
+ 	@${ECHO_MSG} "##### COMPLETE UNITS #####"
+ 
+ do-install:
+ 	# Installing fpc compiler
+-	(cd ${WRKDIR}/${FPCSRCDIR} && ${SETENV} ${MAKE_ENV} \
++	(cd ${WRKDIR}/${FPCSRCDIR} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} \
+ 		${MAKE_CMD} install ${MAKE_ARGS} ${BOOTPPC})
+ 
+ 	# Installing manpages
