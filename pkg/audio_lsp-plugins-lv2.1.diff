@@ -1,0 +1,11 @@
+--- ../lsp-plugins-lv2.orig/Makefile	2024-07-31 09:30:37.016095000 -0400
++++ Makefile	2024-08-17 21:43:30.283381000 -0400
+@@ -53,7 +53,7 @@
+ 		's|<alloca\.h>|<stdlib.h>|'
+ 
+ do-configure:
+-	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${GMAKE} config ${MAKE_ARGS}
++	@cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${GMAKE} config ${MAKE_ARGS}
+ 
+ post-install:
+ 	@${STRIP_CMD} \

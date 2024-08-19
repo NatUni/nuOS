@@ -16,25 +16,46 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.999a0
 
-# current hardcoded target terminal: 172x32
+while getopts ln:ov: OPT; do case $OPT in
+	l) OPT_LOGIN=y;;
+	n) NOM=$OPTARG;;
+	o) OPT_ONCE=y;;
+	v) NMR=$OPTARG;;
+esac; done; shift $(($OPTIND-1))
 
 : ${NOM=nuOS}
-: ${NMR=`echo $NUOS_VER | sed -Ee 's/^0\.//;s/^0\.//;s/[a-zA-Z]+[0-9]+$//'`}
+: ${NMR=`echo $NUOS_VER | /usr/bin/sed -Ee 's/^0\.//;s/^0\.//;s/[a-zA-Z]+[0-9]+$//'`}
+
+
+if [ -n "${OPT_LOGIN-}" ]; then
+	eval "TTY=\"/dev/\$$#\""
+	case "$TTY" in
+		/dev/tty*)
+			exec 0<"$TTY"
+			exec 1>"$TTY"
+			exec 2>"$TTY"
+		;;
+		*)
+			exit 1
+		;;
+	esac
+fi
 
 if [ -t 1 ]; then
 	trm=y
+	export TERM=${TERM:-vt100}
 else
 	echo "$NOM"
 	echo "$NMR"
 fi
 
 logo () {
-	tdfiglet -jr -f breachx -w $(($W - 5)) "$NOM" && tdfiglet -jr -w $(($W - 11)) -f cartoon "$NMR"
+	/usr/local/bin/tdfiglet -jr -f breachx -w $(($W - 5)) "$NOM" && /usr/local/bin/tdfiglet -jr -w $(($W - 11)) -f cartoon "$NMR"
 }
 
 while
 	{ read -r W; read -r H; } <<EOF
-`[ -n "${trm-}" ] && tput cols lines || printf "80\n24\n"`
+`[ -n "${trm-}" ] && /usr/bin/tput cols lines || /usr/bin/printf "80\n24\n"`
 EOF
 	if [ $W != "${w-}" ]; then
 		w=$W
@@ -49,24 +70,29 @@ EOF
 			i=$(($i + 2))
 		done
 	fi
-	# echo $W $H
-	t=`gdate +%T.%3N`
+	t=`/usr/local/bin/gdate +%T.%3N`
 	ms=${t##*.}
 	ms=${ms#0}
 	ms=${ms#0}
 	time=${t%.*}
 	time=${time#0}
-	if [ $(($W + $H)) -le 110 ]; then
+	if [ $(($W + $H)) -lt 110 ]; then
 		time=${time%:*}
 	fi
-	cat <<EOF
+	/usr/local/bin/ghead -c -1 <<EOF
+
 $t
 
 
-$s$(tdfiglet -jc -w $(($W - 9)) -f cyanidx $time)$s
+
+$s$(/usr/local/bin/tdfiglet -jc -w $(($W - 9)) -f cyanidx $time)$s
 $l
 EOF
-:
+	[ -z "${OPT_ONCE-}" ] || { echo && exit; };
 do
-	sleep .$((1000 - $ms))
+	if [ -n "${OPT_LOGIN-}" ]; then
+		timeout .$((1000 - $ms))s sh -c 'read -r -t 1 _' && exec /usr/libexec/getty "$@" && exit
+	else
+		sleep .$((1000 - $ms))
+	fi
 done

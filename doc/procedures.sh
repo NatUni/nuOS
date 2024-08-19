@@ -340,6 +340,9 @@ gpg2 --local-user 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 --clear-sign nuOS-v12
 
 export GNUPGHOME=$(mktemp -d) && gpg2 --import /usr/nuos/share/key/root\@nuos.org.pub && gpg2 --batch --yes --command-file <(printf 'trust\n5\ny\nsave\nquit\n') --edit-key 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 && gpg2 --verify nuOS-v12.999a0-amd64.dd.sum.asc
 
+gpart recover da0
+gpart resize -a 1024 -i 3 da0
+zpool online -e spore gpt/spore0
 
 zpool export spore
 nu_img -d spore
@@ -368,7 +371,7 @@ chown -Rv root:wheel /usr/{src,obj,ports}
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
 
 
-
+mount -t nfs -o intr,soft,timeo=5,retrans=3 192.168.40.41:/hive /hive
 
 
 zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.3-RELEASE-p4/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done

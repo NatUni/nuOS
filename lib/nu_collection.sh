@@ -469,6 +469,10 @@ collection_vars_init () {
 		devel/tortoisehg
 		editors/neovim-qt@qt6
 		editors/neovim-gtk
+		editors/languageclient-neovim
+		editors/vim-lsp
+		editors/kakoune
+		editors/kakoune-lsp
 		editors/emacs
 		editors/calligra
 		editors/libreoffice
@@ -542,6 +546,7 @@ collection_vars_init () {
 		audio/muse-sequencer
 		audio/zrythm
 		audio/mixxx
+		audio/lsp-plugins-lv2
 		cad/opencascade
 		graphics/blender
 		devel/gwenhywfar
