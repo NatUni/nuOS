@@ -91,7 +91,10 @@ EOF
 	[ -z "${OPT_ONCE-}" ] || { echo && exit; };
 do
 	if [ -n "${OPT_LOGIN-}" ]; then
-		timeout .$((1000 - $ms))s sh -c 'read -r -t 1 _' && exec /usr/libexec/getty "$@" && exit
+		timeout .$((1000 - $ms))s sh -c 'read -r -t 1 _' && \
+			/usr/bin/env TERM=${TERM:-vt100} /usr/bin/clear && \
+			exec /usr/libexec/getty "$@" && \
+			exit
 	else
 		sleep .$((1000 - $ms))
 	fi

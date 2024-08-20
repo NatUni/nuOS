@@ -665,8 +665,17 @@ env ADMIN_PASS= \
         -l @activate_gui \
         -q
 
+pkg info -q | xargs -n1 pkg query '%o@%At:%Av %n-%v' | grep @flavor: | sed -e s/@flavor:/@/ | cut -wf2 > fvrd
 
-ls pkg/*_*/dependencies/all | cut -d / -f 2 | sed -e s,_,/, | xargs pkg check -dnq | cut -wf1 | xargs pkg delete -fyn | grep '^[[:space:]]' | sed -e 's/: /-/' | xargs -n1 > kill
+ls pkg/*_*/dependencies/all | cut -d / -f 2 | sed -e s,_,/, 
+nu_pkg_tree -i pkg -p desktop
+
+| xargs pkg check -dnq | cut -wf1 | xargs pkg delete -fyn | grep '^[[:space:]]' | sed -e 's/: /-/' | xargs -n1 > kill
+
+for p in `cat kill` ; do o=`pkg info -qo $p`; f=`pkg query '%n-%v %At:%Av' $p | grep ' flavor:' | cut -d: -f2`; echo $o${f:+@$f} $p; done > remake
+
 xargs pkg delete -fy < kill
 sh -c 'while read -r p; do rm -v /usr/ports/packages/All/$p.pkg; done < kill'
 sh -c 'while read -r p; do rm -v /usr/ports/packages/Index.nuOS/FreeBSD-13.3-amd64.opteron-sse3/$p.g????????????.????????????????.pkg; done < kill'
+
+nu_install_pkg -d '' `cut -wf1 remake`

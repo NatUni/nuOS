@@ -257,6 +257,28 @@ fi
 
 if ! srsly ${OPT_BASE_OS-}; then
 	admin_install -z $POOL_MNT
+
+	if ! grep -qw HOSTOS_NOBRAND=y $POOL_MNT/etc/nuos/conf; then
+		h=${NEW_HOST%%.*}
+		d=${NEW_HOST#*.}
+		if [ 5 -ge ${#h} -a 12 -ge ${#d} ]; then
+			{
+				hw=$((79 - ${#h}))
+				case ${#d} in
+					12) dw=60;;
+					11) dw=63;;
+					*) dw=65;;
+				esac
+				echo && \
+				echo && \
+				tdfiglet -f asylumx -jc -w$hw $h && \
+				tdfiglet -f pittyx -jc -w$dw .$d && \
+				echo && \
+				echo "nuOS $NUOS_VER"
+			} > $POOL_MNT/etc/issue
+		fi
+	fi
+	
 	if canhas "${LOCAL_SCRIPT_0-}"; then
 		zfs snapshot -r $new_host_ds@sys_conception
 		(

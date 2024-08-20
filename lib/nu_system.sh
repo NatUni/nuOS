@@ -78,7 +78,7 @@ maybe_yell () {
 
 srsly () {
 	case "${1-}" in
-		y) return 0;;
+		y|[1-9]*) return 0;;
 		'') return 1;;
 		*) echo ERROR: confusing boolean "($*)"; exit 88;;
 	esac

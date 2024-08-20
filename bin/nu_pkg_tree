@@ -16,13 +16,15 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.999a0
 
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
 while getopts DfFi:kNo:OpPRSt:rxv OPT; do case $OPT in
 	D) OPT_DEBUG=y;;
 	f) OPT_FILENAME=y;;
 	F) OPT_NOFLAVORS=y;;
 	i) INPUT=$OPTARG;;
 	k) OPT_KEEP=y;;
-	N) OPT_NORMALIZE=y;;
+	N) incr OPT_NORMALIZE 1;;
 	o) type=$OPTARG; eval file=\"\$$OPTIND\"; case $type in
 		dot|xml|txt|tbl|dir)
 			setvar out_$type "$file";;
@@ -41,10 +43,7 @@ esac; done; shift $(($OPTIND-1))
 : ${THREADS:=8}
 
 
-. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_ports.sh"
-. "$(dirname "$(realpath "$0")")/../lib/nu_collection.sh"
+load_lib nu_make nu_ports nu_collection
 
 baseos_init -q
 nuos_init -q
@@ -418,6 +417,70 @@ if [ -n "${out_dir-}" ]; then
 			sort -u -o $f.s $f
 			mv $f.s $f
 		done
+		if [ 2 -le ${OPT_NORMALIZE-} ]; then
+			for p in `ls | grep -v @`; do
+				if [ -f $p/default_flavor ]; then
+					f=`cat $p/default_flavor`
+					if [ -d $p@$f ]; then
+						c=`find $p $p@$f -type f | cut -d / -f 2- | sort -u`
+						r=`printf '%s\n' "$c" | grep -v /`
+						l=`printf '%s\n' "$c" | grep /`
+						e=0
+						for rf in $r; do
+							if ! diff $p/$rf $p@$f/$rf; then
+								echo "ERROR: $p/$rf != $p@$f/$rf" >&2
+								e=$(($e + 1))
+							fi
+						done
+						if [ $e -gt 0 ]; then
+							exit 1
+						else
+							for lf in $l; do
+								cat $p/$lf $p@$f/$lf 2>/dev/null | sort -u > $p@$f/$lf.new
+								mv $p@$f/$lf.new $p@$f/$lf
+							done
+							rm -r $p
+						fi
+					else
+						mv $p $p@$f
+					fi
+					ln -s $p@$f $p
+				fi
+			done
+			for p in `find . -type d -depth 1 -name '*@*'`; do
+				p=${p#./}
+				f=${p#*@}
+				p=${p%@*}
+				d=`cat $p@$f/default_flavor`
+				if [ $f = $d ]; then
+					if [ -d $p -a ! -L $p ]; then
+						if [ 'name slaves' = "`ls $p | sort | xargs`" ]; then
+							if diff -q $p/name $p@$f/name; then
+								{ cat $p/slaves $p@$f/slaves 2>/dev/null || true; } > $p@$f/slaves.new
+								if [ -s $p@$f/slaves.new ]; then
+									mv $p@$f/slaves.new $p@$f/slaves
+								else
+									echo "ERROR: ! -s $p/slaves" >&2
+									exit 1
+								fi
+								rm -r $p
+								ln -s $p@$f $p
+							else
+								echo "ERROR: $p/name != $p@$f/name" >&2
+								exit 1
+							fi
+						else
+							echo "ERROR: -d $p" >&2
+							exit 1
+						fi
+					else
+						if [ ! -L $p ]; then
+							ln -s $p@$f $p
+						fi
+					fi
+				fi
+			done
+		fi
 		cd "$OLDPWD"
 	fi
 	cp -R "$work_dir"/* "$out_dir/"

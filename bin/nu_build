@@ -17,10 +17,11 @@ set -e; set -u; set -C
 NUOS_VER=0.0.12.999a0
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts Bc:FMNp:qr:Sv OPT; do case $OPT in
+while getopts Bc:FIMNp:qr:Sv OPT; do case $OPT in
 	B) OPT_NOBRAND=y;;
 	c) PKG_COLLECTION=$OPTARG;;
 	F) OPT_SKIP_FBSD=y;;
+	I) OPT_IMPLICITLY_TRUST_HOST=y;;
 	M) OPT_NOMAKE=y;;
 	N) OPT_SKIP_NUOS=y;;
 	p) POOL_NAME=$OPTARG;;
@@ -751,6 +752,8 @@ ________________________________________________________________________________
 
 EOF
 		
+		sed -i '' -e 's|/usr/libexec/getty\>|/usr/nuos/bin/nu_clock -l|' $POOL_MNT/etc/ttys
+		
 		mkdir $POOL_MNT/usr/nuos
 		tar -cf - -C "$(dirname "$(realpath "$0")")/.." --exclude .DS_Store --exclude .directory --exclude node_modules --exclude ^conf --exclude '^.?*' --exclude ^www/dist --exclude '^www/*.log' . | tar -x${OPT_VERBOSE:+v}f - -C $POOL_MNT/usr/nuos
 		chown -R root:wheel $POOL_MNT/usr/nuos
@@ -808,7 +811,7 @@ EOF
 		require_tmp -c -C $POOL_MNT pkg_tree
 		mount -r -t nullfs /usr/ports $POOL_MNT/usr/ports
 		mount -r -t nullfs /var/db/portsnap $POOL_MNT/var/db/portsnap
-		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -o dir $POOL_MNT/$NU_PKG_DBDIR $PKG_COLLECTION
+		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -NN -o dir $POOL_MNT/$NU_PKG_DBDIR $PKG_COLLECTION
 		sister nu_pkg_tree ${OPT_VERBOSE:+-v} -i $POOL_MNT/$NU_PKG_DBDIR $PKG_COLLECTION | tee "$pkg_tree"
 		umount $POOL_MNT/var/db/portsnap
 		umount $POOL_MNT/usr/ports
