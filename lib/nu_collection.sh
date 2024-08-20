@@ -112,6 +112,7 @@ collection_vars_init () {
 	
 	COLL_developer='
 		lite
+		security/osv-scanner
 		devel/bsddialog
 		ports-mgmt/portconfig
 		archivers/rpm4
@@ -130,6 +131,7 @@ collection_vars_init () {
 		textproc/ydiff
 		sysutils/siegfried
 		devel/llvm18
+		lang/gcc14
 		math/lean4
 		lang/v
 		devel/kokkos
@@ -171,6 +173,7 @@ collection_vars_init () {
 		net/spoofdpi
 		emulators/qemu-user-static
 		archivers/nfpm
+		devel/pipelight
 	'
 	
 	COLL_user='
@@ -188,6 +191,7 @@ collection_vars_init () {
 		shells/zsh
 		shells/fish
 		shells/bash
+		shells/xonsh@py311
 		games/cxxmatrix
 		misc/figlet-fonts
 		misc/tdfiglet
@@ -327,6 +331,7 @@ collection_vars_init () {
 		www/galene
 		multimedia/zoneminder
 		multimedia/linux_dvbwrapper-kmod
+		graphics/potrace
 	'
 	
 	COLL_coinserver='
@@ -364,10 +369,14 @@ collection_vars_init () {
 		net/kube-scheduler
 		sysutils/kubectl
 		sysutils/minikube
+		sysutils/minipot
+		sysutils/potnet
+		net-p2p/nomadnet
 	'
 	
 	COLL_server='
 		commonserver
+		security/certspotter
 		graphics/optipng
 		archivers/zopfli
 		graphics/gifsicle
@@ -707,6 +716,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		gamer
+		editors/vscode
 		x11-wm/labwc
 		math/or-tools
 		devel/librashader
