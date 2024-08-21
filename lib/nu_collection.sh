@@ -144,6 +144,7 @@ collection_vars_init () {
 		lang/go
 		lang/rust
 		devel/wasmer
+		www/wabt
 		lang/mono6.8
 		www/node
 		www/npm
