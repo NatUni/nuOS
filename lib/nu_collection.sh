@@ -138,10 +138,13 @@ collection_vars_init () {
 		devel/kokkos
 		lang/expect
 		math/convertall
+		lang/perl5.38
+		lang/perl5.40
 		lang/python
 		lang/python312
 		lang/ruby33
 		lang/go
+		lang/go123
 		lang/rust
 		devel/wasmer
 		www/wabt
@@ -406,6 +409,7 @@ collection_vars_init () {
 		www/jitsi-meet
 		print/gutenprint
 		print/brlaser
+		print/ipp-usb
 		misc/llama-cpp
 		misc/ollama
 		misc/py-ollama@py311

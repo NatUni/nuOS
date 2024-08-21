@@ -174,8 +174,8 @@ su -l
 #       certain that the drive contains no data of value to you then you may include this step and
 #       ignore any error it may produce. Importantly, the "p3" after the "da0" in the combined part
 #       identifier ("da0p3") is found by referencing the "3" shown in the third column of output by
-#       the previous investigative command and may actually be a "2" or a "3" (depending on whether
-#       the nuOS (or similarly) formatted drive was used for booting and running a system or merely
+#       the previous investigative command and may actually be a "1" or a "3" (depending on whether
+#       the nuOS [or similarly] formatted drive was used for booting and running a system or merely
 #       for storing data.) The key element to realize is that the proper number is found beside and
 #       on the same line with the information including the type "freebsd-zfs".
 
@@ -183,7 +183,7 @@ su -l
 # interfere with the fresh installation.
 zpool labelclear -f /dev/da0p3
 
-# Wipe the drive in preparation of installation.
+# Wipe the drive (quickly, insecurely) to prepare for installation.
 gpart destroy -F da0
 
 # Simultaneously decompress and write the boot/installation image to our blank drive.
@@ -274,8 +274,8 @@ service wifibox start
 service netif restart wifibox0
 
 
-nu_update -fff -aaa -q -c gamer
-time nu_build -q -c gamer -r g13
+nu_update -qfffaaac gamer
+time nu_build -qc gamer -r g13
 
 service jail stop
 
@@ -332,6 +332,9 @@ zfs destroy -r rick/img/spore
 
 #time nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c gamer -r g13 -z 120000000K
 time nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c desktop -r g13
+
+nu_os_install -qo nuOS-v12.999a0+g13-amd64.nub -c desktop
+xz -vkT0 nuOS-v12.999a0+g13-amd64.nub
 
 cp -v /root/nuOS-v12.999a0-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
 
@@ -577,7 +580,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
     TZ=America/Detroit \
     PRIMARY_NETIF=re2 \
     L2_bridge="re0 re1" \
-    GPU_VENDOR=Intel \
+    GPU_VENDOR=Radeon \
     nu_sys -p epic \
         -s 24G \
         -h artu.bofh.vip \
@@ -598,7 +601,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
         -l @../examples/install/allow_jedi_in \
         -l @activate_gui \
         -q
-
+disable_svc `test -d /tmp/nu_sys.*.ALT_MNT.* && echo -C /tmp/nu_sys.*.ALT_MNT.*` lightdm seatd dbus webcamd
 
 zpool labelclear -f gpt/dusk0
 gpart destroy -F da0x007

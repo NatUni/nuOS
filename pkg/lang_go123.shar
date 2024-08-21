@@ -1,0 +1,101 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	go123
+#	go123/files
+#	go123/files/patch-src_cmd_go_internal_modload_vendor.go
+#	go123/files/patch-src_cmd_dist_build.go
+#	go123/distinfo
+#	go123/Makefile
+#
+echo c - go123
+mkdir -p go123 > /dev/null 2>&1
+echo c - go123/files
+mkdir -p go123/files > /dev/null 2>&1
+echo x - go123/files/patch-src_cmd_go_internal_modload_vendor.go
+sed 's/^X//' >go123/files/patch-src_cmd_go_internal_modload_vendor.go << '774a1d2e0b0db22378ef1db816578480'
+X--- src/cmd/go/internal/modload/vendor.go.orig	2024-02-02 18:09:55 UTC
+X+++ src/cmd/go/internal/modload/vendor.go
+X@@ -159,7 +159,7 @@ func checkVendorConsistency(indexes []*modFileIndex, m
+X 			panic(fmt.Errorf("not in workspace mode but number of indexes is %v, not 1", len(indexes)))
+X 		}
+X 		index := indexes[0]
+X-		if gover.Compare(index.goVersion, "1.14") < 0 {
+X+		if gover.Compare(index.goVersion, "1.14") < 0 || os.Getenv("GO_NO_VENDOR_CHECKS") == "1" {
+X 			// Go versions before 1.14 did not include enough information in
+X 			// vendor/modules.txt to check for consistency.
+X 			// If we know that we're on an earlier version, relax the consistency check.
+774a1d2e0b0db22378ef1db816578480
+echo x - go123/files/patch-src_cmd_dist_build.go
+sed 's/^X//' >go123/files/patch-src_cmd_dist_build.go << 'a09098be9f5f9c83ba735149461fa37b'
+X--- src/cmd/dist/build.go.orig	2024-03-29 15:27:02 UTC
+X+++ src/cmd/dist/build.go
+X@@ -891,6 +891,20 @@ func runInstall(pkg string, ch chan struct{}) {
+X 			asmArgs = append(asmArgs, "-D", "GOPPC64_power8")
+X 		}
+X 	}
+X+	if goarch == "arm" {
+X+		// Define GOARM_value from goarm, which can be either a version
+X+		// like "6", or a version and a FP mode, like "7,hardfloat".
+X+		switch {
+X+		case strings.Contains(goarm, "7"):
+X+			asmArgs = append(asmArgs, "-D", "GOARM_7")
+X+			fallthrough
+X+		case strings.Contains(goarm, "6"):
+X+			asmArgs = append(asmArgs, "-D", "GOARM_6")
+X+			fallthrough
+X+		default:
+X+			asmArgs = append(asmArgs, "-D", "GOARM_5")
+X+		}
+X+	}
+X 	goasmh := pathf("%s/go_asm.h", workdir)
+X 
+X 	// Collect symabis from assembly code.
+a09098be9f5f9c83ba735149461fa37b
+echo x - go123/distinfo
+sed 's/^X//' >go123/distinfo << 'd7e04adc747f7cf07f98126ea3223781'
+XTIMESTAMP = 1724257566
+XSHA256 (go1.23.0.src.tar.gz) = 42b7a8e80d805daa03022ed3fde4321d4c3bf2c990a144165d01eeecd6f699c6
+XSIZE (go1.23.0.src.tar.gz) = 28163301
+XSHA256 (go-freebsd-arm64-go1.20.tar.xz) = 674e0a9bce8b64dcc085b000eb83ae880e96be1ee47dad6ec86c82dbe5550623
+XSIZE (go-freebsd-arm64-go1.20.tar.xz) = 32640640
+XSHA256 (go-freebsd-amd64-go1.20.tar.xz) = 170f612c4b8a59400f27d642aab37afa831fe2d6df3e7473dec2d4574a59a46c
+XSIZE (go-freebsd-amd64-go1.20.tar.xz) = 34684360
+XSHA256 (go-freebsd-arm6-go1.20.tar.xz) = acf99dbb285c6d2b80e0abfe4bffd0d230516ea84d17be0d5bc1045809e3d33a
+XSIZE (go-freebsd-arm6-go1.20.tar.xz) = 33418476
+XSHA256 (go-freebsd-arm7-go1.20.tar.xz) = 12dd61c802eada70380f0b4755656d82dbf228575c056775c682456380be5039
+XSIZE (go-freebsd-arm7-go1.20.tar.xz) = 33346596
+XSHA256 (go-freebsd-386-go1.20.tar.xz) = 34e888a37153270b33503a23885ea4c85ba4bd09849d2c937fc9d312c0f49983
+XSIZE (go-freebsd-386-go1.20.tar.xz) = 35448892
+XSHA256 (go-freebsd-riscv64-go1.20.tar.xz) = 010921013d24124ff31f4b1965456349547acf936572fc6e0bcf95a0542794bd
+XSIZE (go-freebsd-riscv64-go1.20.tar.xz) = 33807544
+d7e04adc747f7cf07f98126ea3223781
+echo x - go123/Makefile
+sed 's/^X//' >go123/Makefile << '6261fbc5e5c7284ceff6e27781b7176a'
+XDISTVERSION=	1.23.0
+X# Always set PORTREVISION explicitly as otherwise they are inherited from lang/go-devel
+XPORTREVISION=
+XMASTER_SITES=	https://golang.org/dl/ \
+X		https://github.com/dmgk/go-bootstrap/releases/download/${BOOTSTRAP_TAG}/:bootstrap \
+X		LOCAL/dmgk:bootstrap
+XDISTFILES=	go${DISTVERSION}.src.tar.gz \
+X		go-${OPSYS:tl}-${GOARCH_${ARCH}}${GOARM_${ARCH}}-${BOOTSTRAP_TAG}.tar.xz:bootstrap
+X
+X# Avoid conflicting patch files
+XPATCHFILES=
+XPATCHDIR=	${.CURDIR}/files
+X
+XCOMMENT=	Go programming language
+X
+XMASTERDIR=	${.CURDIR}/../go-devel
+XWRKSRC=		${WRKDIR}/go
+XDISTINFO_FILE=	${.CURDIR}/distinfo
+X
+X.include "${MASTERDIR}/Makefile"
+6261fbc5e5c7284ceff6e27781b7176a
+exit
+
