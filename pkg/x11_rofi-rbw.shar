@@ -1,0 +1,134 @@
+# This is a shell archive.  Save it in a file, remove anything before
+# this line, and then unpack it by entering "sh file".  Note, it may
+# create directories; files and directories will be owned by you and
+# have default permissions.
+#
+# This archive contains:
+#
+#	rofi-rbw
+#	rofi-rbw/pkg-plist
+#	rofi-rbw/files
+#	rofi-rbw/files/rofi-rbw.in
+#	rofi-rbw/distinfo
+#	rofi-rbw/Makefile
+#	rofi-rbw/pkg-descr
+#
+echo c - rofi-rbw
+mkdir -p rofi-rbw > /dev/null 2>&1
+echo x - rofi-rbw/pkg-plist
+sed 's/^X//' >rofi-rbw/pkg-plist << 'e3446c3e2287d1d8af1d397fff0183e9'
+Xlib/rofi-rbw/selector/__pycache__/__init__.cpython-311.pyc
+Xlib/rofi-rbw/selector/__pycache__/rofi.cpython-311.pyc
+Xlib/rofi-rbw/selector/__pycache__/bemenu.cpython-311.pyc
+Xlib/rofi-rbw/selector/__pycache__/wofi.cpython-311.pyc
+Xlib/rofi-rbw/selector/__pycache__/selector.cpython-311.pyc
+Xlib/rofi-rbw/selector/wofi.py
+Xlib/rofi-rbw/selector/selector.py
+Xlib/rofi-rbw/selector/__init__.py
+Xlib/rofi-rbw/selector/rofi.py
+Xlib/rofi-rbw/cache.py
+Xlib/rofi-rbw/abstractionhelper.py
+Xlib/rofi-rbw/rofi_rbw.py
+Xlib/rofi-rbw/rbw.py
+Xlib/rofi-rbw/__main__.py
+Xlib/rofi-rbw/__pycache__/abstractionhelper.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/credentials.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/paths.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/entry.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/cache.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/rofi_rbw.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/__main__.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/argument_parsing.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/__init__.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/rbw.cpython-311.pyc
+Xlib/rofi-rbw/__pycache__/models.cpython-311.pyc
+Xlib/rofi-rbw/models.py
+Xlib/rofi-rbw/entry.py
+Xlib/rofi-rbw/typer/ydotool.py
+Xlib/rofi-rbw/typer/wtype.py
+Xlib/rofi-rbw/typer/__init__.py
+Xlib/rofi-rbw/typer/dotool.py
+Xlib/rofi-rbw/typer/xdotool.py
+Xlib/rofi-rbw/typer/__pycache__/__init__.cpython-311.pyc
+Xlib/rofi-rbw/typer/__pycache__/noop.cpython-311.pyc
+Xlib/rofi-rbw/typer/__pycache__/xdotool.cpython-311.pyc
+Xlib/rofi-rbw/typer/__pycache__/ydotool.cpython-311.pyc
+Xlib/rofi-rbw/typer/__pycache__/wtype.cpython-311.pyc
+Xlib/rofi-rbw/typer/__pycache__/dotool.cpython-311.pyc
+Xlib/rofi-rbw/typer/__pycache__/typer.cpython-311.pyc
+Xlib/rofi-rbw/typer/typer.py
+Xlib/rofi-rbw/typer/noop.py
+Xlib/rofi-rbw/paths.py
+Xlib/rofi-rbw/credentials.py
+Xlib/rofi-rbw/__init__.py
+Xlib/rofi-rbw/argument_parsing.py
+Xlib/rofi-rbw/clipboarder/__init__.py
+Xlib/rofi-rbw/clipboarder/wlclip.py
+Xlib/rofi-rbw/clipboarder/__pycache__/xsel.cpython-311.pyc
+Xlib/rofi-rbw/clipboarder/__pycache__/__init__.cpython-311.pyc
+Xlib/rofi-rbw/clipboarder/__pycache__/wlclip.cpython-311.pyc
+Xlib/rofi-rbw/clipboarder/__pycache__/xclip.cpython-311.pyc
+Xlib/rofi-rbw/clipboarder/__pycache__/noop.cpython-311.pyc
+Xlib/rofi-rbw/clipboarder/__pycache__/clipboarder.cpython-311.pyc
+Xlib/rofi-rbw/clipboarder/clipboarder.py
+Xlib/rofi-rbw/clipboarder/xclip.py
+Xlib/rofi-rbw/clipboarder/noop.py
+Xlib/rofi-rbw/clipboarder/xsel.py
+Xbin/rofi-rbw
+e3446c3e2287d1d8af1d397fff0183e9
+echo c - rofi-rbw/files
+mkdir -p rofi-rbw/files > /dev/null 2>&1
+echo x - rofi-rbw/files/rofi-rbw.in
+sed 's/^X//' >rofi-rbw/files/rofi-rbw.in << 'cd913bc21b6e93993dd66aa3faf279c6'
+X#!/bin/sh
+Xexec %%PYTHON_CMD%% %%PREFIX%%/lib/rofi-rbw/rofi_rbw.py "$@"
+cd913bc21b6e93993dd66aa3faf279c6
+echo x - rofi-rbw/distinfo
+sed 's/^X//' >rofi-rbw/distinfo << '78052f40c897799e35ce668268f5f498'
+XTIMESTAMP = 1724192882
+XSHA256 (fdw-rofi-rbw-1.4.2_GH0.tar.gz) = 66641cb2846a4f2b0f6a523c6e8623642e3f0cf8b0da57d80cd19c0b63d7cc84
+XSIZE (fdw-rofi-rbw-1.4.2_GH0.tar.gz) = 75054
+78052f40c897799e35ce668268f5f498
+echo x - rofi-rbw/Makefile
+sed 's/^X//' >rofi-rbw/Makefile << '6d91ddc5e1bc1aad68254fbf2b9fa9a8'
+XPORTNAME=	rofi-rbw
+XDISTVERSION=	1.4.2
+XCATEGORIES=	x11 security
+X
+XMAINTAINER=	milios@ccsys.com
+XCOMMENT=	a Rofi frontend for rbw, a client for Bitwarden
+XWWW=		https://github.com/doy/rbw
+X
+XLICENSE=	MIT
+X
+XUSES=		python
+XUSE_GITHUB=	yes
+XGH_ACCOUNT=	fdw
+X
+XRUN_DEPENDS=	rbw:security/rbw \
+X		xclip:x11/xclip \
+X		xdotool:x11/xdotool
+X
+XSUB_FILES=	${PORTNAME}
+XSUB_LIST=	PREFIX=${PREFIX} \
+X		PYTHON_CMD=${PYTHON_CMD}
+X
+X
+X.include <bsd.port.pre.mk>
+X
+Xdo-build:
+X	cd ${WRKSRC}/src/${PORTNAME:S/-/_/g} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${PYTHON_CMD} -m compileall .
+X
+Xdo-install:
+X	${CP} -r ${WRKSRC}/src/${PORTNAME:S/-/_/g} ${STAGEDIR}${PREFIX}/lib/${PORTNAME}
+X	${INSTALL_SCRIPT} ${WRKDIR}/${PORTNAME} ${STAGEDIR}${PREFIX}/bin/${PORTNAME}
+X
+X.include <bsd.port.post.mk>
+6d91ddc5e1bc1aad68254fbf2b9fa9a8
+echo x - rofi-rbw/pkg-descr
+sed 's/^X//' >rofi-rbw/pkg-descr << '67b93195208b016dd49ba36f481c0ef9'
+XBased on the alternative Bitwarden CLI rbw and inspired by rofi-pass, rbw-rofi
+Xis a simplistic password typer/copier using rofi and wofi.
+67b93195208b016dd49ba36f481c0ef9
+exit
+

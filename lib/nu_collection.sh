@@ -52,6 +52,7 @@ collection_vars_init () {
 		security/openssh-portable
 		net/dhcpcd
 		dns/unbound
+		dns/knot-resolver
 	'
 	
 	COLL_base='
@@ -138,7 +139,7 @@ collection_vars_init () {
 		lang/expect
 		math/convertall
 		lang/python
-		lang/python38
+		lang/python312
 		lang/ruby33
 		lang/go
 		lang/rust
@@ -156,6 +157,7 @@ collection_vars_init () {
 		lang/cim
 		lang/halide
 		www/zola
+		www/gohugo
 		devel/libsigsegv
 		devel/linux-rl9-libsigsegv
 		devel/linux-rl9-devtools
@@ -174,6 +176,7 @@ collection_vars_init () {
 		emulators/qemu-user-static
 		archivers/nfpm
 		devel/pipelight
+		devel/lefthook
 	'
 	
 	COLL_user='
@@ -181,6 +184,7 @@ collection_vars_init () {
 		sysutils/password-store
 		sysutils/pass-otp
 		security/py-xkcdpass
+		security/rbw
 		textproc/moar
 		finance/ledger
 		irc/irssi
@@ -192,7 +196,9 @@ collection_vars_init () {
 		shells/fish
 		shells/bash
 		shells/xonsh@py311
+		sysutils/faketty
 		games/cxxmatrix
+		www/tgpt
 		misc/figlet-fonts
 		misc/tdfiglet
 	'
@@ -205,6 +211,7 @@ collection_vars_init () {
 		mail/opendkim
 		mail/opendmarc
 		dns/knot3
+		security/zlint
 		security/acme.sh
 		net/openldap26-server
 		security/openvpn
@@ -223,6 +230,7 @@ collection_vars_init () {
 		security/cyrus-sasl2-saslauthd
 		graphics/vips
 		net/vnstat
+		security/vaultwarden
 		databases/postgresql16-server
 		databases/postgis34
 		databases/pg_activity
@@ -240,9 +248,10 @@ collection_vars_init () {
 		misc/openhab-addons
 		lang/squeak
 		lang/gravity
-		lang/wren
+		lang/wren-cli
 		lang/janet
 		java/openjdk21
+		java/openjdk22
 		textproc/zed
 		textproc/zq
 		sysutils/parallel
@@ -332,6 +341,7 @@ collection_vars_init () {
 		multimedia/zoneminder
 		multimedia/linux_dvbwrapper-kmod
 		graphics/potrace
+		audio/virtual_oss_ctl
 	'
 	
 	COLL_coinserver='
@@ -457,6 +467,8 @@ collection_vars_init () {
 		graphics/linux-rl9-libglvnd
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
+		x11/rofi-pass
+		x11/rofi-rbw
 		x11-wm/wayfire
 		x11/wf-shell
 		x11/wcm
@@ -494,6 +506,7 @@ collection_vars_init () {
 		x11/scripts
 		net/xrdp
 		x11-drivers/xorgxrdp
+		deskutils/fyi
 		x11-clocks/wlclock
 		graphics/scrot
 		x11/xeyes
@@ -716,6 +729,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		gamer
+		security/bitwarden-cli
 		editors/vscode
 		x11-wm/labwc
 		math/or-tools

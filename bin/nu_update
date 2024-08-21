@@ -18,9 +18,8 @@ NUOS_VER=0.0.12.999a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts aAc:dDfF:j:Ko:P:qsSuUv OPT; do case $OPT in
+while getopts ac:dDfF:j:KP:qsSuUv OPT; do case $OPT in
 	a) incr OPT_AUTO 1;;
-	A) incr OPT_DEPRECATED_AUTO_PROCESS 1;;
 	c) PKG_COLLECTION=$OPTARG;;
 	d) OPT_DEPS=y;;
 	D) OPT_DEBUG=y;;
@@ -28,7 +27,6 @@ while getopts aAc:dDfF:j:Ko:P:qsSuUv OPT; do case $OPT in
 	F) FBSD_COMMIT_ID=$OPTARG;;
 	j) JAIL_NAME=$OPTARG;;
 	K) OPT_KEEP_FAT_OBJ=y;;
-	o) OUTPUT_FILE=$OPTARG;;
 	P) PORTS_COMMIT_ID=$OPTARG;;
 	q) OPT_QUICK=y;;
 	s) OPT_ONLY_SNAP=y;;
@@ -39,19 +37,11 @@ while getopts aAc:dDfF:j:Ko:P:qsSuUv OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
-[ -n "${OPT_ONLY_SNAP-}" ] || [ -n "${OPT_DEPRECATED_AUTO_PROCESS-}" -a -z "${OUTPUT_FILE-}" ] || [ ! -e "$OUTPUT_FILE" -o ! -s "$OUTPUT_FILE" ]
-
 load_lib nu_collection
 
 baseos_init
 nuos_init
 collection_vars_init -q
-
-if [ -n "${OPT_DEPRECATED_AUTO_PROCESS-}" ]; then
-	: ${JAIL_NAME:=lab}
-	require_tmp auto_output
-	OUTPUT_FILE="$auto_output"
-fi
 
 if [ -n "${JAIL_NAME-}" ]; then
 	CHROOTDIR=`jls -h -j $JAIL_NAME path | sed -e 1d`
@@ -262,7 +252,6 @@ if canhas ${OPT_AUTO-} && [ -L $NU_PKG_DBDIR ]; then
 	diff "$have" "$want" | grep '^>' | cut -wf2 >| "$make"
 	
 	if [ ${OPT_AUTO-} -ge 2 -a -s "$kill" ]; then
-# 		newest_pkg_before=`ls -t $pkgs_dir | head -n 1`
 		pkg delete -fy `cat "$kill"`
 		while read -r pkg; do
 			rm -v /usr/ports/packages/All/$pkg.$PKG_SUFFIX || true
@@ -273,13 +262,9 @@ if canhas ${OPT_AUTO-} && [ -L $NU_PKG_DBDIR ]; then
 		done < "$kill"
 	fi
 	if [ ${OPT_AUTO-} -ge 3 -a -s "$make" ]; then
-# 			[ ${OPT_AUTO-} -le 3 ] || all=y
-# 			[ ${OPT_AUTO-} -le 4 ] || every=y
-# 			sister nu_pkg_build_cluster ${all:+-a} ${every:+-a} -w 3
 		sister nu_install_pkg -d $NU_PKG_DBDIR
 		echo Done building new $PKG_COLLECTION packages.
 	fi
-# 	newest_pkg_after=`ls -t $pkgs_dir | head -n 1`
 fi
 
 echo Update done.

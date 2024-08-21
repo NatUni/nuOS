@@ -274,8 +274,7 @@ service wifibox start
 service netif restart wifibox0
 
 
-nu_update -o update.`date +%Y-%m-%d-%H%M%S`.out -fff -aaa -q -c gamer
-
+nu_update -fff -aaa -q -c gamer
 time nu_build -q -c gamer -r g13
 
 service jail stop
@@ -365,7 +364,7 @@ rsync -avP --delete ~/nuOS nuos.org:
 find /usr/ports -depth 3 -type d '(' -name work -or -name 'work-*' ')' | xargs rm -rfv
 chown -Rv jedi:jedi /usr/{src,obj,ports}
 
-rsync -avP --delete --exclude ports/distfiles --exclude 'ports/*/*/work*' nuos.org:/usr/{src,obj,ports} /usr/
+rsync -avP --delete --exclude ports/distfiles --exclude 'ports/*/*/work*' rick.local:/usr/{src,obj,ports} /usr/
 
 chown -Rv root:wheel /usr/{src,obj,ports}
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
