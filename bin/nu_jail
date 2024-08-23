@@ -86,7 +86,7 @@ if srsly "${OPT_DELETE-}"; then
 	fi
 	if jls -j $JAIL_NAME_; then
 		if grep -q "^[[:blank:]]*$JAIL_NAME_[[:blank:]]*{$" /etc/jail.conf /etc/jail.$JAIL_NAME_.conf /etc/jail.conf.d/$JAIL_NAME_.conf 2> /dev/null; then
-			service jail stop $JAIL_NAME > /dev/null 2>&1 &
+			service jail onestop $JAIL_NAME > /dev/null 2>&1 &
 			while jls -Ndj $JAIL_NAME_ > /dev/null; do
 				sleep 1
 			done

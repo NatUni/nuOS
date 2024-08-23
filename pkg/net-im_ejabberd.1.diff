@@ -1,0 +1,11 @@
+--- ../ejabberd.orig/Makefile	2024-08-22 04:36:45.959834000 -0400
++++ Makefile	2024-08-22 04:37:17.414041000 -0400
+@@ -157,7 +157,7 @@
+ 
+ .include <bsd.port.pre.mk>
+ 
+-pre-everything::
++pre-patch::
+ 	@if ${PKG_BIN} query %n-%v net-im/ejabberd; then \
+ 		${ECHO_MSG} needs to be uninstalled, before this port build could proceed. ; \
+ 		${ECHO_MSG} For details: https://github.com/processone/ejabberd/issues/2194 ; \

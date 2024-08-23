@@ -210,6 +210,7 @@ collection_vars_init () {
 	COLL_miniserver='
 		developer
 		user
+		security/pam_script
 		net-mgmt/lldpd
 		mail/postfix
 		mail/opendkim
@@ -467,6 +468,7 @@ collection_vars_init () {
 		multimedia/libva-vdpau-driver
 		multimedia/libvdpau
 		multimedia/libvdpau-va-gl
+		graphics/mesa-gallium-vdpau
 		multimedia/linux-rl9-libvdpau
 		multimedia/vdpauinfo
 		graphics/linux-rl9-libglvnd

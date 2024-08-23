@@ -400,6 +400,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
         -l @harden_remote_login \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
+        -l @enable_gpu \
         -l @activate_gui \
         -q
 
@@ -427,6 +428,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
         -l @harden_remote_login \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
+        -l @enable_gpu \
         -l @activate_gui \
         -q
 
@@ -452,6 +454,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
         -l @harden_remote_login \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
+        -l @enable_gpu \
         -l @activate_gui \
         -q
 
@@ -599,9 +602,8 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
         -l @harden_remote_login \
         -l @allow_remote_login \
         -l @../examples/install/allow_jedi_in \
-        -l @activate_gui \
+        -l @enable_gpu \
         -q
-disable_svc `test -d /tmp/nu_sys.*.ALT_MNT.* && echo -C /tmp/nu_sys.*.ALT_MNT.*` lightdm seatd dbus webcamd
 
 zpool labelclear -f gpt/dusk0
 gpart destroy -F da0x007
@@ -667,12 +669,10 @@ env ADMIN_PASS= \
         -l @activate_gui \
         -q
 
-pkg info -q | xargs -n1 pkg query '%o@%At:%Av %n-%v' | grep @flavor: | sed -e s/@flavor:/@/ | cut -wf2 > fvrd
-
-ls pkg/*_*/dependencies/all | cut -d / -f 2 | sed -e s,_,/, 
-nu_pkg_tree -i pkg -p desktop
-
-| xargs pkg check -dnq | cut -wf1 | xargs pkg delete -fyn | grep '^[[:space:]]' | sed -e 's/: /-/' | xargs -n1 > kill
+ls pkg/*_*/dependencies/all | cut -d / -f 2 | sed -e s,_,/, \ # -or-
+nu_pkg_tree -i pkg -p desktop \
+    | xargs pkg check -dnq | cut -wf1 | xargs pkg delete -fyn | grep '^[[:space:]]' | sed -e 's/: /-/' | xargs -n1 \
+    > kill
 
 for p in `cat kill` ; do o=`pkg info -qo $p`; f=`pkg query '%n-%v %At:%Av' $p | grep ' flavor:' | cut -d: -f2`; echo $o${f:+@$f} $p; done > remake
 
@@ -681,3 +681,20 @@ sh -c 'while read -r p; do rm -v /usr/ports/packages/All/$p.pkg; done < kill'
 sh -c 'while read -r p; do rm -v /usr/ports/packages/Index.nuOS/FreeBSD-13.3-amd64.opteron-sse3/$p.g????????????.????????????????.pkg; done < kill'
 
 nu_install_pkg -d '' `cut -wf1 remake`
+
+nu_install_pkg -BfFgMS
+
+
+echo /hive > /etc/exports
+enable_svc rpcbind statd:rpc_statd lockd:rpc_lockd mountd nfsd:nfs_server
+echo rpcbind statd lockd mountd nfsd | xargs -J % -n1 service % start
+
+
+enable_svc rpcbind nfsclient:nfs_client statd:rpc_statd lockd:rpc_lockd
+echo rpcbind nfsclient statd lockd | xargs -J % -n1 service % start
+
+mkdir -p /hive
+mount_nfs -o intr,soft,rdirplus,readahead=4,timeo=15,retrans=5,acregmin=5,acregmax=15,acdirmin=1,acdirmax=3 192.168.40.56:/hive /hive
+
+cd /etc/rc.conf.d
+rm lockd nfsclient nfs_client nfsd rpcbind statd

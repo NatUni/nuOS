@@ -414,6 +414,11 @@ if [ -n "${out_dir-}" ]; then
 		s=`eko */slaves`
 		[ "$s" != '*/slaves' ] || s=
 		for f in $d $s; do
+			if [ "${f%/dependencies/collection}" != "$f" ]; then
+				grep -v / $f | sort -u > $f.s
+				grep v $f | sort -u >> $f.s
+				continue
+			fi
 			sort -u -o $f.s $f
 			mv $f.s $f
 		done
