@@ -6,7 +6,18 @@ KEY=${1#0[xX]}
 
 symbols="`{ jot - 1 9; jot -c - A H; jot -c - J N; jot -c - P Z; jot -c - a k; jot -c - m z; } | tr -d '\n'`"
 
-typed_key="80${KEY}01"
+case "${KEY_COIN_TYPE-}" in
+	# these are not right yet
+	32|44|[pP][kK][hH]|[xX]*) typed_key="0488ADE4000000000000000000${KEY}01";;
+	49|[sS][hH]|[yY]*) typed_key="0488ADE4${KEY}01";;
+	84|[wW][pP][kK][hH]|[zZ]*) typed_key="0488ADE4${KEY}01";;
+	86|[tT][rR]) typed_key="0488ADE4${KEY}01";;
+	# this works
+	''|[Ww][Ii][Ff]) typed_key="80${KEY}01";;
+	*)
+		echo ERROR: Unknown KEY_COIN_TYPE
+		exit 1
+esac
 csum=`echo $typed_key | xxd -r -p | sha256 | xxd -r -p | sha256 | head -c 8`
 wrapped_key=$typed_key$csum
 
