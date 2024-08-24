@@ -17,7 +17,7 @@ set -e; set -u; set -C
 NUOS_VER=0.0.12.999a0
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts ABC:d:D:fFgMRStuvyY OPT; do case $OPT in
+while getopts ABC:d:D:fFgl:MRStuvyY OPT; do case $OPT in
 	A) OPT_ARG_SUBPROCESS=y;;
 	B) OPT_NOBUILD=y;;
 	C) CHROOTDIR=$OPTARG;;
@@ -26,6 +26,7 @@ while getopts ABC:d:D:fFgMRStuvyY OPT; do case $OPT in
 	f) OPT_NOCLEAN_BEFORE=y;;
 	F) OPT_NOCLEAN_AFTER=y;;
 	g) OPT_FETCH=y;;
+	l) LOG_TO=$OPTARG;;
 	M) OPT_NOMAKE=y;;
 	R) OPT_NORECURSE=y;;
 	S) OPT_NOSCRIPT=y;;
@@ -37,6 +38,10 @@ while getopts ABC:d:D:fFgMRStuvyY OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 
 [ -z "${OPT_TAGPKG-}" ] || [ -z "${OPT_FETCH-}" ]
+if [ -n "${OPT_YES-}" ]; then
+	yes | sh $0 ${OPT_ARG_SUBPROCESS:+-A} ${OPT_NOBUILD:+-B} ${NU_PKG_DBDIR+-d $NU_PKG_DBDIR} ${PORT_DBDIR+-D $PORT_DBDIR} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_FETCH:+-g} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_UPGRADE:+-u} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C "$CHROOTDIR"} -Y $@
+	exit $?
+fi
 
 load_lib nu_make nu_ports nu_collection nu_install
 
@@ -46,10 +51,6 @@ nuos_init -q
 make_vars_init
 collection_vars_init -q
 
-if [ -n "${OPT_YES-}" ]; then
-	yes | sh $0 ${OPT_ARG_SUBPROCESS:+-A} ${OPT_NOBUILD:+-B} ${NU_PKG_DBDIR+-d $NU_PKG_DBDIR} ${PORT_DBDIR+-D $PORT_DBDIR} ${OPT_NOCLEAN_BEFORE:+-f} ${OPT_NOCLEAN_AFTER:+-F} ${OPT_FETCH:+-g} ${OPT_NOMAKE:+-M} ${OPT_NORECURSE:+-R} ${OPT_NOSCRIPT:+-S} ${OPT_TAGPKG:+-t} ${OPT_UPGRADE:+-u} ${OPT_VERBOSE:+-v} ${CHROOTDIR:+-C "$CHROOTDIR"} -Y $@
-	exit $?
-fi
 
 require_ports_tree
 prepare_make_conf make_conf retire_make_conf_cmd
@@ -125,6 +126,26 @@ restore_build_platform () {
 	retire_tmp reinstall_after_build
 }
 
+mktrgts='fetch checksum extract build stage package'
+
+if canhas "${LOG_TO-}"; then
+	mkdir -p "$LOG_TO"
+	case "$LOG_TO" in
+		/*) :;;
+		*) LOG_TO=`realpath "$LOG_TO"`;;
+	esac
+	trgtabvs=`eko $mktrgts | tr -d aeiou`
+	for mktrgt in $mktrgts; do
+		setvar abv$mktrgt ${trgtabvs%% *}
+		trgtabvs="${trgtabvs#* }"
+	done
+	if [ -d "$NUOS_CODE/.git" ]; then
+		nuos_tag=g`env GIT_DIR="$NUOS_CODE/.git" git -C "$NUOS_CODE" rev-parse HEAD | head -c 12`
+		require_tmp git_status
+		env GIT_DIR="$NUOS_CODE/.git" git -C "$NUOS_CODE" status >| $git_status
+	fi
+fi
+
 for port in `grep / "$deps"`; do
 	underscore port
 	while [ -f "$metainfo_dir/$port_.substitute" ]; do
@@ -148,6 +169,13 @@ for port in `grep / "$deps"`; do
 		pkg_file=/usr/ports/packages/All/$pkg
 		pkg_suffix_init
 		if srsly "${OPT_TAGPKG-}${OPT_FETCH-}" || [ -z "${PKG_SUFFIX-}" -o ! -e $pkg_file.${PKG_SUFFIX-} ]; then
+			noteworthy=y
+			[ -z "${LOG_TO-}" ] || mkdir "$LOG_TO/$port_"
+		else
+			noteworthy=
+		fi
+		tag=`pkg_db_tag`
+		if srsly $noteworthy; then
 			[ -z "${OPT_NOMAKE-}" -o -n "${OPT_FETCH-}" ]
 			destdir=
 			unset makeargs
@@ -188,7 +216,10 @@ for port in `grep / "$deps"`; do
 						done
 					fi
 					check_build_platform
-					env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS package
+					for mktrgt in fetch checksum extract build stage package; do
+						eval abv=\$abv$mktrgt
+						${LOG_TO:+time -lpo "$LOG_TO/$port_/time.$abv"} env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS $mktrgt
+					done
 					restore_build_platform
 				elif srsly ${OPT_FETCH-}; then
 					env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS fetch
@@ -228,8 +259,7 @@ for port in `grep / "$deps"`; do
 				pkg_step=post-build
 				. "$script"
 			fi
-			if tag=`pkg_db_tag` && [ $tag = `ports_tag` ] && [ ! -L $pkg_file.$PKG_SUFFIX ]; then
-				
+			if [ $tag = `ports_tag` ] && [ ! -L $pkg_file.$PKG_SUFFIX ]; then
 				mkdir -p "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT"
 				if canhas ${old_pkg-}; then
 					mkdir -p "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT.old"
@@ -241,7 +271,7 @@ for port in `grep / "$deps"`; do
 						mv -v /usr/ports/packages/All/$old_pkg.$PKG_SUFFIX /usr/ports/packages/All.old/
 					fi
 				fi
-				echo saving index:
+				echo saving nuOS index:
 				spill make_conf
 				spill db
 				spill port
@@ -249,6 +279,21 @@ for port in `grep / "$deps"`; do
 				mv -v $pkg_file.$PKG_SUFFIX "/usr/ports/packages/Index.nuOS/$os_compat-$TRGT/$pkg.$tag.$idx.$PKG_SUFFIX"
 				ln -s "../Index.nuOS/$os_compat-$TRGT/$pkg.$tag.$idx.$PKG_SUFFIX" $pkg_file.$PKG_SUFFIX
 			fi
+		fi 2>&1 | if canhas ${noteworthy:+${LOG_TO-}}; then
+			env > "${LOG_TO-}/$port_/env"
+			{
+				eko pkg=$pkg
+				eko tag=$tag
+				spill TRGT NUOS_VER nuos_tag
+				eko cptn=$HOST@$USER:$$
+				eko '[ $I_DO_NOT_NEED_MY_TOES = cuzWutGudRth0SE ] || exit 88'
+				shar `find ${git_status-} $make_conf $metainfo_dir/$uni.* ${flavor:+$metainfo_dir/$port_.*} $PORT_DBDIR/$uni` | tail -n +5
+				uniq_tkn=`sister nu_randpw -b 36`
+				eko "cat > $port_.`date +%s`.log <<'EOF-$uniq_tkn'"
+				cat
+				eko "EOF-$uniq_tkn"
+			} | tee "${LOG_TO-}/$port_/log.sh"
+		else cat
 		fi
 		if pkg info -e $pkg < /dev/null && ( [ -z "${CHROOTDIR-}" ] || pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg < /dev/null ); then
 			echo found dependency $pkg
@@ -259,7 +304,8 @@ for port in `grep / "$deps"`; do
 				pkg_step=pre-install
 				. "$script"
 			fi
-			env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg || xz --threads=0 --decompress --keep --force --stdout $pkg_file.$PKG_SUFFIX | lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} add -M -
+			[ -z "${LOG_TO-}" ] || mkdir -p "$LOG_TO/.add/$port_"
+			env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg || ${LOG_TO:+time -lpao "$LOG_TO/.add/$port_/time.$$@${HOST-ghost}.xzd"} xz --threads=0 --decompress --keep --force --stdout $pkg_file.$PKG_SUFFIX | lockf -k "${CHROOTDIR-}/var/run/nu_install_pkg.pkgdb.lock" ${LOG_TO:+time -lpao "$LOG_TO/.add/$port_/time.$$@${HOST-ghost}.add"} env `cat "$env" 2>/dev/null` pkg ${CHROOTDIR:+-c $CHROOTDIR} add -M -
 			if [ -f "$script" ]; then
 				pkg_step=post-install
 				. "$script"

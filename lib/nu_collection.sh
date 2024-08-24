@@ -117,6 +117,7 @@ collection_vars_init () {
 		devel/bsddialog
 		ports-mgmt/portconfig
 		archivers/rpm4
+		devel/xdg-dbus-proxy
 		graphics/jp2a
 		devel/subversion
 		devel/git
@@ -297,6 +298,7 @@ collection_vars_init () {
 		devel/stack
 		sysutils/kubo-go
 		security/tor
+		net/torsocks
 		security/i2pd
 		net-mgmt/librenms
 		net-mgmt/observium

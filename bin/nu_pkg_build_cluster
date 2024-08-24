@@ -18,16 +18,24 @@ NUOS_VER=0.0.12.999a0
 
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts aC:d:vw: OPT; do case $OPT in
-	a) incr REBUILD_ALL 1;;
+# while getopts aC:d:vw: OPT; do case $OPT in
+# 	a) incr REBUILD_ALL 1;;
+# 	C) CHROOTDIR=$OPTARG;;
+# 	d) NU_PKG_DBDIR=$OPTARG;;
+# 	v) OPT_VERBOSE=y;;
+# 	w) WORKERS=$OPTARG;;
+# esac; done; shift $(($OPTIND-1))
+
+while getopts C:d:j:vw: OPT; do case $OPT in
 	C) CHROOTDIR=$OPTARG;;
 	d) NU_PKG_DBDIR=$OPTARG;;
+#	j) BUILD_JAIL=$OPTARG;;
 	v) OPT_VERBOSE=y;;
-	w) WORKERS=$OPTARG;;
+	w) push WORKERS $OPTARG;;
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
-[ -z "${CHROOTDIR-}" ] || exit 43 # CHROOTDIR is unsupported, though we want to some day
+[ -z "${CHROOTDIR-}" ] || exit 43 CHROOTDIR is not an offered feature
 . "$(dirname "$(realpath "$0")")/../lib/nu_make.sh"
 . "$(dirname "$(realpath "$0")")/../lib/nu_ports.sh"
 
@@ -37,6 +45,21 @@ make_vars_init
 maybe_yell
 require_ports_tree
 
+require_tmp db_pull
+require_tmp -d data_graph
+(
+	cd "${CHROOTDIR-}$NU_PKG_DBDIR"
+	find . '(' -depth 1 -and -type l ')' -or -path '*/dependencies' -or -path '*/dependants' -or -path '*/default_flavor' >| "$db_pull"
+	tar -cf - -T "$db_pull" | tar -xf - -C "$data_graph"
+)
+retire_tmp db_pull
+eko data_graph $data_graph
+
+
+eko
+eko Built packages described in $NU_PKG_DBDIR with ${err:=0} errors.
+exit $err
+# 0x0000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE0000
 : ${WORKERS:=3}
 
 require_tmp -d data_graph
@@ -127,3 +150,5 @@ retire_tmp data_graph
 #retire_tmp logs
 
 [ $errors = 0 ]
+fi
+# /end 0xDEADC0DE

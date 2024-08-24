@@ -265,7 +265,8 @@ patch -N -V none /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf < ~/n
 wpa_passphrase 'My WiFi Network Name' 'theWiFiPa$$w0rd' >> /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf
 
 enable_svc wifibox
-cat >> /etc/rc.conf.local <<EOF
+cat >> /etc/rc.conf.local <<'EOF'
+
 ifconfig_wifibox0="SYNCDHCP"
 background_dhclient_wifibox0="YES"
 defaultroute_delay="0"
@@ -325,7 +326,13 @@ cp -anv /usr/local/etc/ssh/ssh_host_*_key* /tmp/nu_sys.*.ALT_MNT.*/usr/local/etc
 history -S +
 cp -anv ~/.*history /tmp/nu_sys.*.ALT_MNT.*/root/
 
+
 shutdown -r now
+
+nu_os_install -qo nuOS-v12.999a0+g13-amd64.nub -c desktop
+xz -vkT0 nuOS-v12.999a0+g13-amd64.nub
+xz -dvkT0 nuOS-v12.999a0+g13-amd64.nub.xz
+
 
 nu_img -d spore
 zfs destroy -r rick/img/spore
@@ -333,10 +340,8 @@ zfs destroy -r rick/img/spore
 #time nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c gamer -r g13 -z 120000000K
 time nu_release -qHfxd@ -h spore.nuos.org -l @activate_gui -c desktop -r g13
 
-nu_os_install -qo nuOS-v12.999a0+g13-amd64.nub -c desktop
-xz -vkT0 nuOS-v12.999a0+g13-amd64.nub
-
 cp -v /root/nuOS-v12.999a0-amd64.dd.* /var/jail/www/home/jedi/nuos.org/www/public/
+rsync -WavP /root/nuOS-v12.999a0+g13-amd64.dd.* cargobay.net:/var/jail/www/home/jedi/nuos.org/www/public/
 
 gpg2 --local-user 5B3FBE91885DE388FED3339FEDB7CB91F1FB7E42 --clear-sign nuOS-v12.999a0-amd64.dd.sum
 
@@ -365,11 +370,9 @@ rsync -avP --delete ~/nuOS nuos.org:
 
 (cd /usr/obj/usr/src/amd64.amd64 && umask 27 && find . -not -perm +go+r | xargs tar -cv --lz4 -f special_permissions.tlz)
 find /usr/ports -depth 3 -type d '(' -name work -or -name 'work-*' ')' | xargs rm -rfv
-chown -Rv jedi:jedi /usr/{src,obj,ports}
 
-rsync -avP --delete --exclude ports/distfiles --exclude 'ports/*/*/work*' rick.local:/usr/{src,obj,ports} /usr/
+rsync -avP --delete --exclude ports/distfiles --exclude ports/packages --exclude 'ports/*/*/work*' jedi@solo.local:/usr/{src,obj,ports} /usr/
 
-chown -Rv root:wheel /usr/{src,obj,ports}
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
 
 
@@ -674,8 +677,6 @@ nu_pkg_tree -i pkg -p desktop \
     | xargs pkg check -dnq | cut -wf1 | xargs pkg delete -fyn | grep '^[[:space:]]' | sed -e 's/: /-/' | xargs -n1 \
     > kill
 
-for p in `cat kill` ; do o=`pkg info -qo $p`; f=`pkg query '%n-%v %At:%Av' $p | grep ' flavor:' | cut -d: -f2`; echo $o${f:+@$f} $p; done > remake
-
 xargs pkg delete -fy < kill
 sh -c 'while read -r p; do rm -v /usr/ports/packages/All/$p.pkg; done < kill'
 sh -c 'while read -r p; do rm -v /usr/ports/packages/Index.nuOS/FreeBSD-13.3-amd64.opteron-sse3/$p.g????????????.????????????????.pkg; done < kill'
@@ -685,7 +686,7 @@ nu_install_pkg -d '' `cut -wf1 remake`
 nu_install_pkg -BfFgMS
 
 
-echo /hive > /etc/exports
+echo /usr/ports/distfiles /usr/ports/packages | xargs -n1 > /etc/exports
 enable_svc rpcbind statd:rpc_statd lockd:rpc_lockd mountd nfsd:nfs_server
 echo rpcbind statd lockd mountd nfsd | xargs -J % -n1 service % start
 
@@ -695,6 +696,3 @@ echo rpcbind nfsclient statd lockd | xargs -J % -n1 service % start
 
 mkdir -p /hive
 mount_nfs -o intr,soft,rdirplus,readahead=4,timeo=15,retrans=5,acregmin=5,acregmax=15,acdirmin=1,acdirmax=3 192.168.40.56:/hive /hive
-
-cd /etc/rc.conf.d
-rm lockd nfsclient nfs_client nfsd rpcbind statd
