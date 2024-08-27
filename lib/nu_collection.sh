@@ -92,7 +92,9 @@ collection_vars_init () {
 		textproc/xsv-rs
 		sysutils/ztop
 		sysutils/btop
+		sysutils/htop
 		net/ntopng
+		sysutils/py-glances@py311
 		sysutils/bottom
 		sysutils/usbtop
 		net/ipxe
@@ -206,6 +208,7 @@ collection_vars_init () {
 		www/tgpt
 		misc/figlet-fonts
 		misc/tdfiglet
+		sysutils/shuf
 	'
 	
 	COLL_miniserver='
@@ -336,6 +339,7 @@ collection_vars_init () {
 		www/flexget
 		www/lux
 		www/gallery-dl
+		multimedia/ytfzf
 		net-p2p/rtorrent
 		net-p2p/createtorrent
 		net-p2p/mktorrent

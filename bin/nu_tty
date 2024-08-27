@@ -1,0 +1,74 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.999a0 - bin/nu_tty
+#
+# Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.999a0
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+while getopts c:if:rRs:S: OPT; do case $OPT in
+	c) COUNT=$OPTARG;;
+	i) OPT_INFO=y;;
+	f) push FONTS $OPTARG;;
+	q) OPT_QUIET=y;;
+	r) OPT_RAND=y;;
+	R) OPT_RVRS=y;;
+	s) SLEEP=$OPTARG;;
+	S) SKIP=$OPTARG;;
+esac; done; shift $(($OPTIND-1))
+[ $# -gt 0 ] || set -- Say. 'Anything?'
+
+
+# for f in *; do bs=`{ echo -n 'obase=10; ibase=16; '; dd status=none bs=1 count=2 skip=43 if=$f | xxd -p -c 2 | tr [[:lower:]] [[:upper:]]; }|bc`; fs=`stat -f %z $f`; if [ $fs -gt $(($bs * 2)) ]; then echo $f $bs $fs; fi; done
+
+for f in $(
+	if canhas ${FONTS-}; then
+		echo $FONTS \
+		| tr ' ' '\n'  # I was today years old when I finally discovered
+		               # how inexcusably slow `xargs -n1` is.
+	else
+		if [ ~/.cache/tdfonts-sort_size -nt /usr/local/share/tdfiglet ]; then
+			cat ~/.cache/tdfonts-sort_size
+		else
+			for ff in `cd /usr/local/share/tdfiglet && ls *.tdf`; do
+			    uc=`tdfiglet -f ${ff%.tdf} AEIOU`
+			    lc=`tdfiglet -f ${ff%.tdf} aeiou`
+			    if [ ${#uc} -gt ${#lc} ]; then
+				    echo "${ff%.tdf} ${#uc}"
+			    else
+				    echo "${ff%.tdf} ${#lc}"
+			    fi
+			done \
+			| sort -n -k 2 \
+			| cut -w -f 1 \
+			| if [ -d ~/.cache ]; then
+				tee ~/.cache/tdfonts-sort_size.new
+				mv ~/.cache/tdfonts-sort_size.new ~/.cache/tdfonts-sort_size
+			  else cat
+			fi
+		fi
+	fi | if srsly ${OPT_RVRS-}; then
+		tail -r; else cat
+	fi | if srsly ${SKIP-}; then
+		tail -n +$(($SKIP + 1)); else cat
+	fi | if srsly ${OPT_RAND-}; then
+		sort -R; else cat
+	fi | if srsly ${COUNT-}; then
+		head -n $COUNT; else cat
+	fi	
+); do
+	srsly ${OPT_QUIET-} || tdfiglet -f dreadlk $f
+	tdfiglet -${OPT_INFO:+i}f $f ${W:+-jc -w$W} "$@"
+	${SLEEP:+sleep $SLEEP}
+done

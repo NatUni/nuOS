@@ -17,7 +17,7 @@ set -e; set -u; set -C
 NUOS_VER=0.0.12.999a0
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts ABC:d:D:fFgl:MRStuvyY OPT; do case $OPT in
+while getopts ABC:d:D:fFgJ:l:MRStuvw:W:yY OPT; do case $OPT in
 	A) OPT_ARG_SUBPROCESS=y;;
 	B) OPT_NOBUILD=y;;
 	C) CHROOTDIR=$OPTARG;;
@@ -26,6 +26,7 @@ while getopts ABC:d:D:fFgl:MRStuvyY OPT; do case $OPT in
 	f) OPT_NOCLEAN_BEFORE=y;;
 	F) OPT_NOCLEAN_AFTER=y;;
 	g) OPT_FETCH=y;;
+	J) MAKE_JOBS=$OPTARG;;
 	l) LOG_TO=$OPTARG;;
 	M) OPT_NOMAKE=y;;
 	R) OPT_NORECURSE=y;;
@@ -33,6 +34,8 @@ while getopts ABC:d:D:fFgl:MRStuvyY OPT; do case $OPT in
 	t) OPT_TAGPKG=y;;
 	u) OPT_UPGRADE=y;;
 	v) OPT_VERBOSE=y;;
+	w) NUM_WORKERS=$OPTARG;; # slave listens port 12007, safe from takeover, unsafe from MitM/DOS; plan accordingly
+	W) WHATS_THE_PASSWORD=$OPTARG;; # set this as well or else.... ^^^^^^^^ ...make it [0-9A-Za-z%@]{24,96}
 	y) OPT_YES=y;;
 	Y) OPT_YES_SUBPROCESS=y;;
 esac; done; shift $(($OPTIND-1))
@@ -70,7 +73,7 @@ BOOT_BASEOS_TYPE=`uname -s`
 BOOT_BASEOS_VER=`uname -r`
 os_compat=$BOOT_BASEOS_TYPE-${BOOT_BASEOS_VER%%-*}
 
-require_tmp deps
+canhas ${NUM_WORKERS-} || require_tmp deps
 if canhas ${NU_PKG_DBDIR-} && [ -d "${CHROOTDIR-}${NU_PKG_DBDIR-}" ]; then
 	db=$NU_PKG_DBDIR
 	retire_db_cmd=:
@@ -80,12 +83,13 @@ if canhas ${NU_PKG_DBDIR-} && [ -d "${CHROOTDIR-}${NU_PKG_DBDIR-}" ]; then
 		echo $@ | xargs -n1
 	else
 		sister nu_pkg_tree -i "${CHROOTDIR-}$db" $@
-	fi >| "$deps"
+	fi >| "${deps:-/dev/null}"
 else
 	require_tmp -d db
 	retire_db_cmd=retire_tmp
-	sister nu_pkg_tree ${OPT_VERBOSE:+-v} ${OPT_NORECURSE:+-R} -o txt "$deps" -o dir "$db" $@
+	sister nu_pkg_tree ${NUM_WORKERS:+-NN}${deps:+ -o txt "$deps"} ${OPT_VERBOSE:+-v} ${OPT_NORECURSE:+-R} -o dir "$db" $@
 fi
+
 
 make_way () {
 	if [ -f "$metainfo_dir/$port_.displace" ] || [ -f "$metainfo_dir/${port_%@*}.displace" ]; then
@@ -146,7 +150,50 @@ if canhas "${LOG_TO-}"; then
 	fi
 fi
 
-for port in `grep / "$deps"`; do
+if canhas ${NUM_WORKERS-}; then
+	: ${LISTEN_TCP_PORT:=12007}
+	idle_wrkrs=$NUM_WORKERS
+	for i in `jot $NUM_WORKERS`; do
+		setvar wrk${i}_state idle
+	done
+	require_tmp nc_err
+	
+	require_tmp nc_json
+	require_tmp nc_conn
+	eko "NOTE: Listening on 0.0.0.0:$LISTEN_TCP_PORT..." >&2
+	nc -4ndDNvl $LISTEN_TCP_PORT 2>| "$nc_err" | while read -r hello; do
+		case "$hello" in
+			nuOS-v0-${WHATS_THE_PASSWORD-newEnglandClamChowder})
+				mv -f "$nc_err" "$nc_conn"
+			;;
+			*) error 13 'Our cluster slave port is under attack!';;
+		esac
+	done
+	conn=`cat "$nc_conn"`
+	case "$conn" in
+		'Connection from '*' '?????' received!')
+			callback=${conn#'Connection from '}
+			callback=${callback%% *}
+			callport=${conn%' received!'}
+			callport=${callport##* }
+			eko "INFO: Ring...ring... It's $callback:$callport..." >&2
+		;;
+		*) error 46 "Received a connection that made no sense. ($nc_conn)";;
+	esac
+	retire_tmp nc_conn
+	eko "NOTE: Ring...ring... It's $callback:$callport..." >&2
+	eko 'ports-mgmt/pkg' # We emit to stdout what we know to be prepared for pkg add (singleton), not make build (fleet)
+	eko "INFO: Calling $callback:$callport..." >&2
+	read -r assgnmnt <<EOF
+`nc -4nN "$callback" "$callport"`
+EOF
+	case "$assgnmnt" in
+		foo) :;;
+		*) error 14 "FATAL: You can fuck right off with that there then.";;
+	esac
+else
+	grep / "$deps"
+fi | while read -r port; do
 	underscore port
 	while [ -f "$metainfo_dir/$port_.substitute" ]; do
 		port=`cat "$metainfo_dir/$port_.substitute"`
@@ -211,14 +258,14 @@ for port in `grep / "$deps"`; do
 									;;
 								esac
 								cd /usr/ports/${x2b%%@*}
-								make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} -DBATCH -DNO_DEPENDS extract
+								${LOG_TO:+time -lpo "$LOG_TO/$port_/time.x2b"} make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${flavor:+FLAVOR=$flavor} -DBATCH -DNO_DEPENDS extract
 							)
 						done
 					fi
 					check_build_platform
 					for mktrgt in fetch checksum extract build stage package; do
-						eval abv=\$abv$mktrgt
-						${LOG_TO:+time -lpo "$LOG_TO/$port_/time.$abv"} env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS $mktrgt
+						[ -z "${LOG_TO-}" ] || eval abv=\$abv$mktrgt
+						${LOG_TO:+time -lpo "$LOG_TO/$port_/time.$abv"} env `cat "$env" 2>/dev/null` make "__MAKE_CONF=$make_conf" PORT_DBDIR="$PORT_DBDIR" ${new_flavor:+FLAVORS="$def_flavors $new_flavor"} ${flavor:+FLAVOR=$flavor} `cat "$makeargs" 2>/dev/null` -DBATCH -DNO_DEPENDS $mktrgt || error 89 "Failed $mktrgt target in port $port."
 					done
 					restore_build_platform
 				elif srsly ${OPT_FETCH-}; then
@@ -282,9 +329,7 @@ for port in `grep / "$deps"`; do
 		fi 2>&1 | if canhas ${noteworthy:+${LOG_TO-}}; then
 			env > "${LOG_TO-}/$port_/env"
 			{
-				eko pkg=$pkg
-				eko tag=$tag
-				spill TRGT NUOS_VER nuos_tag
+				spill pkg tag os_compat TRGT NUOS_VER nuos_tag
 				eko cptn=$HOST@$USER:$$
 				eko '[ $I_DO_NOT_NEED_MY_TOES = cuzWutGudRth0SE ] || exit 88'
 				shar `find ${git_status-} $make_conf $metainfo_dir/$uni.* ${flavor:+$metainfo_dir/$port_.*} $PORT_DBDIR/$uni` | tail -n +5
@@ -298,6 +343,7 @@ for port in `grep / "$deps"`; do
 		if pkg info -e $pkg < /dev/null && ( [ -z "${CHROOTDIR-}" ] || pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg < /dev/null ); then
 			echo found dependency $pkg
 		else
+			[ -f $pkg_file.$PKG_SUFFIX ]
 			make_way
 			destdir="${CHROOTDIR-}"
 			if [ -f "$script" ]; then
@@ -311,11 +357,10 @@ for port in `grep / "$deps"`; do
 				. "$script"
 			fi
 		fi
-		pkg ${CHROOTDIR:+-c $CHROOTDIR} info -e $pkg
 	fi
 done
 $retire_db_cmd db
-retire_tmp deps
+canhas ${NUM_WORKERS-} || retire_tmp deps
 
 if [ -n "${nullfs_mounted-}" ]; then
 	umount "$CHROOTDIR/usr/ports/packages"

@@ -1,0 +1,1 @@
+test ! -f files/patch-tdfiglet.c

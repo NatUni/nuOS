@@ -1,0 +1,9 @@
+--- ../tdfiglet.orig/Makefile	2024-08-26 04:28:30.784501000 -0400
++++ Makefile	2024-08-26 04:18:45.696212000 -0400
+@@ -1,5 +1,6 @@
+ PORTNAME=	tdfiglet
+ PORTVERSION=	0.5
++PORTREVISION=	1
+ CATEGORIES=	misc
+ 
+ MAINTAINER=	zi@FreeBSD.org
