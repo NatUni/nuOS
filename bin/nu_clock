@@ -16,10 +16,13 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.999a0
 
-while getopts ln:ov: OPT; do case $OPT in
+while getopts blmn:osv: OPT; do case $OPT in
+	b) OPT_BLINK=y;;
 	l) OPT_LOGIN=y;;
+	m) OPT_NO_SECONDS=y;;
 	n) NOM=$OPTARG;;
 	o) OPT_ONCE=y;;
+	s) OPT_SPCSEP=y;;
 	v) NMR=$OPTARG;;
 esac; done; shift $(($OPTIND-1))
 
@@ -53,6 +56,12 @@ logo () {
 	/usr/local/bin/tdfiglet -jr -f breachx -w $(($W - 5)) "$NOM" && /usr/local/bin/tdfiglet -jr -w $(($W - 11)) -f cartoon "$NMR"
 }
 
+if [ -n "${OPT_BLINK-}" ]; then
+	pause=500
+else
+	pause=1000
+fi
+
 while
 	{ read -r W; read -r H; } <<EOF
 `[ -n "${trm-}" ] && /usr/bin/tput cols lines || /usr/bin/printf "80\n24\n"`
@@ -76,8 +85,11 @@ EOF
 	ms=${ms#0}
 	time=${t%.*}
 	time=${time#0}
-	if [ $(($W + $H)) -lt 110 ]; then
+	if srsly ${OPT_NO_SECONDS-} || [ $(($W + $H)) -lt 110 ]; then
 		time=${time%:*}
+	fi
+	if [ -n "${OPT_SPCSEP-}" ] || [ -n "${OPT_BLINK-}" -a $ms -ge $pause ]; then
+		time=`echo $time | tr : ' '`
 	fi
 	/usr/local/bin/ghead -c -1 <<EOF
 
@@ -85,17 +97,17 @@ $t
 
 
 
-$s$(/usr/local/bin/tdfiglet -jc -w $(($W - 9)) -f cyanidx $time)$s
+$s$(/usr/local/bin/tdfiglet -jc -w $(($W - 9)) -W3 -f ${CLOCK_FONT:-cyanidx} "$time")$s
 $l
 EOF
 	[ -z "${OPT_ONCE-}" ] || { echo && exit; };
 do
 	if [ -n "${OPT_LOGIN-}" ]; then
-		timeout .$((1000 - $ms))s sh -c 'read -r -t 1 _' && \
+		timeout .$(($pause - $ms))s sh -c 'read -r -t 1 _' && \
 			/usr/bin/env TERM=${TERM:-vt100} /usr/bin/clear && \
 			exec /usr/libexec/getty "$@" && \
 			exit
 	else
-		sleep .$((1000 - $ms))
+		sleep .$(($pause - ($ms % $pause))) || echo $pause $ms
 	fi
 done

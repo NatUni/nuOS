@@ -116,6 +116,13 @@ incr () {
 	fi
 }
 
+enum () {
+# 	eval "case '$2' in 
+# 		txt|csv|xml|json|dir) :;;  
+# 		*) exit 22; esac;;
+
+}
+
 push () {
 	local _push_var=$1 _push_old_val= _push_prepend= _push_new_val=; shift
 	unset _push_new_val

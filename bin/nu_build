@@ -218,8 +218,19 @@ else
 # KEYWORD: shutdown
 EOF
 	
-	# TODO: nu_update misses this for now but it's not a real show stopper. make this modificaiton more robust to change and
+	# TODO: nu_update misses these for now but it's not a real show stopper. make this modificaiton more robust to change and
 	#       include it when refactoring the above fbsd-divergence work.
+	
+	if ! srsly "${OPT_NOBRAND-}"; then
+		cat >> $POOL_MNT/.cshrc <<'EOF'
+
+alias nuos 'set path = (/sbin /bin /usr/sbin /usr/bin /nuos/bin /usr/local/sbin /usr/local/bin $HOME/bin) && if ($?prompt) set prompt = "%N♥%m:%~ %# "'
+EOF
+		cat >> $POOL_MNT/root/.shrc <<'EOF'
+
+nuos () { PATH=/sbin:/bin:/usr/sbin:/usr/bin:/nuos/bin:/usr/local/sbin:/usr/local/bin:~/bin; PS1="\u♥\h:\w \\$ "; }
+EOF
+	fi
 	patch -N -V none $POOL_MNT/usr/share/skel/dot.cshrc <<'EOF'
 --- /usr/share/skel/dot.cshrc.orig	2024-01-24 06:41:24.067770000 -0500
 +++ /usr/share/skel/dot.cshrc	2024-01-27 13:32:13.788139000 -0500
@@ -235,6 +246,7 @@ EOF
  	# Use history to aid expansion
  	set autoexpand
 EOF
+	# TODO: end of "these", see above
 	
 	cat > $POOL_MNT/usr/local/etc/beadm.conf <<'EOF'
 echo beadm is incompatible with nuOS >&2
@@ -758,7 +770,7 @@ EOF
 		tar -cf - -C "$(dirname "$(realpath "$0")")/.." --exclude .DS_Store --exclude .directory --exclude node_modules --exclude ^conf --exclude '^.?*' --exclude ^www/dist --exclude '^www/*.log' . | tar -x${OPT_VERBOSE:+v}f - -C $POOL_MNT/usr/nuos
 		chown -R root:wheel $POOL_MNT/usr/nuos
 		conf=usr/nuos/conf
-		
+		ln -s usr/nuos $POOL_MNT/nuos
 	else
 		conf=etc/nuos/conf
 		echo HOSTOS_NOBRAND=y > $POOL_MNT/$conf

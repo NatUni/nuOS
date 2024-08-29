@@ -275,7 +275,7 @@ if ! srsly ${OPT_BASE_OS-}; then
 				tdfiglet -f pittyx -jc -w$dw .$d && \
 				echo && \
 				echo "nuOS $NUOS_VER"
-			} > $POOL_MNT/etc/issue
+			} | tee $POOL_MNT/etc/issue
 		fi
 	fi
 	

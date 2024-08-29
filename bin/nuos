@@ -1,0 +1,55 @@
+#!/bin/sh
+set -e; set -u; set -C
+
+# nuOS 0.0.12.999a0 - bin/nuos
+#
+# Copyright (c) 2008-2024 Chad Jacob Milios and Crop Circle Systems.
+# All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Simplified BSD License.
+# If a copy of the Simplified BSD License was not distributed alongside this file, you can
+# obtain one at https://www.freebsd.org/copyright/freebsd-license.html . This software
+# project is not affiliated with the FreeBSD Project.
+#
+# Official updates and community support available at https://nuos.org .
+# Professional services available at https://ccsys.com .
+
+NUOS_VER=0.0.12.999a0
+
+# NOTE: This executable is often shadowed by lines at the bottom of root's .(c)shrc file(s).
+#       Usage of that alias is a straightforward `nuos` to load the system distributed version
+#       of nuOS. Using this executable loads its version of nuOS but is used differently. Its
+#       output must be sourced a la:
+#           eval `bin/nuos`
+#       The prompt will include a ♥ while you're running the system console or a ♣ when you're
+#       running this development version. The system console can be redirected to a local version
+#       by overriding the symbolic link found on your system at "/nuos".
+
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+while getopts cs OPT; do case $OPT in
+	c) OPT_CSH=y; OPT_SH=;;
+	s) OPT_SH=y; OPT_CSH=;;
+esac; done; shift $(($OPTIND-1))
+
+if ! canhas ${OPT_CSH-}${OPT_SH-}; then
+	shell=`ps -o command= -p $PPID`
+	case "`basename ${shell:-${SHELL:-/bin/sh}}`" in
+		*csh) OPT_CSH=y; OPT_SH=;;
+		*) OPT_SH=y; OPT_CSH=;;
+	esac
+fi
+
+case ${OPT_CSH:+csh}${OPT_SH:+sh} in
+	sh) cat <<EOF
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:`realpath $NUOS_CODE`/bin:/usr/local/sbin:/usr/local/bin:~/bin
+PS1="\\u♣\\h:\\w \\\\\$ "
+EOF
+	;;
+	csh) cat <<EOF
+set path = (/sbin /bin /usr/sbin /usr/bin `realpath $NUOS_CODE`/bin /usr/local/sbin /usr/local/bin \$HOME/bin) && if (\$?prompt) set prompt = "%N♣%m:%~ %# "
+EOF
+	;;
+esac
+# setenv PATH /sbin:/bin:/usr/sbin:/usr/bin:`realpath $NUOS_CODE`/bin:/usr/local/sbin:/usr/local/bin:\${HOME}/bin
+# if (\$?prompt) set prompt = "%N♣%m:%~ %# "

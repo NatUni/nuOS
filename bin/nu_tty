@@ -32,11 +32,19 @@ esac; done; shift $(($OPTIND-1))
 
 # for f in *; do bs=`{ echo -n 'obase=10; ibase=16; '; dd status=none bs=1 count=2 skip=43 if=$f | xxd -p -c 2 | tr [[:lower:]] [[:upper:]]; }|bc`; fs=`stat -f %z $f`; if [ $fs -gt $(($bs * 2)) ]; then echo $f $bs $fs; fi; done
 
+enwon () {
+	for l in `cat -s`; do
+		echo $l
+	done
+}
+
+
 for f in $(
 	if canhas ${FONTS-}; then
 		echo $FONTS \
-		| tr ' ' '\n'  # I was today years old when I finally discovered
-		               # how inexcusably slow `xargs -n1` is.
+		| enwon
+# 		| tr ' ' '\n'  # I was today years old when I finally discovered
+# 		               # how inexcusably slow `xargs -n1` is.
 	else
 		if [ ~/.cache/tdfonts-sort_size -nt /usr/local/share/tdfiglet ]; then
 			cat ~/.cache/tdfonts-sort_size
@@ -68,7 +76,7 @@ for f in $(
 		head -n $COUNT; else cat
 	fi	
 ); do
-	srsly ${OPT_QUIET-} || tdfiglet -f dreadlk $f
-	tdfiglet -${OPT_INFO:+i}f $f ${W:+-jc -w$W} "$@"
+	srsly ${OPT_QUIET-} || tdfiglet -f dreadlk -L 0  $f
+	tdfiglet -f $f -L 0 ${SPACE_WIDTH:+-W $SPACE_WIDTH} ${OPT_INFO:+i} ${W:+-jc -w $W} "$@"
 	${SLEEP:+sleep $SLEEP}
 done

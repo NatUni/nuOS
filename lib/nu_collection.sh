@@ -115,9 +115,10 @@ collection_vars_init () {
 	
 	COLL_developer='
 		lite
-		security/osv-scanner
 		devel/bsddialog
 		ports-mgmt/portconfig
+		security/osv-scanner
+		lang/rizin-cutter
 		archivers/rpm4
 		devel/xdg-dbus-proxy
 		graphics/jp2a
@@ -478,6 +479,7 @@ collection_vars_init () {
 		multimedia/linux-rl9-libvdpau
 		multimedia/vdpauinfo
 		graphics/linux-rl9-libglvnd
+		multimedia/simplescreenrecorder
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
 		x11/rofi-pass

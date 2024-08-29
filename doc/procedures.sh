@@ -6,6 +6,7 @@ exit 1
 # study them. Many of these commands are literal and verbatim as used on the systems at operation
 # headquarters and in our various development labs for specific usage in particular applications.
 
+
 # Certain assumptions are as follows:
 
 # The processes documented here are illustrated using a nuOS system by the commands appropriate for
@@ -93,9 +94,11 @@ exit 1
 # your experience with us and participate in our growth and expansion. Thank you for taking the
 # time to explore our digital ecosystem!
 
+
 # The current live boot and installation image is available from https://nuOS.org and retrieved as
 # follows. Note that unless you are already using nuOS you might use an alternate method to get it.
 fetch https://nuos.org/nuOS-v12.999a0-amd64.dd.xz
+
 
 # For high security environments a PGP signed fingerprint is also available. The commands below are
 # merely illustrative. Note that to download and verify the fingerprint using the same computer and
@@ -110,6 +113,7 @@ fetch https://nuos.org/nuOS-v12.999a0-amd64.dd.xz
 # a brand new computer for running nuOS offered by a trustworthy vendor of hardware and consulting
 # services specializing in security.
 fetch https://nuos.org/nuOS-v12.999a0-amd64.dd.sum
+
 
 # List suitable devices recognized by the system. (`nu_hdd -l` does this on nuOS)
 geom disk list | grep -wiF -e 'geom name:' -e descr: -e mediasize: -e ident:
@@ -135,6 +139,7 @@ geom disk list | grep -wiF -e 'geom name:' -e descr: -e mediasize: -e ident:
 #          and running nuOS. (Multi-boot scenarios are an option for the expert or very interested
 #          reader and will not be covered in this document.)
 
+
 # Investigate the current layout of the disk, "da0" in this case. This does not apply modifications.
 gpart show da0
 
@@ -149,10 +154,12 @@ gpart show da0
 # are certain you're ready to totally wipe the drive clean then you may ignore any output or error
 # the previous command may have produced.
 
+
 # Become the "root" user. Commands from here will require total access and authority in order to
 # change the on disk format of a disk and/or install a totally different operating system. Working
 # with your system's root account must be done carefully and meticulously. You have been warned.
-su -l
+su -
+
 
 ###################################################################################################
 # WARNING: The following commands will OBLITERATE any data you might have on drive "da0" (for all #
@@ -186,24 +193,48 @@ zpool labelclear -f /dev/da0p3
 # Wipe the drive (quickly, insecurely) to prepare for installation.
 gpart destroy -F da0
 
-# Simultaneously decompress and write the boot/installation image to our blank drive.
+
+# Simultaneously decompress and write the boot/installation image to our blank device.
 xzcat -T0 /home/jedi/nuOS-v12.999a0-amd64.dd.xz | dd of=/dev/da0 ibs=128K iflag=fullblock obs=128K conv=sparse,osync status=progress
 
 
-# ...more to come...
+# Reboot into that system you just wrote to your new installation device using whatever BIOS or EFI
+# method is appropriate for your hardware. Login with the default user/pass of "ninja"/"nutz".
+
+# You now are running a fully functional nuOS system and don't need to do anything special to begin
+# using and customizing the environment right within the boot media you have already produced. You
+# may proceed if you wish to install a fresh distribution of nuOS onto another boot device.
 
 
-# Your shell is (t)csh and you want to use the nuOS version your system came with:
-setenv PATH ${PATH}:/usr/nuos/bin
+# Become the superuser.
+su -
 
-# Your shell is (t)csh and you want to use the nuOS version you're developing:
-setenv PATH ${PATH}:/home/jedi/nuOS/bin
+# Enable further nuOS administrative commands. The shell prompt will swtich "@" to a heart whenever
+# nuOS administration mode has been enabled in your terminal.
+nuos
 
-# Your shell is (ba)sh and you want to use the nuOS version your system came with:
-PATH=$PATH:/usr/nuos/bin
 
-# Your shell is (ba)sh and you want to use the nuOS version you're developing:
-PATH=$PATH:/home/jedi/nuOS/bin
+# List devices available to the system as potential boot media.
+nu_hdd -l
+
+
+###################################################################################################
+# WARNING: This is again where you will OBLITERATE any data you might have on drive "nvd0". Be    #
+#          very certain you are dealing with the correct drive that you intend to erase and use.  #
+###################################################################################################
+
+# Format a blank device to boot from. In this example we've chosen "nvd0". We'll call it "tty" to
+# indicate it is permanently attached to a system we're going to name "tty". A device formatted for
+# nuOS storage is known as a "pool". It is possible to place the pool onto a partition of a device,
+# however such an experiment is an exercise for the interested reader.
+nu_hdd -b -p tty nvd0
+
+
+# Install nuOS onto the storage pool "tty".
+nu_os_install -p tty
+
+# Install a customized nuOS system prepared to boot as you desire. The range of options is beyond
+# the scope of this document. The following example is used on my daily driver laptop.
 
 # WARNING: Passing secrets via the environment or command line is insecure on any multiuser system
 #          and any secrets landing in your shell's command history log are hard to keep private.
@@ -240,6 +271,10 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
 # building relationships according to each's needs and means. Examples here include "-b ''" where
 # this variable is applicable, which entirely omits all such facilities and capabilities from the
 # software installation.
+
+
+# Reboot.
+shutdown -r now
 
 
 
@@ -320,6 +355,7 @@ env ADMIN_PASS= \
         -l @../examples/install/cargobay_init \
         -q
 
+cp -av /var/db/dhcpcd/* /tmp/nu_sys.*.ALT_MNT.*/var/db/dhcpcd/
 cp -anv nuos_site_exodus `echo /tmp/nu_sys.*.ALT_MNT.*`/root/nuos_deliverance
 cp -anv ~/owner_pass /tmp/nu_sys.*.ALT_MNT.*/root/
 cp -anv /usr/local/etc/ssh/ssh_host_*_key* /tmp/nu_sys.*.ALT_MNT.*/usr/local/etc/ssh/
@@ -329,10 +365,8 @@ cp -anv ~/.*history /tmp/nu_sys.*.ALT_MNT.*/root/
 
 shutdown -r now
 
-nu_os_install -qo nuOS-v12.999a0+g13-amd64.nub -c desktop
-xz -vkT0 nuOS-v12.999a0+g13-amd64.nub
-xz -dvkT0 nuOS-v12.999a0+g13-amd64.nub.xz
-
+nu_os_install -qo /kite/nuos.nub -c gamer
+nu_os_install -qi /kite/nuos.nub -p solo
 
 nu_img -d spore
 zfs destroy -r rick/img/spore
@@ -371,7 +405,7 @@ rsync -avP --delete ~/nuOS nuos.org:
 (cd /usr/obj/usr/src/amd64.amd64 && umask 27 && find . -not -perm +go+r | xargs tar -cv --lz4 -f special_permissions.tlz)
 find /usr/ports -depth 3 -type d '(' -name work -or -name 'work-*' ')' | xargs rm -rfv
 
-rsync -avP --delete --exclude ports/distfiles --exclude ports/packages --exclude 'ports/*/*/work*' jedi@solo.local:/usr/{src,obj,ports} /usr/
+rsync -avP --delete --exclude ports/distfiles --exclude ports/packages --exclude 'ports/*/*/work*' jedi@rick.local:/usr/{src,obj,ports} /usr/
 
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
 
@@ -686,13 +720,67 @@ nu_install_pkg -d '' `cut -wf1 remake`
 nu_install_pkg -BfFgMS
 
 
-echo /usr/ports/distfiles /usr/ports/packages | xargs -n1 > /etc/exports
-enable_svc rpcbind statd:rpc_statd lockd:rpc_lockd mountd nfsd:nfs_server
-echo rpcbind statd lockd mountd nfsd | xargs -J % -n1 service % start
+mount -t devfs -o ruleset=2 dev /tmp/nu_sys.*.ALT_MNT.*/dev/
+chroot /tmp/nu_sys.*.ALT_MNT.*
 
+enable_svc rpcbind statd:rpc_statd lockd:rpc_lockd mountd nfsd:nfs_server
+echo /usr/ports/distfiles /usr/ports/packages | xargs -n1 > /etc/exports
+mkdir -vp /yard /boat /kite /dump /slum >> /etc/exports
+cat >> /etc/rc.local <<'EOF'
+(zpool import && for p in yard boat kite dump slum; do zpool import $p & done) &
+EOF
+cat >> /etc/rc.shutdown.local <<'EOF'
+for p in yard boat kite dump slum; do zpool export $p & done; wait
+for d in `camcontrol devlist | sed -nEe '/^<.*>[[:space:]]+at /s///p' | cut -wf6 | tr -c [a-zA-Z0-9@%+] ' ' | xargs -n1 | grep grep -xE da[0-9]+`; do camcontrol eject $d & done; wait
+EOF
+echo rpcbind statd lockd mountd nfsd | xargs -J % -n1 service % start
 
 enable_svc rpcbind nfsclient:nfs_client statd:rpc_statd lockd:rpc_lockd
 echo rpcbind nfsclient statd lockd | xargs -J % -n1 service % start
+cat >> /etc/rc.local <<'EOF'
+(for shr in hive wook slop yard boat kite dump slum; do i=$((${i-30}+1)); (sleep $i && sh /$shr/.mount.sh bgnow) & done) &
+EOF
 
-mkdir -p /hive
-mount_nfs -o intr,soft,rdirplus,readahead=4,timeo=15,retrans=5,acregmin=5,acregmax=15,acdirmin=1,acdirmax=3 192.168.40.56:/hive /hive
+for d in /usr/ports/packages /usr/ports/distfiles `mkdir -vp /hive /wook /slop /yard /boat /kite /dump /slum`; do
+    cat > $d/.mount.sh <<'EOOF'
+#!/bin/sh
+v=0
+srvrs='
+    artu.local hive
+    solo.local wook
+    yoda.local slop
+    rick.local yard boat kite dump slum usr/ports/packages usr/ports/distfiles
+'
+opts='
+    rdirplus
+    readahead=4
+    timeo=15,retrans=500
+    acregmin=5,acregmax=15
+    acdirmin=1,acdirmax=3
+'
+V=0
+case $0 in /*/${_e=.mount.sh}) smp=${mp="${0%/$_e}"};; *) exit 2;; esac
+[ Xnfs != X`mount -p | awk '$2=="'"$mp"'"{print $3}'` ] || exit 16
+: ${HOST:=`hostname -s`}
+while read -r srvr shrs; do
+    for shr in $shrs; do
+        [ X${srvr%%.*} = X${HOST%%.*} ] \
+        && continue
+        case ${mp#/} in
+            $shr)
+                mount -t nfs \
+                    -o intr,soft \
+                        `for o in ${*#$1} $opts $1; do
+                            echo -o $o
+                        done` \
+                    $srvr:$smp $mp \
+                || exit 60
+            ;;
+        esac
+    done
+done <<EOF
+$srvrs
+EOF
+EOOF
+    chmod +x $d/.mount.sh
+done
