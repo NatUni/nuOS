@@ -1,0 +1,21 @@
+--- ../vpp.orig/Makefile	2024-09-02 13:52:35.226149000 -0400
++++ Makefile	2024-09-02 13:24:46.702578000 -0400
+@@ -16,8 +16,6 @@
+ LICENSE=	APACHE20
+ LICENSE_FILE=	${WRKSRC}/LICENSE
+ 
+-IGNORE_FreeBSD_13=	is not supported on FreeBSD 13.x due to missing timerfd library shim
+-
+ BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}ply>0:devel/py-ply@${PY_FLAVOR} \
+ 		bash:shells/bash \
+ 		cmake:devel/cmake-core
+@@ -36,6 +34,9 @@
+ VPPPROGS=	vat2 vpp_json_test vpp_echo vpp_prometheus_export svmdbtool \
+ 		vpp_get_metrics vpp_restart svmtool vpp_get_stats vpp vppctl
+ BUILD_PATH=	build-root/build-vpp-native/vpp
++
++post-patch:
++	${REINPLACE_CMD} -Ee "s/(Python3) (REQUIRED)/\1 ${PYTHON_VER} EXACT \2/" ${WRKSRC}/src/vpp-api/python/CMakeLists.txt
+ 
+ pre-configure:
+ 	@${ECHO_CMD} ${DISTVERSION} > ${WRKSRC}/src/scripts/.version

@@ -171,7 +171,7 @@ EOF
 	
 	zfs snapshot -r $fbsd_sysroot_ds@tmpfs_enabled
 	
-	(cd $POOL_MNT && mkdir -p compat/linux/dev compat/linux/proc compat/linux/sys usr/ports/packages)
+	(cd $POOL_MNT && mkdir -p compat/linux/tmp compat/linux/dev compat/linux/proc compat/linux/sys usr/ports/packages)
 	
 	zfs snapshot -r $fbsd_sysroot_ds@pkg_ready
 	zfs set org.nuos:active_revision=$fbsd_bld_id $fbsd_bin_ds
@@ -257,10 +257,12 @@ EOF
 tmp /var/run tmpfs rw,nosuid,size=4m 0 0
 fdesc /dev/fd fdescfs rw 0 0
 proc /proc procfs rw 0 0
-tmp /compat/linux/dev/shm tmpfs nu,xx,update,nosuid,mode=1777,size=16m 0 0
+tmp /compat/linux/dev/shm tmpfs nu,xx,update,nosuid,mode=1777,size=8m 0 0
+tmp /compat/linux/tmp tmpfs rw,nosuid,mode=1777,size=16m 0 0
 EOF
 	if [ $baseos_major_ver -le 12 ]; then
 		cat >> $POOL_MNT/etc/fstab <<'EOF'
+fdesc /compat/linux/dev/fd fdescfs rw,linrdlnk 0 0
 linproc /compat/linux/proc linprocfs rw 0 0
 linsys /compat/linux/sys linsysfs rw 0 0
 EOF
@@ -471,21 +473,26 @@ security_status_pkgaudit_enable="NO"
 security_status_pkg_checksum_enable="NO"
 EOF
 	
-	cat >> $POOL_MNT/etc/ssh/sshd_config <<'EOF'
-UseDNS no
-EOF
+# 	cat >> $POOL_MNT/etc/ssh/sshd_config <<'EOF'
+# UseDNS no
+# EOF
 	
 	cat > $POOL_MNT/etc/jail.conf`[ ! -d $POOL_MNT/etc/jail.conf.d ] || echo .template` <<'EOF'
-$tmpfs_args = "-o size=3221225472";
 path = "/var/jail/$name";
 host.hostname = "$name.jail";
 devfs_ruleset = 4;
 exec.clean;
 #exec.consolelog = "/var/log/jail/$name.log"
-exec.prestart += "mount -t devfs dev $path/dev && devfs -m $path/dev ruleset $devfs_ruleset && devfs -m $path/dev rule applyset && ln -sf /var/run/log $path/dev/log";
+exec.prestart += "mount -t devfs -o ruleset=$devfs_ruleset dev $path/dev && ln -sf /var/run/log $path/dev/log";
 exec.prestart += "mount -t fdescfs fdesc $path/dev/fd";
-exec.prestart += "mount -t tmpfs -o nosuid $tmpfs_args tmp $path/tmp";
+# exec.prestart += "mount -t fdescfs fdesc $path/compat/linux/dev/fd";
 exec.prestart += "mount -t procfs proc $path/proc";
+exec.prestart += "mount -t tmpfs -o nosuid -o  size=32m  tmp $path/tmp";
+exec.prestart += "mount -t tmpfs -o nosuid -o  size=4m   tmp $path/var/run";
+# exec.prestart += "mount -t tmpfs -o nosuid -o  size=8m   tmp $path/compat/linux/dev/shm";
+exec.prestart += "mount -t tmpfs -o nosuid -o  size=16m  tmp $path/compat/linux/tmp";
+# exec.prestart += "mount -t fdescfs fdesc $path/dev/fd";
+# exec.prestart += "mount -t procfs proc $path/proc";
 exec.start = "/bin/sh /etc/rc";
 exec.stop = "/bin/sh /etc/rc.shutdown jail";
 exec.poststop += "umount $path/proc";

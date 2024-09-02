@@ -129,16 +129,19 @@ if [ 0 != "${SWAP_SIZE:-0}" -o -n "${TMP_SIZE-}" -o -n "${RUN_SIZE-}" -o -n "${L
 	swap_bytes=`dehumanize $SWAP_SIZE`
 	: ${TMP_SIZE:=`humanize $(($swap_bytes / 2)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
 	: ${RUN_SIZE:=`humanize $(($swap_bytes / 16)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
-	: ${LINSHM_SIZE:=`humanize $(($swap_bytes / 4)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
+	: ${LINSHM_SIZE:=`humanize $(($swap_bytes / 8)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
+	: ${LINTMP_SIZE:=`humanize $(($swap_bytes / 4)) | tr -d ' B' | tr '[[:upper:]]' '[[:lower:]]'`}
 	
 	awk "
 		\$3 == \"tmpfs\" {
-			if (\$2 ~ /\/tmp\$/) {
+			if (\$2 == \"/tmp\") {
 				s=\"$TMP_SIZE\"
-			} else if (\$2 ~ /\/run\$/) {
+			} else if (\$2 == \"/var/run\") {
 				s=\"$RUN_SIZE\"
-			} else if (\$2 ~ /\/shm\$/) {
+			} else if (\$2 == \"/compat/linux/dev/shm\") {
 				s=\"$LINSHM_SIZE\"
+			} else if (\$2 == \"/compat/linux/tmp\") {
+				s=\"$LINTMP_SIZE\"
 			} else {
 				s=\"\"
 			}

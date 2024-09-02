@@ -1,0 +1,13 @@
+--- /dev/null	2024-09-02 13:59:32.786401000 -0400
++++ files/patch-src_vppinfra_pmalloc.c	2024-09-02 13:59:14.056712000 -0400
+@@ -0,0 +1,10 @@
++--- src/vppinfra/pmalloc.c.orig	2024-09-02 13:58:00.301566000 -0400
+++++ src/vppinfra/pmalloc.c	2024-09-02 13:58:39.292176000 -0400
++@@ -19,6 +19,7 @@
++ #include <sys/stat.h>
++ #ifdef __FreeBSD__
++ #include <sys/memrange.h>
+++#include <sys/ioctl.h>
++ #endif /* __FreeBSD__ */
++ #include <fcntl.h>
++ #include <unistd.h>

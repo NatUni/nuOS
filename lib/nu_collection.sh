@@ -71,7 +71,7 @@ collection_vars_init () {
 	COLL_lite='
 		base
 		sysutils/limine
-		sysutils/screen
+		sysutils/screen49
 		misc/mbuffer
 		sysutils/pipemeter
 		archivers/zstd
@@ -80,7 +80,10 @@ collection_vars_init () {
 		sysutils/dmidecode
 		sysutils/hw-probe
 		comms/hcidump
+		sysutils/znapzend
 		sysutils/smartmontools
+		sysutils/ddpt
+		sysutils/sg3_utils
 		sysutils/ipmitool
 		sysutils/freeipmi
 		sysutils/openipmi
@@ -105,12 +108,6 @@ collection_vars_init () {
 		net/wifi-firmware-kmod
 		net/wifibox
 		emulators/libc6-shim
-		sysutils/neofetch
-		sysutils/pfetch
-		sysutils/fastfetch
-		sysutils/ufetch
-		sysutils/bsdebfetch
-		sysutils/cpufetch
 	'
 	
 	COLL_developer='
@@ -119,6 +116,7 @@ collection_vars_init () {
 		ports-mgmt/portconfig
 		security/osv-scanner
 		lang/rizin-cutter
+		devel/cppcheck
 		archivers/rpm4
 		devel/xdg-dbus-proxy
 		graphics/jp2a
@@ -144,12 +142,30 @@ collection_vars_init () {
 		math/convertall
 		lang/perl5.38
 		lang/perl5.40
+		lang/php83-extensions
+		databases/mysql90-client
 		lang/python
 		lang/python312
 		lang/ruby33
 		lang/go
 		lang/go123
 		lang/rust
+		lang/sbcl
+		lang/ecl
+		devel/eql5
+		lang/guile3
+		lang/chez-scheme
+		lang/ocaml
+		lang/ldc
+		lang/squeak
+		lang/algol68g
+		lang/gravity
+		lang/wren-cli
+		lang/janet
+		java/openjdk21
+		java/openjdk22
+		textproc/zed
+		textproc/zq
 		devel/wasmer
 		www/wabt
 		lang/mono6.8
@@ -164,6 +180,7 @@ collection_vars_init () {
 		lang/cairo
 		lang/cim
 		lang/halide
+		sysutils/py-upt
 		www/zola
 		www/gohugo
 		devel/libsigsegv
@@ -171,7 +188,6 @@ collection_vars_init () {
 		devel/linux-rl9-devtools
 		sysutils/linux-miniconda-installer
 		textproc/riffdiff
-		lang/chez-scheme
 		emulators/qemu
 		emulators/unicorn
 		editors/vim
@@ -179,6 +195,7 @@ collection_vars_init () {
 		math/octave
 		math/octave-forge
 		math/geogebra
+		math/maxima
 		math/R
 		net/spoofdpi
 		emulators/qemu-user-static
@@ -203,20 +220,35 @@ collection_vars_init () {
 		shells/zsh
 		shells/fish
 		shells/bash
+		shells/dash
 		shells/xonsh@py311
 		sysutils/faketty
+		sysutils/parallel
+		security/pssh
 		games/cxxmatrix
 		www/tgpt
+		misc/toilet
 		misc/figlet-fonts
 		misc/tdfiglet
 		sysutils/shuf
+		sysutils/neofetch
+		sysutils/pfetch
+		sysutils/fastfetch
+		sysutils/ufetch
+		sysutils/bsdebfetch
+		sysutils/cpufetch
+		sysutils/bsdinfo
+		sysutils/bsdhwmon
 	'
 	
 	COLL_miniserver='
 		developer
 		user
 		security/pam_script
+		sysutils/ngbuddy
 		net-mgmt/lldpd
+		net/dpdk
+		net/vpp
 		mail/postfix
 		mail/opendkim
 		mail/opendmarc
@@ -232,6 +264,7 @@ collection_vars_init () {
 		net/avahi
 		dns/nss_mdns
 		net/3proxy
+		irc/inspircd
 		ftp/pure-ftpd
 		net/isc-dhcp44-server
 		net/istgt
@@ -247,7 +280,7 @@ collection_vars_init () {
 		databases/timescaledb
 		databases/timescaledb-backup
 		databases/timescaledb-tune
-		databases/mysql81-server
+		databases/mysql90-server
 		databases/redis
 		databases/mongodb70
 		databases/mongodb-tools
@@ -256,19 +289,8 @@ collection_vars_init () {
 		net/kafka
 		devel/zookeeper
 		misc/openhab-addons
-		lang/squeak
-		lang/gravity
-		lang/wren-cli
-		lang/janet
-		java/openjdk21
-		java/openjdk22
-		textproc/zed
-		textproc/zq
-		sysutils/parallel
-		security/pssh
 		sysutils/hilite
 		sysutils/py-honcho
-		lang/php83-extensions
 		www/mod_php83
 		www/apache24
 		www/mod_qos
@@ -320,7 +342,8 @@ collection_vars_init () {
 	
 	COLL_mediaserver='
 		miniserver
-		misc/toilet
+		multimedia/pwcbsd
+		multimedia/webcamd
 		www/httrack
 		net/netatalk3
 		net/samba419
@@ -354,6 +377,7 @@ collection_vars_init () {
 		multimedia/linux_dvbwrapper-kmod
 		graphics/potrace
 		audio/virtual_oss_ctl
+		graphics/filament
 	'
 	
 	COLL_coinserver='
@@ -423,6 +447,7 @@ collection_vars_init () {
 		misc/py-ollama@py311
 		misc/py-oterm@py311
 		misc/alpaca
+		misc/koboldcpp
 		devel/py-jupyterlab@py311
 		devel/py-jupyterlab-lsp@py311
 		textproc/py-jupyterlab-pygments@py311
@@ -480,10 +505,12 @@ collection_vars_init () {
 		multimedia/vdpauinfo
 		graphics/linux-rl9-libglvnd
 		multimedia/simplescreenrecorder
+		multimedia/wl-screenrec
 		net/wpa_supplicant_gui
 		net-mgmt/kismet
 		x11/rofi-pass
 		x11/rofi-rbw
+		x11-wm/labwc
 		x11-wm/wayfire
 		x11/wf-shell
 		x11/wcm
@@ -513,6 +540,7 @@ collection_vars_init () {
 		editors/calligra
 		editors/libreoffice
 		graphics/gimp
+		graphics/gmic-qt
 		graphics/krita
 		graphics/inkscape
 		print/scribus
@@ -525,6 +553,7 @@ collection_vars_init () {
 		x11-clocks/wlclock
 		graphics/scrot
 		x11/xeyes
+		x11/screenkey
 		x11/wshowkeys
 		x11/gnome
 		x11/kde5
@@ -584,6 +613,7 @@ collection_vars_init () {
 		audio/zrythm
 		audio/mixxx
 		audio/lsp-plugins-lv2
+		math/wxmaxima
 		cad/opencascade
 		graphics/blender
 		devel/gwenhywfar
@@ -744,15 +774,12 @@ collection_vars_init () {
 	
 	COLL_nice='
 		gamer
+		math/sage
+		multimedia/makemkv
 		security/bitwarden-cli
 		editors/vscode
-		x11-wm/labwc
 		math/or-tools
-		devel/librashader
-		lang/ldc
 		games/stuntrally
-		net/dpdk
-		net/vpp
 		devel/py-jupyterlab-widgets@py311
 		science/py-jupyter_jsmol@py311
 		games/emptyepsilon
@@ -774,7 +801,6 @@ collection_vars_init () {
 		multimedia/obs-streamfx
 		lang/opensycl
 		lang/crystal
-		math/sage
 		deskutils/calibre
 		games/openbve
 	'

@@ -1,0 +1,24 @@
+--- ../ldc.orig/Makefile	2024-09-02 05:46:53.959855000 -0400
++++ Makefile	2024-09-02 05:46:18.848210000 -0400
+@@ -15,9 +15,10 @@
+ ONLY_FOR_ARCHS=	amd64
+ ONLY_FOR_ARCHS_REASON=	The bootstrap compiler is provided only for x86_64
+ 
+-LIB_DEPENDS=	libconfig.so:devel/libconfig
++LIB_DEPENDS=	libconfig.so:devel/libconfig \
++		libzstd.so:archivers/zstd
+ 
+-USES=		llvm:lib,run ninja cmake:insource pkgconfig
++USES=		llvm:lib,run ninja cmake:insource pkgconfig localbase:ldflags
+ 
+ #USE_GITHUB=	yes
+ #GH_ACCOUNT=	ldc-developers
+@@ -25,7 +26,7 @@
+ 
+ USE_LDCONFIG=	yes
+ 
+-CFLAGS+=	-fPIC
++CFLAGS+=	-fPIC -lzstd
+ 
+ CMAKE_ARGS+=	-DLDC_INSTALL_PREFIX="${PREFIX}" \
+ 		-DD_COMPILER="${WRKDIR}/ldc2-${PORTVERSION}-freebsd-x86_64/bin/ldmd2" \

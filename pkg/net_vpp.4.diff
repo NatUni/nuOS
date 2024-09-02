@@ -1,0 +1,13 @@
+--- /dev/null	2024-09-02 14:03:10.104218000 -0400
++++ files/patch-src_vppinfra_freebsd_mem.c	2024-09-02 14:02:49.169564000 -0400
+@@ -0,0 +1,10 @@
++--- src/vppinfra/freebsd/mem.c.orig	2024-09-02 14:00:28.569489000 -0400
+++++ src/vppinfra/freebsd/mem.c	2024-09-02 14:02:16.918648000 -0400
++@@ -9,6 +9,7 @@
++ #include <sys/stat.h>
++ #include <unistd.h>
++ #include <sys/memrange.h>
+++#include <sys/ioctl.h>
++ #include <sys/mount.h>
++ #include <sys/mman.h>
++ #include <fcntl.h>

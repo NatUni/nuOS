@@ -45,6 +45,15 @@ make_vars_init
 maybe_yell
 require_ports_tree
 
+dpdy_stsfd () {
+	for p in $ports; do
+		underscore p
+		sz=`stat -f %z "$data_graph/$p_/dependencies/all" 2>/dev/null || true`
+		# echo $p $sz
+		srsly $sz || echo $p
+	done | grep -vx ports-mgmt/pkg
+}
+
 require_tmp db_pull
 require_tmp -d data_graph
 (
@@ -53,12 +62,168 @@ require_tmp -d data_graph
 	tar -cf - -T "$db_pull" | tar -xf - -C "$data_graph"
 )
 retire_tmp db_pull
-eko data_graph $data_graph
+require_tmp build_order
+sister nu_pkg_tree -i "${CHROOTDIR-}$NU_PKG_DBDIR" >| "$build_order"
+while read -r p; do
+	underscore p
+	case $p in
+		*/*)
+			push ports $p
+			push pkgs `cat "${CHROOTDIR-}$NU_PKG_DBDIR/$p_/name"`
+		;;
+		*) :;;
+	esac
+done < "$build_order"
+require_tmp ready
+dpdy_stsfd >| "$ready"
+wc -l "$build_order" "$ready" | sed -e '$d'
+rd="`cat "$ready" | xargs`"
+while read -r p; do
+	underscore p
+	case $p in
+		*/*)
+			push rd $p
+			push rdpn `cat "${CHROOTDIR-}$NU_PKG_DBDIR/$p_/name"`
+		;;
+		*) :;;
+	esac
+done < "$ready"
+slts_n=0
+for wrkr in ${WORKERS:=`ls /var/run/nuos_pkg | xargs`}; do
+	w=`cat /var/run/nuos_pkg/$wrkr/wide`
+	setvar WORKERS_$wrkr "$w"
+	spill WORKERS_$wrkr
+	i=0
+	while [ $i -lt $w ]; do
+		push slts $wrkr
+		slts_n=$(( $slts_n + 1 ))
+		i=$(($i+1))
+	done
+done
+spill slts
 
+ltrim () {
+	eval local "v=\"\$$1\""
+	until [ "$v" = "${v#[' '$'\t'$'\n']}" ]; do
+		v="${v#?}"
+	done
+	setvar $1 "$v"
+}
 
-eko
+pull () {
+	local n= h= t= i= r= e=
+	case $1 in
+		[0-9]*) n=$1; shift;;
+	esac
+	i=1
+	until [ $i -gt ${n:=1} ]; do
+		push r $1; shift
+		i=$(($i+1))
+	done
+	eval t=\"\$$1\"
+	[ $# = 1 ]
+	set -- $r $1
+	i=1
+	e=1
+	until [ $i -gt ${n:=1} ]; do
+		h=${t%%[' '$'\t'$'\n']*}
+		t=${t#$h}
+		ltrim h
+		ltrim t
+		setvar $1 "$h"
+		shift
+		[ -z "$h" ] || e=0
+		i=$(($i+1))
+	done
+	setvar $1 "$t"
+	return $e
+}
+
+get_work () {
+	while pull slt slts; do
+		pull wp rd
+		pull pn rdpn
+		underscore wp
+		mkdir -pv /var/run/nuos_pkgd/mbx/$slt/$wp_
+		push bz_slts $slt $wp $pn
+# 		push bzpn $pn
+	done
+}
+
+rm -rf /var/run/nuos_pkgd/mbx || true
+mkdir /var/run/nuos_pkgd/mbx
+:>| /var/run/nuos_pkgd/shipd
+while
+	[ "${bz_slts-apples}" = "${still_bz_slts-oranges}" ] || get_work
+	still_bz_slts=
+	while pull 3 wrkr port pkg bz_slts; do
+		#echo stat -f %z "/var/run/nuos_pkg/$wrkr/$pkg.pkg"
+		sz=`stat -f %z "/var/run/nuos_pkg/$wrkr/$pkg.pkg" 2>/dev/null || true`
+		if srsly $sz; then
+			cp -a /var/run/nuos_pkg/$wrkr/$pkg.pkg /usr/ports/packages/All/.$pkg.pkg
+			rm -v /var/run/nuos_pkg/$wrkr/$pkg.pkg
+			mv -n /usr/ports/packages/All/.$pkg.pkg /usr/ports/packages/All/$pkg.pkg
+			sister nu_install_pkg -BfFRSt ${NU_PKG_DBDIR+-d "${CHROOTDIR-}$NU_PKG_DBDIR"} ${PORT_DBDIR+-D "$PORT_DBDIR"} $port
+			echo $pkg >> /var/run/nuos_pkgd/shipd
+			push slts $wrkr
+			underscore port
+			if [ -L "$data_graph/$port_" ]; then
+				clone=`readlink "$data_graph/$port_" | sed -e s+_+/+`
+				port="$port $clone"
+			fi
+			for p in $port; do
+				underscore p
+				for consumer in `cat "$data_graph/$p_/dependants/all" 2>/dev/null || true`; do
+					underscore consumer
+					if [ -L "$data_graph/$consumer_" ]; then
+						clone=`readlink "$data_graph/$consumer_" | sed -e s+_+/+`
+						consumer="$consumer $clone"
+					fi
+					for c in $consumer; do
+						underscore c
+						grep -vx $p "$data_graph/$c_/dependencies/all" > "$data_graph/$c_/dependencies/all.new"
+						mv "$data_graph/$c_/dependencies/all.new" "$data_graph/$c_/dependencies/all"
+						if [ ! -s "$data_graph/$c_/dependencies/all" ]; then
+							rd="$rd $c"; rdpn="$rdpn `cat "${CHROOTDIR-}$NU_PKG_DBDIR/$c_/name"`"
+						fi
+					done
+				done
+			done
+			rmdir -v /var/run/nuos_pkgd/mbx/$wrkr/$port_
+			rm -rf "$data_graph/$port_"
+		else
+			push still_bz_slts $wrkr $port $pkg
+		fi
+	done
+	echo -n .
+	canhas ${rd#$wp}
+do
+	if [ "$bz_slts" = "$still_bz_slts" ]; then
+		sleep 1
+	else
+		bz_slts=$still_bz_slts
+		get_work
+	fi
+done
+
+# spill pkgs
+spill slts_n slts
+spill rd
+# spill data_graph
+
 eko Built packages described in $NU_PKG_DBDIR with ${err:=0} errors.
 exit $err
+
+
+
+
+
+
+
+
+
+
+
 # 0x0000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE00000000DEADC0DE0000
 : ${WORKERS:=3}
 

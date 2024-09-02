@@ -1,0 +1,12 @@
+--- ../dpdk.orig/Makefile	2024-09-02 06:25:18.098973000 -0400
++++ Makefile	2024-09-02 06:28:12.106943000 -0400
+@@ -62,4 +62,8 @@
+ TEST_MESON_TRUE=	tests
+ TOOLS_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pyelftools>=0:devel/py-pyelftools@${PY_FLAVOR}
+ 
+-.include <bsd.port.mk>
++.include <bsd.port.pre.mk>
++
++LDFLAGS:=
++
++.include <bsd.port.post.mk>

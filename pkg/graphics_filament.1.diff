@@ -1,0 +1,20 @@
+--- ../filament.orig/Makefile	2024-09-02 17:28:44.875233000 -0400
++++ Makefile	2024-09-02 17:28:34.225411000 -0400
+@@ -19,6 +19,8 @@
+ BUILD_DEPENDS=	bash:shells/bash \
+ 		evdev-proto>0:devel/evdev-proto
+ 
++RUN_DEPENDS=	robin-map>0:devel/robin-map
++
+ USES=		cmake compiler:c++17-lang localbase:ldflags python:build sdl shebangfix xorg
+ USE_SDL=	sdl2
+ USE_XORG=	x11
+@@ -48,6 +50,8 @@
+ 	@${REINPLACE_CMD} -e 's|"/proc/self/exe"|"/proc/curproc/file"|' ${WRKSRC}/libs/utils/src/linux/Path.cpp
+ 
+ post-install:
++	# rename conflicting binary
++	cd ${STAGEDIR}${PREFIX} && ${MV} bin/resgen bin/filament-resgen
+ 	# remove unnecessary files
+ 	@cd ${STAGEDIR}${PREFIX} && ${RM} -r README.md LICENSE docs
+ 	# remove conflicting file, see https://github.com/google/filament/issues/5957

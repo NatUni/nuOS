@@ -250,7 +250,7 @@ env ADMIN_NAME='Jedi Hacker' ADMIN_CPNY='Rebel Alliance' \
         -b '' \
         -a jedi \
         -u bum \
-        -c desktop \
+        -c gamer \
         -l @set_timezone \
         -l @enable_dynamic_network \
         -l @cache_dns \
@@ -298,6 +298,8 @@ patch -N -V none /usr/local/etc/wifibox/bhyve.conf < ~/nuos_deliverance/local/wi
 patch -N -V none /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf < ~/nuos_deliverance/local/wifibox/wpa_supplicant.conf.diff
 
 wpa_passphrase 'My WiFi Network Name' 'theWiFiPa$$w0rd' >> /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf
+
+tail -n 5 /usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf >> /tmp/nu_sys.*.ALT_MNT.*/usr/local/etc/wifibox/wpa_supplicant/wpa_supplicant.conf
 
 enable_svc wifibox
 cat >> /etc/rc.conf.local <<'EOF'
@@ -726,22 +728,26 @@ chroot /tmp/nu_sys.*.ALT_MNT.*
 enable_svc rpcbind statd:rpc_statd lockd:rpc_lockd mountd nfsd:nfs_server
 echo /usr/ports/distfiles /usr/ports/packages | xargs -n1 > /etc/exports
 mkdir -vp /yard /boat /kite /dump /slum >> /etc/exports
+mkdir -vp /wook >> /etc/exports
+mkdir -vp /slop >> /etc/exports
+mkdir -vp /hive >> /etc/exports
 cat >> /etc/rc.local <<'EOF'
 (zpool import && for p in yard boat kite dump slum; do zpool import $p & done) &
+(zpool import && for p in slop; do zpool import $p & done) &
 EOF
 cat >> /etc/rc.shutdown.local <<'EOF'
 for p in yard boat kite dump slum; do zpool export $p & done; wait
-for d in `camcontrol devlist | sed -nEe '/^<.*>[[:space:]]+at /s///p' | cut -wf6 | tr -c [a-zA-Z0-9@%+] ' ' | xargs -n1 | grep grep -xE da[0-9]+`; do camcontrol eject $d & done; wait
+for d in `camcontrol devlist | sed -nEe '/^<.*>[[:space:]]+at /s///p' | cut -wf6 | tr -c [a-zA-Z0-9@%+] ' ' | xargs -n1 | grep -xE da[0-9]+`; do camcontrol eject $d & done; wait
 EOF
 echo rpcbind statd lockd mountd nfsd | xargs -J % -n1 service % start
 
 enable_svc rpcbind nfsclient:nfs_client statd:rpc_statd lockd:rpc_lockd
 echo rpcbind nfsclient statd lockd | xargs -J % -n1 service % start
 cat >> /etc/rc.local <<'EOF'
-(for shr in hive wook slop yard boat kite dump slum; do i=$((${i-30}+1)); (sleep $i && sh /$shr/.mount.sh bgnow) & done) &
+(for shr in usr/ports/packages usr/ports/distfiles hive wook slop yard boat kite dump slum; do i=$((${i-30}+1)); (sleep $i && sh /$shr/.mount.sh bgnow) & done) &
 EOF
 
-for d in /usr/ports/packages /usr/ports/distfiles `mkdir -vp /hive /wook /slop /yard /boat /kite /dump /slum`; do
+for d in `mkdir -vp /hive /wook /slop /yard /boat /kite /dump /slum`; do
     cat > $d/.mount.sh <<'EOOF'
 #!/bin/sh
 v=0

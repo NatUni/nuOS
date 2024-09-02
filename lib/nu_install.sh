@@ -78,9 +78,7 @@ require_base_src () {
 		$retire_src_conf_cmd src_conf
 	fi
 	
-	[ -f /usr/obj/usr/src/$TRGT_ARCH.$TRGT_PROC/toolchain-metadata.mk ] || old_build=y
-	[ -f /usr/obj/usr/src/compiler-metadata.mk ] || new_build=y
-	[ y = "${old_build-}${new_build-}" ]
+	new_build=y
 	
 	local kconf=/usr/src/sys/$TRGT_ARCH/conf/NUOS
 	if [ $TRGT_KERN = NUOS ] && [ ! -e $kconf -o $kconf -ot "$NUOS_CODE/share/kern/NUOS" ]; then

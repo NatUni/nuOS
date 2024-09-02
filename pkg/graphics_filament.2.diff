@@ -1,0 +1,22 @@
+--- ../filament.orig/pkg-plist	2024-09-02 17:26:04.725223000 -0400
++++ pkg-plist	2024-09-02 17:24:27.604335000 -0400
+@@ -14,7 +14,7 @@
+ bin/matinfo
+ bin/mipgen
+ bin/normal-blending
+-bin/resgen
++bin/filament-resgen
+ bin/roughness-prefilter
+ bin/specular-color
+ bin/uberz
+@@ -133,10 +133,6 @@
+ include/math/vec4.h
+ include/mathio/ostream.h
+ include/mikktspace/mikktspace.h
+-include/tsl/robin_growth_policy.h
+-include/tsl/robin_hash.h
+-include/tsl/robin_map.h
+-include/tsl/robin_set.h
+ include/uberz/ArchiveEnums.h
+ include/uberz/ReadableArchive.h
+ include/uberz/WritableArchive.h

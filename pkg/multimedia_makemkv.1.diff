@@ -1,0 +1,26 @@
+--- ../makemkv.orig/Makefile	2024-09-01 16:53:34.641177000 -0400
++++ Makefile	2024-09-01 16:54:39.764090000 -0400
+@@ -97,12 +97,12 @@
+ 		${CONFIGURE_ENV} CXX=${CXX} \
+ 		./configure --prefix=${LINUXSYSROOT} --disable-silent-rules \
+ 			--disable-shared --enable-static --with-pic; \
+-		${MAKE_ENV} ${MAKE_CMD} ${_MAKE_JOBS} ${INSTALL_TARGET}
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${_MAKE_JOBS} ${INSTALL_TARGET}
+ 
+ pre-configure:
+ 		cd ${WRKSRC_ffmpeg}; \
+ 		${FFMPEG_CONFIGURE_ENV} ./configure ${FFMPEG_CONFIGURE_ARGS}; \
+-		${MAKE_ENV} ${MAKE_CMD} ${_MAKE_JOBS} \
++		${SETENVI} ${WRK_ENV} ${MAKE_ENV} ${MAKE_CMD} ${_MAKE_JOBS} \
+ 			${FFMPEG_MAKE_ARGS} ${FFMPEG_INSTALL_TARGET}
+ 
+ pre-install:
+@@ -114,7 +114,7 @@
+ 		cd ${WRKSRC_bin}; \
+ 		${MKDIR} tmp; \
+ 		${ECHO_CMD} accepted > tmp/eula_accepted; \
+-		${MAKE_CMD} DESTDIR=${STAGEDIR} PREFIX=${PREFIX} install
++		${SETENVI} ${WRK_ENV} ${MAKE_CMD} DESTDIR=${STAGEDIR} PREFIX=${PREFIX} install
+ 		${PATCHELF_CMD} --set-rpath ${PREFIX}/lib/makemkv \
+ 			${STAGEDIR}${PREFIX}/bin/makemkvcon
+ 		${REINPLACE_CMD} -e 's:/sys/bus/scsi:/etc/makemkv/:' \

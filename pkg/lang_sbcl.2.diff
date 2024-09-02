@@ -1,0 +1,10 @@
+--- ../sbcl.orig/pkg-plist	2024-09-02 04:17:48.098852000 -0400
++++ pkg-plist	2024-09-02 04:25:03.723037000 -0400
+@@ -208,7 +208,6 @@
+ %%SIMD%%lib/sbcl/sb-simd/packages.lisp
+ %%SIMD%%lib/sbcl/sb-simd/printable.lisp
+ %%SIMD%%lib/sbcl/sb-simd/record.lisp
+-%%SIMD%%lib/sbcl/sb-simd/sb-simd.asd
+ %%SIMD%%lib/sbcl/sb-simd/utilities.lisp
+ lib/sbcl/sb-simple-streams/classes.lisp
+ lib/sbcl/sb-simple-streams/direct.lisp

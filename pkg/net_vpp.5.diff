@@ -1,0 +1,10 @@
+--- ../vpp.orig/pkg-plist	2024-09-02 14:06:48.070534000 -0400
++++ pkg-plist	2024-09-02 14:05:17.485859000 -0400
+@@ -236,7 +236,6 @@
+ lib/vpp_plugins/pnat_plugin.so
+ lib/vpp_plugins/pppoe_plugin.so
+ lib/vpp_plugins/prom_plugin.so
+-lib/vpp_plugins/snort_plugin.so
+ lib/vpp_plugins/srmpls_plugin.so
+ lib/vpp_plugins/srv6ad_plugin.so
+ lib/vpp_plugins/srv6adflow_plugin.so
