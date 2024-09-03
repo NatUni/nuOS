@@ -621,6 +621,7 @@ collection_vars_init () {
 		net-im/fractal
 		multimedia/vlc
 		multimedia/mpc-qt
+		multimedia/gtk-youtube-viewer
 		multimedia/v4l-utils
 		multimedia/obs-studio
 		multimedia/wlrobs
