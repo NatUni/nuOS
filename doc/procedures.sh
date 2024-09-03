@@ -312,6 +312,13 @@ service wifibox start
 service netif restart wifibox0
 
 
+cat >> /etc/hosts <<'EOF'
+192.168.40.44       rick.lab.us.org rick.local rick
+192.168.40.114      solo.hodl.ceo solo.local solo
+192.168.40.148      yoda.boogaloo.ninja yoda.local yoda
+192.168.40.42       artu.bofh.vip artu.local artu
+EOF
+
 nu_update -qfffaaac gamer
 time nu_build -qc gamer -r g13
 
@@ -367,6 +374,7 @@ cp -anv ~/.*history /tmp/nu_sys.*.ALT_MNT.*/root/
 
 shutdown -r now
 
+rm -v /kite/nuos.nub
 nu_os_install -qo /kite/nuos.nub -c gamer
 nu_os_install -qi /kite/nuos.nub -p solo
 
@@ -410,9 +418,6 @@ find /usr/ports -depth 3 -type d '(' -name work -or -name 'work-*' ')' | xargs r
 rsync -avP --delete --exclude ports/distfiles --exclude ports/packages --exclude 'ports/*/*/work*' jedi@rick.local:/usr/{src,obj,ports} /usr/
 
 (cd /usr/obj/usr/src/amd64.amd64 && tar -xvpf special_permissions.tlz)
-
-
-mount -t nfs -o intr,soft,timeo=5,retrans=3 192.168.40.41:/hive /hive
 
 
 zfs list -rH -o mountpoint,name nebu/os/FreeBSD/13.3-RELEASE-p4/amd64.opteron-sse3/r0 | sort | while IFS=$'\t' read -r m d; do mount -t zfs -r $d /mnt$m; done
@@ -724,6 +729,8 @@ nu_install_pkg -BfFgMS
 
 mount -t devfs -o ruleset=2 dev /tmp/nu_sys.*.ALT_MNT.*/dev/
 chroot /tmp/nu_sys.*.ALT_MNT.*
+nuos
+sh
 
 enable_svc rpcbind statd:rpc_statd lockd:rpc_lockd mountd nfsd:nfs_server
 echo /usr/ports/distfiles /usr/ports/packages | xargs -n1 > /etc/exports

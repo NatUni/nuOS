@@ -16,7 +16,7 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.999a0
 
-while getopts C:fl:sSvV OPT; do case $OPT in
+while getopts C:fl:sSvV46 OPT; do case $OPT in
 	C) CHROOTDIR=$OPTARG;;
 	f) OPT_FORCE=y;;
 	l) LISTEN=$OPTARG;;
@@ -24,6 +24,8 @@ while getopts C:fl:sSvV OPT; do case $OPT in
 	S) OPT_INSECURE_SEARCH=y;;
 	v) OPT_VERBOSE=y;;
 	V) OPT_NOVERIFY=y;;
+	4) OPT_IP4_ONLY=y;;
+	6) OPT_IP6_ONLY=y;;
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
@@ -43,13 +45,16 @@ echo
 
 maybe_yell
 
-
+[ -z "${OPT_IP6_ONLY-}" -o -z "${OPT_IP4_ONLY-}" ] || OPT_IP4_ONLY= && OPT_IP6_ONLY=
 canhas "${OPT_INSECURE_SEARCH-}" || secure_search=y
 [ -z "${OPT_NOVERIFY-}" -o -n "${OPT_FORCE-}" ]
 
 [ 0.0.0.0/0 = $ALLOW ] || refuse=0.0.0.0/0
 [ -f "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf" ] || cp "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf.sample" "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf"
 diff -q "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf.sample" "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf" && [ ! -s "${CHROOTDIR-}/etc/resolvconf.conf" ]
+cp -nv "$NUOS_CODE/share/dns/named.cache" "${CHROOTDIR-}/usr/local/etc/unbound/"
+cp -nv "$NUOS_CODE/share/dns/root.key" "${CHROOTDIR-}/usr/local/etc/unbound/"
+chown unbound "${CHROOTDIR-}/usr/local/etc/unbound/root.key"
 
 cat >> "${CHROOTDIR-}/etc/resolvconf.conf" <<'EOF'
 resolv_conf="/etc/resolv.conf.std"
@@ -68,7 +73,17 @@ sed -i '' -Ee "
 ${refuse:+	access-control: $refuse refuse\\
 }	access-control: $ALLOW allow
 		}
-	}
+		/^([[:blank:]]*)#?[[:blank:]]*(unknown-server-time-limit:).*\$/s//\\1\\2 ${INIT_WAIT_MS:=500}/
+		/^([[:blank:]]*)#?[[:blank:]]*(root-hints:).*\$/s//\\1\\2 \"named.cache\"/
+		/^([[:blank:]]*)#?[[:blank:]]*(harden-large-queries:).*\$/s//\\1\\2 yes/
+		/^([[:blank:]]*)#?[[:blank:]]*(harden-referral-path:).*\$/s//\\1\\2 yes/
+		/^([[:blank:]]*)#?[[:blank:]]*(harden-algo-downgrade:).*\$/s//\\1\\2 yes/
+		/^([[:blank:]]*)#?[[:blank:]]*(harden-unknown-additional:).*\$/s//\\1\\2 yes/
+		/^([[:blank:]]*)#?[[:blank:]]*(prefetch:).*\$/s//\\1\\2 yes/
+		/^([[:blank:]]*)#?[[:blank:]]*(prefetch-key:).*\$/s//\\1\\2 yes/
+${OPT_IP6_ONLY:+		/^([[:blank:]]*)#?[[:blank:]]*(do-ip4:).*\$/s//\\1\\2 no/
+}${OPT_IP4_ONLY:+		/^([[:blank:]]*)#?[[:blank:]]*(do-ip6:).*\$/s//\\1\\2 no/
+}	}
 " "${CHROOTDIR-}/usr/local/etc/unbound/unbound.conf"
 
 if [ -n "${OPT_NOVERIFY-}" ]; then

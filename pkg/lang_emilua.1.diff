@@ -1,0 +1,11 @@
+--- ../emilua.orig/Makefile	2024-09-03 15:39:02.886548000 -0400
++++ Makefile	2024-09-03 15:39:52.562528000 -0400
+@@ -12,8 +12,6 @@
+ LICENSE_FILE_BSL=	${WRKSRC}/LICENSE-BSL-1.0.txt
+ LICENSE_FILE_MIT=	${WRKSRC}/LICENSE-MIT.txt
+ 
+-IGNORE_FreeBSD_13=	not supported by Emilua
+-
+ BUILD_DEPENDS=	asciidoctor:textproc/rubygem-asciidoctor \
+ 		boost-libs>0:devel/boost-libs \
+ 		cereal>0:devel/cereal \

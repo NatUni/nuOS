@@ -80,6 +80,7 @@ collection_vars_init () {
 		sysutils/dmidecode
 		sysutils/hw-probe
 		comms/hcidump
+		sysutils/acpica-tools
 		sysutils/znapzend
 		sysutils/smartmontools
 		sysutils/ddpt
@@ -133,6 +134,7 @@ collection_vars_init () {
 		math/units
 		textproc/ydiff
 		sysutils/siegfried
+		www/hurl
 		devel/llvm18
 		lang/gcc14
 		math/lean4
@@ -150,6 +152,7 @@ collection_vars_init () {
 		lang/go
 		lang/go123
 		lang/rust
+		lang/emilua
 		lang/sbcl
 		lang/ecl
 		devel/eql5
@@ -178,6 +181,7 @@ collection_vars_init () {
 		www/npm
 		www/yarn
 		www/deno
+		multimedia/arcan
 		sysutils/mise
 		lang/nim
 		lang/seed7
@@ -218,6 +222,7 @@ collection_vars_init () {
 		security/py-xkcdpass
 		security/rbw
 		textproc/moar
+		net/trippy
 		finance/ledger
 		irc/irssi
 		textproc/en-aspell
@@ -319,7 +324,6 @@ collection_vars_init () {
 		mail/snappymail
 		net-im/ejabberd
 		net/rabbitmq
-		net/lavinmq
 		net/nsq
 		net/natscli
 		net/nats-top
@@ -414,6 +418,7 @@ collection_vars_init () {
 		sysutils/docker-credential-pass
 		sysutils/docker-machine
 		sysutils/docker-registry
+		sysutils/containerd
 		sysutils/helm
 		sysutils/helmfile
 		sysutils/podman-suite
@@ -494,6 +499,7 @@ collection_vars_init () {
 		multimedia/libva-nvidia-driver
 		x11/linux-nvidia-libs
 		misc/utouch-kmod
+		x11/antimicrox
 		sysutils/radeontop
 		graphics/vulkan-caps-viewer
 		graphics/vulkan-extension-layer
@@ -518,6 +524,10 @@ collection_vars_init () {
 		net-mgmt/kismet
 		x11/rofi-pass
 		x11/rofi-rbw
+		x11-wm/durden
+		graphics/aloadimage
+		x11/aclip
+		x11-servers/xarcan
 		x11-wm/labwc
 		x11-wm/wayfire
 		x11/wf-shell
@@ -557,7 +567,9 @@ collection_vars_init () {
 		x11/scripts
 		net/xrdp
 		x11-drivers/xorgxrdp
+		x11/xnotify
 		deskutils/fyi
+		sysutils/tiramisu
 		x11-clocks/wlclock
 		graphics/scrot
 		x11/xeyes
@@ -595,6 +607,7 @@ collection_vars_init () {
 		net/x11vnc
 		net/spiritvnc
 		www/novnc
+		multimedia/py-tartube
 		x11/xpra
 		x11/xpra-html5
 		sysutils/conky
@@ -784,6 +797,7 @@ collection_vars_init () {
 	
 	COLL_nice='
 		gamer
+		net/lavinmq
 		math/sage
 		multimedia/makemkv
 		security/bitwarden-cli

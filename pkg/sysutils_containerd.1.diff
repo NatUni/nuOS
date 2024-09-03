@@ -1,0 +1,10 @@
+--- ../containerd.orig/Makefile	2024-09-03 14:50:55.367596000 -0400
++++ Makefile	2024-09-03 14:51:40.275068000 -0400
+@@ -30,6 +30,6 @@
+ 		bin/ctr
+ 
+ do-install:
+-	@(cd ${WRKSRC} && ${SETENV} DESTDIR="${STAGEDIR}" ${MAKE_CMD} install)
++	@(cd ${WRKSRC} && ${SETENVI} ${WRK_ENV} ${MAKE_ENV} DESTDIR="${STAGEDIR}" ${MAKE_CMD} install)
+ 
+ .include <bsd.port.mk>
