@@ -162,6 +162,11 @@ collection_vars_init () {
 		lang/gravity
 		lang/wren-cli
 		lang/janet
+		math/cvc5
+		math/yices
+		lang/maude
+		lang/crystal
+		devel/shards
 		java/openjdk21
 		java/openjdk22
 		textproc/zed
@@ -206,6 +211,8 @@ collection_vars_init () {
 	
 	COLL_user='
 		lite
+		sysutils/keyd
+		sysutils/netevent
 		sysutils/password-store
 		sysutils/pass-otp
 		security/py-xkcdpass
@@ -312,6 +319,7 @@ collection_vars_init () {
 		mail/snappymail
 		net-im/ejabberd
 		net/rabbitmq
+		net/lavinmq
 		net/nsq
 		net/natscli
 		net/nats-top
@@ -573,6 +581,7 @@ collection_vars_init () {
 		graphics/zbar
 		sysutils/plasma-pass
 		graphics/qtqr
+		x11/tessen
 		devel/godot
 		devel/godot-tools
 		lang/pharo
@@ -596,6 +605,7 @@ collection_vars_init () {
 		java/icedtea-web
 		mail/thunderbird
 		net-im/dissent
+		net-im/fractal
 		multimedia/vlc
 		multimedia/mpc-qt
 		multimedia/v4l-utils
@@ -800,7 +810,6 @@ collection_vars_init () {
 		multimedia/obs-scrab
 		multimedia/obs-streamfx
 		lang/opensycl
-		lang/crystal
 		deskutils/calibre
 		games/openbve
 	'
