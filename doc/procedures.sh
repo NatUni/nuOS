@@ -311,13 +311,13 @@ EOF
 service wifibox start
 service netif restart wifibox0
 
-
 cat >> /etc/hosts <<'EOF'
 192.168.40.44       rick.lab.us.org rick.local rick
 192.168.40.114      solo.hodl.ceo solo.local solo
 192.168.40.148      yoda.boogaloo.ninja yoda.local yoda
 192.168.40.42       artu.bofh.vip artu.local artu
 EOF
+
 
 nu_update -qfffaaac gamer
 time nu_build -qc gamer -r g13
