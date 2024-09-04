@@ -1,1 +1,0 @@
-grep -qw IGNORE_FreeBSD_13 Makefile
