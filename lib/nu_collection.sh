@@ -82,6 +82,7 @@ collection_vars_init () {
 		comms/hcidump
 		sysutils/acpica-tools
 		sysutils/znapzend
+		sysutils/autorestic
 		sysutils/smartmontools
 		sysutils/ddpt
 		sysutils/sg3_utils
@@ -126,6 +127,7 @@ collection_vars_init () {
 		devel/subversion
 		devel/git
 		devel/git-lfs
+		devel/git-filter-repo
 		devel/mercurial
 		lang/gawk
 		textproc/gsed
