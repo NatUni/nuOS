@@ -1,0 +1,11 @@
+--- ../eturnal.orig/Makefile	2024-09-05 21:59:07.321161000 -0400
++++ Makefile	2024-09-05 21:57:12.723100000 -0400
+@@ -87,5 +87,8 @@
+ 	${MKDIR} ${STAGEDIR}/var/log/eturnal
+ 	${FIND} ${STAGEDIR}${PREFIX}/lib/eturnal/lib -type f -name '*.so' \
+ 		-exec ${STRIP_CMD} {} +
++	cd ${STAGEDIR}${PREFIX}/lib/eturnal && \
++		${MV} releases/12+eol-31081 releases/${DISTVERSION} && \
++		${MV} bin/eturnal-12+eol-31081 bin/eturnal-${DISTVERSION}
+ 
+ .include <bsd.port.mk>

@@ -727,6 +727,9 @@ nu_install_pkg -d '' `cut -wf1 remake`
 nu_install_pkg -BfFgMS
 
 
+watch -cnotW ttyv0
+
+
 mount -t devfs -o ruleset=2 dev /tmp/nu_sys.*.ALT_MNT.*/dev/
 chroot /tmp/nu_sys.*.ALT_MNT.*
 nuos
@@ -751,6 +754,8 @@ echo rpcbind statd lockd mountd nfsd | xargs -J % -n1 service % start
 enable_svc rpcbind nfsclient:nfs_client statd:rpc_statd lockd:rpc_lockd
 echo rpcbind nfsclient statd lockd | xargs -J % -n1 service % start
 cat >> /etc/rc.local <<'EOF'
+/usr/local/bin/nvidia-smi -pm ENABLED
+/usr/local/bin/nvidia-smi -pl 500
 (for shr in usr/ports/packages usr/ports/distfiles hive wook slop yard boat kite dump slum; do i=$((${i-30}+1)); (sleep $i && sh /$shr/.mount.sh bgnow) & done) &
 EOF
 

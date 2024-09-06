@@ -16,9 +16,16 @@ set -e; set -u; set -C
 
 NUOS_VER=0.0.12.999a0
 
-while getopts C:fl:sSvV46 OPT; do case $OPT in
+. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+while getopts bc:C:fhHi:l:sSvV46 OPT; do case $OPT in
+# 	b) incr BIGGER 1;;
+# 	c) SLABS=$OPTARG;;
 	C) CHROOTDIR=$OPTARG;;
 	f) OPT_FORCE=y;;
+	h) OPT_HARDEN=y;; # nuOS default already on
+	H) OPT_HARDEN=;;  # unbound default security, not bad, little faster
+	i) INIT_WAIT_MS=$OPTARG;;
 	l) LISTEN=$OPTARG;;
 	s) OPT_SELF_SUFFICIENT=y;;
 	S) OPT_INSECURE_SEARCH=y;;
@@ -29,7 +36,10 @@ while getopts C:fl:sSvV46 OPT; do case $OPT in
 esac; done; shift $(($OPTIND-1))
 [ $# = 0 ]
 
-. "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
+
+: ${OPT_HARDEN=y}
+: ${INIT_WAIT_MS:=500}
+[ -z "${HARDER_THAN_YOU_THINK-}" ] || OPT_HARDEN=y
 
 nuos_init
 
@@ -73,13 +83,13 @@ sed -i '' -Ee "
 ${refuse:+	access-control: $refuse refuse\\
 }	access-control: $ALLOW allow
 		}
-		/^([[:blank:]]*)#?[[:blank:]]*(unknown-server-time-limit:).*\$/s//\\1\\2 ${INIT_WAIT_MS:=500}/
+		/^([[:blank:]]*)#?[[:blank:]]*(unknown-server-time-limit:).*\$/s//\\1\\2 $INIT_WAIT_MS/
 		/^([[:blank:]]*)#?[[:blank:]]*(root-hints:).*\$/s//\\1\\2 \"named.cache\"/
-		/^([[:blank:]]*)#?[[:blank:]]*(harden-large-queries:).*\$/s//\\1\\2 yes/
-		/^([[:blank:]]*)#?[[:blank:]]*(harden-referral-path:).*\$/s//\\1\\2 yes/
-		/^([[:blank:]]*)#?[[:blank:]]*(harden-algo-downgrade:).*\$/s//\\1\\2 yes/
-		/^([[:blank:]]*)#?[[:blank:]]*(harden-unknown-additional:).*\$/s//\\1\\2 yes/
-		/^([[:blank:]]*)#?[[:blank:]]*(prefetch:).*\$/s//\\1\\2 yes/
+${OPT_HARDEN:+		/^([[:blank:]]*)#?[[:blank:]]*(harden-large-queries:).*\$/s//\\1\\2 yes/
+}${HARDER_THAN_YOU_THINK:+		/^([[:blank:]]*)#?[[:blank:]]*(harden-referral-path:).*\$/s//\\1\\2 yes/
+}${OPT_HARDEN:+		/^([[:blank:]]*)#?[[:blank:]]*(harden-algo-downgrade:).*\$/s//\\1\\2 yes/
+}${OPT_HARDEN:+		/^([[:blank:]]*)#?[[:blank:]]*(harden-unknown-additional:).*\$/s//\\1\\2 yes/
+}		/^([[:blank:]]*)#?[[:blank:]]*(prefetch:).*\$/s//\\1\\2 yes/
 		/^([[:blank:]]*)#?[[:blank:]]*(prefetch-key:).*\$/s//\\1\\2 yes/
 ${OPT_IP6_ONLY:+		/^([[:blank:]]*)#?[[:blank:]]*(do-ip4:).*\$/s//\\1\\2 no/
 }${OPT_IP4_ONLY:+		/^([[:blank:]]*)#?[[:blank:]]*(do-ip6:).*\$/s//\\1\\2 no/

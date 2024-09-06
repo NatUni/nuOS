@@ -85,6 +85,7 @@ collection_vars_init () {
 		sysutils/smartmontools
 		sysutils/ddpt
 		sysutils/sg3_utils
+		devel/efivar
 		sysutils/ipmitool
 		sysutils/freeipmi
 		sysutils/openipmi
@@ -117,6 +118,7 @@ collection_vars_init () {
 		ports-mgmt/portconfig
 		security/osv-scanner
 		lang/rizin-cutter
+		devel/ghidra
 		devel/cppcheck
 		archivers/rpm4
 		devel/xdg-dbus-proxy
@@ -130,7 +132,13 @@ collection_vars_init () {
 		devel/gmake
 		sysutils/coreutils
 		sysutils/heirloom
+		textproc/heirloom-doctools
+		devel/heirloom-devtools
+		devel/pika
 		security/nmap
+		dns/packetq
+		dns/dsc
+		dns/dnsjit
 		math/units
 		textproc/ydiff
 		sysutils/siegfried
@@ -172,6 +180,7 @@ collection_vars_init () {
 		devel/shards
 		java/openjdk21
 		java/openjdk22
+		devel/gradle
 		textproc/zed
 		textproc/zq
 		devel/wasmer
@@ -181,6 +190,12 @@ collection_vars_init () {
 		www/npm
 		www/yarn
 		www/deno
+		lang/erlang
+		lang/erlang-runtime25
+		lang/erlang-runtime26
+		devel/rebar3
+		lang/elixir
+		devel/stack
 		multimedia/arcan
 		sysutils/mise
 		lang/nim
@@ -234,6 +249,8 @@ collection_vars_init () {
 		shells/bash
 		shells/dash
 		shells/xonsh@py311
+		shells/heirloom-sh
+		mail/heirloom-mailx
 		sysutils/faketty
 		sysutils/parallel
 		security/pssh
@@ -251,6 +268,7 @@ collection_vars_init () {
 		sysutils/cpufetch
 		sysutils/bsdinfo
 		sysutils/bsdhwmon
+		net/speedtest-go
 	'
 	
 	COLL_miniserver='
@@ -285,6 +303,7 @@ collection_vars_init () {
 		security/cyrus-sasl2-saslauthd
 		graphics/vips
 		net/vnstat
+		net/eturnal
 		security/vaultwarden
 		databases/postgresql16-server
 		databases/postgis34
@@ -316,8 +335,6 @@ collection_vars_init () {
 		security/lego
 		net-mgmt/fastnetmon
 		www/matomo
-		security/shibboleth-sp
-		security/shibboleth-idp
 		www/authelia
 		net/keycloak
 		mail/nocc
@@ -331,9 +348,6 @@ collection_vars_init () {
 		net/nats-server
 		net/nats-nsc
 		net/nats-nkeys
-		lang/erlang-runtime25
-		lang/elixir
-		devel/stack
 		sysutils/kubo-go
 		security/tor
 		net/torsocks
@@ -396,6 +410,7 @@ collection_vars_init () {
 		miniserver
 		net-p2p/bitcoin-daemon
 		net-p2p/bitcoin-utils
+		finance/ord
 		net-p2p/litecoin-daemon
 		net-p2p/litecoin-utils
 		net-p2p/namecoin-daemon
@@ -421,6 +436,7 @@ collection_vars_init () {
 		sysutils/containerd
 		sysutils/helm
 		sysutils/helmfile
+		sysutils/kapp
 		sysutils/podman-suite
 		devel/etcd34
 		net/kube-apiserver
@@ -461,6 +477,7 @@ collection_vars_init () {
 		misc/py-oterm@py311
 		misc/alpaca
 		misc/koboldcpp
+		misc/aichat
 		devel/py-jupyterlab@py311
 		devel/py-jupyterlab-lsp@py311
 		textproc/py-jupyterlab-pygments@py311
@@ -485,6 +502,7 @@ collection_vars_init () {
 		misc/py-torch-geometric@py311
 		misc/py-torchmetrics@py311
 		misc/py-torchvision@py311
+		misc/py-wandb
 	'
 	
 	COLL_desktop='
@@ -498,6 +516,8 @@ collection_vars_init () {
 		x11/nvidia-settings
 		multimedia/libva-nvidia-driver
 		x11/linux-nvidia-libs
+		graphics/linux-rl9-dri
+		graphics/linux-rl9-vulkan
 		misc/utouch-kmod
 		x11/antimicrox
 		sysutils/radeontop
@@ -647,6 +667,7 @@ collection_vars_init () {
 		cad/qcad
 		science/opensim-core
 		cad/PrusaSlicer
+		cad/cura
 		emulators/wine-proton
 		databases/pgmodeler
 		devel/RStudio@desktop
@@ -701,8 +722,6 @@ collection_vars_init () {
 		games/lugaru
 		games/lincity-ng
 		games/lander
-		games/minecraft-server
-		games/minecraft-client
 		games/megamario
 		games/megaglest
 		games/mari0
@@ -798,6 +817,10 @@ collection_vars_init () {
 	
 	COLL_nice='
 		gamer
+		games/minecraft-server
+		games/minecraft-client
+		security/shibboleth-sp
+		security/shibboleth-idp
 		net/lavinmq
 		math/sage
 		multimedia/makemkv

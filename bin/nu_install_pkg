@@ -17,7 +17,7 @@ set -e; set -u; set -C
 NUOS_VER=0.0.12.999a0
 . "$(dirname "$(realpath "$0")")/../lib/nu_system.sh"
 
-while getopts ABC:d:D:fFgJ:l:MRStuvw:W:yY OPT; do case $OPT in
+while getopts ABC:d:D:fFgJ:l:MoRStuvw:W:yY OPT; do case $OPT in
 	A) OPT_ARG_SUBPROCESS=y;;
 	B) OPT_NOBUILD=y;;
 	C) CHROOTDIR=$OPTARG;;
@@ -29,6 +29,7 @@ while getopts ABC:d:D:fFgJ:l:MRStuvw:W:yY OPT; do case $OPT in
 	J) MAKE_JOBS=$OPTARG;;
 	l) LOG_TO=$OPTARG;;
 	M) OPT_NOMAKE=y;;
+	o) OPT_ORDER=y;;
 	R) OPT_NORECURSE=y;;
 	S) OPT_NOSCRIPT=y;;
 	t) OPT_TAGPKG=y;;
@@ -87,7 +88,7 @@ if canhas ${NU_PKG_DBDIR-} && [ -d "${CHROOTDIR-}${NU_PKG_DBDIR-}" ]; then
 else
 	require_tmp -d db
 	retire_db_cmd=retire_tmp
-	sister nu_pkg_tree ${NUM_WORKERS:+-NN}${deps:+ -o txt "$deps"} ${OPT_VERBOSE:+-v} ${OPT_NORECURSE:+-R} -o dir "$db" $@
+	sister nu_pkg_tree ${OPT_ORDER:+-NN}${deps:+ -o txt "$deps"} ${OPT_VERBOSE:+-v} ${OPT_NORECURSE:+-R} -o dir "$db" $@
 fi
 
 

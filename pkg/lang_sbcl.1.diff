@@ -1,6 +1,6 @@
 --- ../sbcl.orig/Makefile	2024-07-02 15:44:13.667855000 -0400
 +++ Makefile	2024-07-02 15:47:58.880029000 -0400
-@@ -147,13 +147,13 @@
+@@ -148,13 +148,13 @@
  		${WRKSRC}/doc/manual/start-stop.texinfo
  
  do-build:
@@ -16,7 +16,7 @@
  	INSTALL_ROOT="${STAGEDIR}${PREFIX}" \
  	MAN_DIR="${STAGEDIR}${PREFIX}/share/man" \
  	INFO_DIR="${STAGEDIR}${PREFIX}/${INFO_PATH}" \
-@@ -181,6 +181,6 @@
+@@ -182,6 +182,6 @@
  	${RM} -r ${STAGEDIR}${DOCSDIR}/html # empty directory created by install.sh
  
  check regression-test test: build
